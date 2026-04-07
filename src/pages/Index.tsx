@@ -14,6 +14,20 @@ const prayers = [
 const Index = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const [completions, setCompletions] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!user) return;
+    const today = new Date().toISOString().split('T')[0];
+    supabase
+      .from('prayer_completions')
+      .select('prayer_type')
+      .eq('user_id', user.id)
+      .eq('prayer_date', today)
+      .then(({ data }) => {
+        if (data) setCompletions(new Set(data.map((d: any) => d.prayer_type)));
+      });
+  }, [user]);
 
   if (loading) {
     return (
