@@ -12,8 +12,17 @@ export default {
         "2xl": "1400px",
       },
     },
+    fontFamily: {
+      serif: ['Cormorant Garamond', 'Georgia', 'serif'],
+      sans: ['Inter', 'system-ui', 'sans-serif'],
+    },
     extend: {
       colors: {
+        gold: {
+          DEFAULT: "hsl(var(--gold))",
+          muted: "hsl(var(--gold-muted))",
+          glow: "hsl(var(--gold-glow))",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
