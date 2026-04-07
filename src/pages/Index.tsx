@@ -1,5 +1,5 @@
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { LogOut, MessageCircle } from 'lucide-react';
 import PrayerCard from '@/components/PrayerCard';
 
