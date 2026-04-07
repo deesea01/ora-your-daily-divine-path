@@ -11,6 +11,7 @@ const prayers = [
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
+  const navigate = useNavigate();
 
   if (loading) {
     return (
