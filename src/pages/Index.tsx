@@ -68,7 +68,7 @@ const Index = () => {
 
         <div className="space-y-3">
           {prayers.map((prayer, i) => (
-            <PrayerCard key={prayer.time} {...prayer} index={i} />
+            <PrayerCard key={prayer.time} {...prayer} index={i} completed={completions.has(prayer.time)} />
           ))}
         </div>
       </section>
