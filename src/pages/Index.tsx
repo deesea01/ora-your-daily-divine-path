@@ -66,7 +66,7 @@ const Index = () => {
 
       {/* Talk to a Monk */}
       <section className="animate-fade-in-delay-3">
-        <button className="group w-full rounded-xl border border-gold/20 bg-card p-5 text-left transition-all hover:border-gold/40 hover:glow-gold active:scale-[0.98]">
+        <button onClick={() => navigate('/monk-chat')} className="group w-full rounded-xl border border-gold/20 bg-card p-5 text-left transition-all hover:border-gold/40 hover:glow-gold active:scale-[0.98]">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gold/10">
               <MessageCircle className="h-5 w-5 text-gold" />
