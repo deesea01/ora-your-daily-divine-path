@@ -80,6 +80,21 @@ const Index = () => {
         <div className="h-px flex-1 bg-border" />
       </div>
 
+      {/* Holy Rosary */}
+      <section className="mb-4 animate-fade-in-delay-3">
+        <button onClick={() => navigate('/rosary')} className="group w-full rounded-xl border border-gold/20 bg-card p-5 text-left transition-all hover:border-gold/40 hover:glow-gold active:scale-[0.98]">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gold/10">
+              <Cross className="h-5 w-5 text-gold" />
+            </div>
+            <div>
+              <h3 className="font-serif text-lg font-medium text-foreground">Holy Rosary</h3>
+              <p className="text-sm text-muted-foreground">Guided decade by decade</p>
+            </div>
+          </div>
+        </button>
+      </section>
+
       {/* Talk to a Monk */}
       <section className="animate-fade-in-delay-3">
         <button onClick={() => navigate('/monk-chat')} className="group w-full rounded-xl border border-gold/20 bg-card p-5 text-left transition-all hover:border-gold/40 hover:glow-gold active:scale-[0.98]">
