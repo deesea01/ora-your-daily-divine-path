@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { LogOut, MessageCircle } from 'lucide-react';
+import { LogOut, MessageCircle, Cross } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import PrayerCard from '@/components/PrayerCard';
 
