@@ -38,6 +38,30 @@ export type Database = {
         }
         Relationships: []
       }
+      prayer_completions: {
+        Row: {
+          completed_at: string
+          id: string
+          prayer_date: string
+          prayer_type: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          id?: string
+          prayer_date?: string
+          prayer_type: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          id?: string
+          prayer_date?: string
+          prayer_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

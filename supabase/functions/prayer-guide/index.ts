@@ -1,0 +1,111 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
+
+const SYSTEM_PROMPTS: Record<string, string> = {
+  morning: `You are a Catholic monk leading a gentle morning prayer.
+Generate a short guided morning prayer experience (about 150-200 words).
+Include:
+- A brief invocation or opening prayer
+- A short scripture verse relevant to the morning
+- A brief meditation or reflection
+- A closing prayer or blessing for the day ahead
+Use a warm, contemplative tone. Be pastoral, not preachy.
+Format with clear sections using markdown headings (##).`,
+
+  midday: `You are a Catholic monk guiding a midday reflection.
+Generate a midday reflection experience (about 150-200 words).
+Include:
+- A centering prayer or pause
+- One thought-provoking reflection question for the reader to sit with
+- A short prayer related to the question
+Use a calm, grounding tone. Help the reader re-center their day in God's presence.
+Format with clear sections using markdown headings (##).`,
+
+  night: `You are a Catholic monk guiding a nightly Examen.
+Generate a night Examen experience (about 200-250 words).
+Include:
+- A brief opening prayer of gratitude
+- Three reflective prompts for the reader to examine their day:
+  1. Where did I see God's presence today?
+  2. What moment am I most grateful for?
+  3. Where did I fall short, and how can I grow?
+- A short closing prayer of surrender and peace
+Use a gentle, introspective tone. Guide the reader toward peace and rest.
+Format with clear sections using markdown headings (##).`,
+};
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { prayerType } = await req.json();
+
+    if (!prayerType || !SYSTEM_PROMPTS[prayerType]) {
+      return new Response(
+        JSON.stringify({ error: "Invalid prayer type. Use: morning, midday, or night." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
+    const today = new Date().toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+
+    const response = await fetch(
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [
+            { role: "system", content: SYSTEM_PROMPTS[prayerType] },
+            { role: "user", content: `Today is ${today}. Please generate today's ${prayerType} prayer.` },
+          ],
+          stream: true,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const t = await response.text();
+      console.error("AI gateway error:", response.status, t);
+      return new Response(
+        JSON.stringify({ error: "Failed to generate prayer." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    return new Response(response.body, {
+      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+    });
+  } catch (e) {
+    console.error("prayer-guide error:", e);
+    return new Response(
+      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+});

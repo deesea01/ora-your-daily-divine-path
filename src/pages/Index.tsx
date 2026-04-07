@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { LogOut, MessageCircle } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import PrayerCard from '@/components/PrayerCard';
 
 const prayers = [
@@ -12,6 +14,20 @@ const prayers = [
 const Index = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const [completions, setCompletions] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!user) return;
+    const today = new Date().toISOString().split('T')[0];
+    supabase
+      .from('prayer_completions')
+      .select('prayer_type')
+      .eq('user_id', user.id)
+      .eq('prayer_date', today)
+      .then(({ data }) => {
+        if (data) setCompletions(new Set(data.map((d: any) => d.prayer_type)));
+      });
+  }, [user]);
 
   if (loading) {
     return (
@@ -52,7 +68,7 @@ const Index = () => {
 
         <div className="space-y-3">
           {prayers.map((prayer, i) => (
-            <PrayerCard key={prayer.time} {...prayer} index={i} />
+            <PrayerCard key={prayer.time} {...prayer} index={i} completed={completions.has(prayer.time)} />
           ))}
         </div>
       </section>
