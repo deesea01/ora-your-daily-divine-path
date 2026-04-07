@@ -25,6 +25,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/monk-chat" element={<MonkChat />} />
             <Route path="/prayer/:type" element={<PrayerDetail />} />
+            <Route path="/rosary" element={<Rosary />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
