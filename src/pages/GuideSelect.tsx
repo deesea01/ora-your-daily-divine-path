@@ -108,16 +108,21 @@ const GuideSelect = () => {
                       <span>{isExpanded ? 'Hide' : 'Preview'} example response</span>
                     </button>
 
-                    {isExpanded && (
-                      <div className="mx-5 mb-4 rounded-lg border border-border bg-background p-4 space-y-2">
-                        <p className="text-xs font-medium text-muted-foreground italic">
-                          "{preview.question}"
-                        </p>
-                        <p className="text-sm text-foreground leading-relaxed">
-                          {preview.answer}
-                        </p>
+                    <div
+                      className="grid transition-all duration-300 ease-out"
+                      style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}
+                    >
+                      <div className="overflow-hidden">
+                        <div className={`mx-5 mb-4 rounded-lg border border-border bg-background p-4 space-y-2 transition-opacity duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0'}`}>
+                          <p className="text-xs font-medium text-muted-foreground italic">
+                            "{preview.question}"
+                          </p>
+                          <p className="text-sm text-foreground leading-relaxed">
+                            {preview.answer}
+                          </p>
+                        </div>
                       </div>
-                    )}
+                    </div>
                   </>
                 )}
               </div>
