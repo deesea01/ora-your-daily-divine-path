@@ -3,6 +3,7 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { ArrowLeft, ChevronRight, ChevronLeft, Loader2, Cross, Volume2, VolumeX } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 const MYSTERIES: Record<string, { label: string; names: string[] }> = {
   joyful: {
