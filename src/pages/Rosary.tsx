@@ -122,7 +122,15 @@ const Rosary = () => {
     fetchExplanation();
   }, [mysterySet, stepIndex]);
 
+  // Auto-read prayer text when step changes and audio is enabled
+  useEffect(() => {
+    if (!isEnabled || !mysterySet) return;
+    const prayerText = getPrayerTextForStep(step, PRAYERS, mysterySet ? MYSTERIES[mysterySet] : undefined, beadCount, mysteryExplanation);
+    if (prayerText) speak(prayerText);
+  }, [stepIndex, beadCount, isEnabled, mysteryExplanation]);
+
   const goNext = () => {
+    stop();
     if (step.kind === 'decadeHailMarys' || step.kind === 'openingHailMarys') {
       const max = step.kind === 'openingHailMarys' ? 3 : 10;
       if (beadCount < max - 1) {
@@ -135,6 +143,7 @@ const Rosary = () => {
   };
 
   const goPrev = () => {
+    stop();
     setBeadCount(0);
     if (stepIndex > 0) setStepIndex((i) => i - 1);
   };
