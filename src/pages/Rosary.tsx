@@ -132,7 +132,7 @@ const Rosary = () => {
             body: JSON.stringify({
               mysterySet,
               decadeIndex: step.decade,
-              preferences: profile ? { seeking: profile.seeking, experience_level: profile.experience_level } : undefined,
+              preferences: profile ? { seeking: profile.seeking, experience_level: profile.experience_level, spiritual_guide: profile.spiritual_guide } : undefined,
             }),
           }
         );

@@ -63,7 +63,7 @@ const PrayerDetail = () => {
             },
             body: JSON.stringify({
               prayerType,
-              preferences: profile ? { seeking: profile.seeking, experience_level: profile.experience_level } : undefined,
+              preferences: profile ? { seeking: profile.seeking, experience_level: profile.experience_level, spiritual_guide: profile.spiritual_guide } : undefined,
             }),
           }
         );
