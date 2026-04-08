@@ -18,6 +18,7 @@ const PrayerDetail = () => {
   const { type } = useParams<{ type: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { profile } = useUserProfile();
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
   const [completed, setCompleted] = useState(false);
