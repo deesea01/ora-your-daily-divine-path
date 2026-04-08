@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { LogOut, MessageCircle, Cross, Flame, ChevronRight } from 'lucide-react';
+import { LogOut, MessageCircle, Cross, Flame, ChevronRight, Heart } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { SPIRITUAL_GUIDES, SpiritualGuideKey } from '@/lib/guides';
@@ -197,7 +197,7 @@ const Index = () => {
       </section>
 
       {/* Spiritual Guide Picker */}
-      <section className="animate-fade-in-delay-3">
+      <section className="mb-4 animate-fade-in-delay-3">
         <button onClick={() => navigate('/guide')} className="group w-full rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-gold/20 active:scale-[0.98]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -205,6 +205,24 @@ const Index = () => {
               <div>
                 <p className="text-sm font-medium text-foreground">Your Guide: {guideData.label}</p>
                 <p className="text-xs text-muted-foreground">{guideData.description}</p>
+              </div>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </div>
+        </button>
+      </section>
+
+      {/* Impact */}
+      <section className="animate-fade-in-delay-3">
+        <button onClick={() => navigate('/impact')} className="group w-full rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-gold/20 active:scale-[0.98]">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gold/10">
+                <Heart className="h-4 w-4 text-gold" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground">Impact</p>
+                <p className="text-xs text-muted-foreground">See how your subscription gives back</p>
               </div>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />

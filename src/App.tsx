@@ -11,6 +11,7 @@ import PrayerDetail from "./pages/PrayerDetail.tsx";
 import Rosary from "./pages/Rosary.tsx";
 import Onboarding from "./pages/Onboarding.tsx";
 import GuideSelect from "./pages/GuideSelect.tsx";
+import Impact from "./pages/Impact.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/rosary" element={<Rosary />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/guide" element={<GuideSelect />} />
+            <Route path="/impact" element={<Impact />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
