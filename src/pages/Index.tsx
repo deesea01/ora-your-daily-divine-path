@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { LogOut, MessageCircle, Cross, Flame, ChevronRight } from 'lucide-react';
+import { LogOut, MessageCircle, Cross, Flame, ChevronRight, Heart } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { SPIRITUAL_GUIDES, SpiritualGuideKey } from '@/lib/guides';
