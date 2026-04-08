@@ -61,7 +61,10 @@ const PrayerDetail = () => {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
             },
-            body: JSON.stringify({ prayerType }),
+            body: JSON.stringify({
+              prayerType,
+              preferences: profile ? { seeking: profile.seeking, experience_level: profile.experience_level } : undefined,
+            }),
           }
         );
 
