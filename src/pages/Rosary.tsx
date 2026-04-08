@@ -129,7 +129,11 @@ const Rosary = () => {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
             },
-            body: JSON.stringify({ mysterySet, decadeIndex: step.decade }),
+            body: JSON.stringify({
+              mysterySet,
+              decadeIndex: step.decade,
+              preferences: profile ? { seeking: profile.seeking, experience_level: profile.experience_level } : undefined,
+            }),
           }
         );
         if (res.ok) {
