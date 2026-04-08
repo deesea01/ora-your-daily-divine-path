@@ -337,6 +337,7 @@ const Rosary = () => {
             </button>
             <div className="w-9" />
           </div>
+        </div>
         {/* Progress bar */}
         <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-secondary">
           <div
