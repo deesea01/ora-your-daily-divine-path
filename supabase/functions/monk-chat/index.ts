@@ -6,17 +6,24 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `You are a Catholic monk guiding users in prayer and spiritual growth.
-
+function buildSystemPrompt(preferences?: { seeking?: string[]; experience_level?: string }) {
+  let prompt = `You are a Catholic monk guiding users in prayer and spiritual growth.
 You respond with humility, clarity, and wisdom rooted in Catholic teaching.
-
 Keep responses concise (3-6 sentences).
-
 Incorporate scripture when relevant.
-
 Be pastoral, not preachy.
-
 Guide users toward prayer, reflection, and virtue.`;
+
+  if (preferences?.seeking?.length) {
+    prompt += `\n\nThis person is seeking: ${preferences.seeking.join(', ')}. Gently orient your guidance toward these intentions.`;
+  }
+  if (preferences?.experience_level === 'beginner') {
+    prompt += `\nThey are new to prayer — use simple, welcoming language and explain any Catholic terms.`;
+  } else if (preferences?.experience_level === 'advanced') {
+    prompt += `\nThey have a mature prayer life — you may reference deeper theological concepts, Church Fathers, and contemplative traditions.`;
+  }
+  return prompt;
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
