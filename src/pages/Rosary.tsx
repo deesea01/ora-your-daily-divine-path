@@ -3,6 +3,7 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { ArrowLeft, ChevronRight, ChevronLeft, Loader2, Cross, Volume2, VolumeX } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 const MYSTERIES: Record<string, { label: string; names: string[] }> = {
   joyful: {
@@ -100,6 +101,7 @@ function suggestedSet(): string {
 const Rosary = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { profile } = useUserProfile();
   const [mysterySet, setMysterySet] = useState<string | null>(null);
   const [stepIndex, setStepIndex] = useState(0);
   const [beadCount, setBeadCount] = useState(0);
@@ -127,7 +129,11 @@ const Rosary = () => {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
             },
-            body: JSON.stringify({ mysterySet, decadeIndex: step.decade }),
+            body: JSON.stringify({
+              mysterySet,
+              decadeIndex: step.decade,
+              preferences: profile ? { seeking: profile.seeking, experience_level: profile.experience_level } : undefined,
+            }),
           }
         );
         if (res.ok) {

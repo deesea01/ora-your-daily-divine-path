@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Send } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 
@@ -18,10 +19,12 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/monk-chat`;
 
 async function streamChat({
   messages,
+  preferences,
   onDelta,
   onDone,
 }: {
   messages: Msg[];
+  preferences?: { seeking?: string[]; experience_level?: string };
   onDelta: (t: string) => void;
   onDone: () => void;
 }) {
@@ -31,7 +34,7 @@ async function streamChat({
       'Content-Type': 'application/json',
       Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
     },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ messages, preferences }),
   });
 
   if (!resp.ok) {
@@ -71,6 +74,7 @@ async function streamChat({
 
 const MonkChat = () => {
   const { user, loading } = useAuth();
+  const { profile } = useUserProfile();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
@@ -132,6 +136,7 @@ const MonkChat = () => {
     try {
       await streamChat({
         messages: [...messages, userMsg],
+        preferences: profile ? { seeking: profile.seeking, experience_level: profile.experience_level } : undefined,
         onDelta: upsert,
         onDone: () => {
           setIsStreaming(false);

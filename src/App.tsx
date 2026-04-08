@@ -9,6 +9,7 @@ import Auth from "./pages/Auth.tsx";
 import MonkChat from "./pages/MonkChat.tsx";
 import PrayerDetail from "./pages/PrayerDetail.tsx";
 import Rosary from "./pages/Rosary.tsx";
+import Onboarding from "./pages/Onboarding.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/monk-chat" element={<MonkChat />} />
             <Route path="/prayer/:type" element={<PrayerDetail />} />
             <Route path="/rosary" element={<Rosary />} />
+            <Route path="/onboarding" element={<Onboarding />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

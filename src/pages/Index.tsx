@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { LogOut, MessageCircle, Cross } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import PrayerCard from '@/components/PrayerCard';
 
 const prayers = [
@@ -14,6 +15,7 @@ const prayers = [
 const Index = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const { profile, loading: profileLoading } = useUserProfile();
   const [completions, setCompletions] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -29,13 +31,16 @@ const Index = () => {
       });
   }, [user]);
 
-  if (loading) {
+  if (loading || profileLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-6 w-6 rounded-full border-2 border-gold border-t-transparent animate-spin" />
       </div>
     );
   }
+
+  if (!user) return <Navigate to="/auth" replace />;
+  if (!profile?.onboarding_completed) return <Navigate to="/onboarding" replace />;
 
   if (!user) return <Navigate to="/auth" replace />;
 

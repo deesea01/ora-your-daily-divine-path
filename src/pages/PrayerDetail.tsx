@@ -3,6 +3,7 @@ import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { ArrowLeft, Check, Sun, CloudSun, Moon, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import ReactMarkdown from 'react-markdown';
 
 const prayerMeta = {
@@ -17,6 +18,7 @@ const PrayerDetail = () => {
   const { type } = useParams<{ type: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { profile } = useUserProfile();
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
   const [completed, setCompleted] = useState(false);
@@ -59,7 +61,10 @@ const PrayerDetail = () => {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
             },
-            body: JSON.stringify({ prayerType }),
+            body: JSON.stringify({
+              prayerType,
+              preferences: profile ? { seeking: profile.seeking, experience_level: profile.experience_level } : undefined,
+            }),
           }
         );
 
