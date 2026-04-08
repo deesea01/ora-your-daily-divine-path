@@ -15,6 +15,7 @@ const prayers = [
 const Index = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const { profile, loading: profileLoading } = useUserProfile();
   const [completions, setCompletions] = useState<Set<string>>(new Set());
 
   useEffect(() => {
