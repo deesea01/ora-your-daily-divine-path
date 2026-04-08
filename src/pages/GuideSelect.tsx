@@ -75,11 +75,7 @@ const GuideSelect = () => {
             const isExpanded = expandedKey === key;
 
             return (
-              <div key={key} className="overflow-hidden rounded-xl border transition-all"
-                style={{
-                  borderColor: key === current ? 'hsl(var(--gold) / 0.5)' : undefined,
-                  backgroundColor: key === current ? 'hsl(var(--gold) / 0.1)' : undefined,
-                }}
+              <div key={key}
                 className={`overflow-hidden rounded-xl border transition-all ${
                   key === current
                     ? 'border-gold/50 bg-gold/10'
