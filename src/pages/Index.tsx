@@ -89,6 +89,8 @@ const Index = () => {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const todayCompleted = completions.size;
+  const guideKey = (profile?.spiritual_guide || 'monk') as SpiritualGuideKey;
+  const guideData = SPIRITUAL_GUIDES[guideKey];
 
   return (
     <div className="min-h-screen bg-background px-6 pb-8 pt-safe">
