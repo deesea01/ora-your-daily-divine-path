@@ -74,6 +74,7 @@ async function streamChat({
 
 const MonkChat = () => {
   const { user, loading } = useAuth();
+  const { profile } = useUserProfile();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
