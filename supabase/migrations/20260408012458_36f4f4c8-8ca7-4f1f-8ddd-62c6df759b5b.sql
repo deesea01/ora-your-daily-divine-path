@@ -1,0 +1,1 @@
+ALTER TABLE public.user_profiles ADD COLUMN spiritual_guide TEXT NOT NULL DEFAULT 'monk';
