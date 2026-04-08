@@ -81,9 +81,10 @@ const Rosary = () => {
   const { user, loading: authLoading } = useAuth();
   const [mysterySet, setMysterySet] = useState<string | null>(null);
   const [stepIndex, setStepIndex] = useState(0);
-  const [beadCount, setBeadCount] = useState(0); // for Hail Mary counter
+  const [beadCount, setBeadCount] = useState(0);
   const [mysteryExplanation, setMysteryExplanation] = useState('');
   const [loadingMystery, setLoadingMystery] = useState(false);
+  const { isSpeaking, isEnabled, speak, stop, toggle } = useSpeechSynthesis();
 
   const step = ALL_STEPS[stepIndex];
   const progress = ((stepIndex + 1) / ALL_STEPS.length) * 100;
