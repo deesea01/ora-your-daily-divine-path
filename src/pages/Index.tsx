@@ -68,16 +68,9 @@ const Index = () => {
       .limit(500)
       .then(({ data }) => {
         if (!data) return;
-        // Group by date, find dates with all 3 prayers
-        const byDate: Record<string, Set<string>> = {};
-        for (const row of data) {
-          if (!byDate[row.prayer_date]) byDate[row.prayer_date] = new Set();
-          byDate[row.prayer_date].add(row.prayer_type);
-        }
-        const fullDays = Object.keys(byDate).filter(
-          (d) => byDate[d].has('morning') && byDate[d].has('midday') && byDate[d].has('night')
-        );
-        setStreak(computeStreak(fullDays));
+        // Any prayer on a given day counts toward the streak
+        const uniqueDays = [...new Set(data.map((r: any) => r.prayer_date))];
+        setStreak(computeStreak(uniqueDays));
       });
   }, [user]);
 
