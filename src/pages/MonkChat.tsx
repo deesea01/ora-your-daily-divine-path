@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Send } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 
