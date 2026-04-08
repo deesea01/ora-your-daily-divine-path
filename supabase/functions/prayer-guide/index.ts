@@ -63,7 +63,8 @@ serve(async (req) => {
       );
     }
 
-    let systemPrompt = SYSTEM_PROMPTS[prayerType];
+    const guideLabel = GUIDE_LABELS[preferences?.spiritual_guide || 'monk'] || GUIDE_LABELS.monk;
+    let systemPrompt = SYSTEM_PROMPTS[prayerType].replace('a Catholic monk', guideLabel);
     if (preferences?.seeking?.length) {
       systemPrompt += `\n\nThis person is seeking: ${preferences.seeking.join(', ')}. Weave these themes naturally into the prayer.`;
     }
