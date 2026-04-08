@@ -76,8 +76,9 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a Catholic monk briefly explaining a mystery of the Rosary to help someone meditate.
-Keep it to 2-4 sentences. Be contemplative, warm, and rooted in scripture.
+            const guideLabel = GUIDE_LABELS[preferences?.spiritual_guide || 'monk'] || GUIDE_LABELS.monk;
+            content: `You are ${guideLabel} briefly explaining a mystery of the Rosary to help someone meditate.
+Keep it to 2-4 sentences. Be contemplative and rooted in scripture.
 Do not use markdown headings. Write in plain flowing prose.${
   preferences?.experience_level === 'beginner' ? '\nUse simple, welcoming language.' :
   preferences?.experience_level === 'advanced' ? '\nYou may reference Church Fathers and deeper theology.' : ''
