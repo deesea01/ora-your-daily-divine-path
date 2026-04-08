@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { ArrowLeft, ChevronRight, ChevronLeft, Loader2, Cross } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronLeft, Loader2, Cross, Volume2, VolumeX } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 
 const MYSTERIES: Record<string, { label: string; names: string[] }> = {
   joyful: {
@@ -66,6 +67,27 @@ function buildSteps(): StepType[] {
 
 const ALL_STEPS = buildSteps();
 
+function getPrayerTextForStep(
+  step: StepType,
+  prayers: typeof PRAYERS,
+  mysteries?: { label: string; names: string[] },
+  beadCount?: number,
+  explanation?: string
+): string {
+  switch (step.kind) {
+    case 'intro': return `${prayers.signOfCross} ${prayers.apostlesCreed}`;
+    case 'openingOurFather': case 'decadeOurFather': return prayers.ourFather;
+    case 'openingHailMarys': case 'decadeHailMarys': return prayers.hailMary;
+    case 'openingGloryBe': case 'decadeGloryBe': return prayers.gloryBe;
+    case 'fatimaPrayer': return prayers.fatimaPrayer;
+    case 'closing': return `${prayers.hailHolyQueen} ${prayers.signOfCross}`;
+    case 'mystery':
+      const name = mysteries?.names[step.decade] || '';
+      return explanation ? `${name}. ${explanation}` : name;
+    default: return '';
+  }
+}
+
 // Suggest a mystery set based on day of week (traditional assignment)
 function suggestedSet(): string {
   const day = new Date().getDay();
@@ -80,9 +102,10 @@ const Rosary = () => {
   const { user, loading: authLoading } = useAuth();
   const [mysterySet, setMysterySet] = useState<string | null>(null);
   const [stepIndex, setStepIndex] = useState(0);
-  const [beadCount, setBeadCount] = useState(0); // for Hail Mary counter
+  const [beadCount, setBeadCount] = useState(0);
   const [mysteryExplanation, setMysteryExplanation] = useState('');
   const [loadingMystery, setLoadingMystery] = useState(false);
+  const { isSpeaking, isEnabled, speak, stop, toggle } = useSpeechSynthesis();
 
   const step = ALL_STEPS[stepIndex];
   const progress = ((stepIndex + 1) / ALL_STEPS.length) * 100;
@@ -120,7 +143,15 @@ const Rosary = () => {
     fetchExplanation();
   }, [mysterySet, stepIndex]);
 
+  // Auto-read prayer text when step changes and audio is enabled
+  useEffect(() => {
+    if (!isEnabled || !mysterySet) return;
+    const prayerText = getPrayerTextForStep(step, PRAYERS, mysterySet ? MYSTERIES[mysterySet] : undefined, beadCount, mysteryExplanation);
+    if (prayerText) speak(prayerText);
+  }, [stepIndex, beadCount, isEnabled, mysteryExplanation]);
+
   const goNext = () => {
+    stop();
     if (step.kind === 'decadeHailMarys' || step.kind === 'openingHailMarys') {
       const max = step.kind === 'openingHailMarys' ? 3 : 10;
       if (beadCount < max - 1) {
@@ -133,6 +164,7 @@ const Rosary = () => {
   };
 
   const goPrev = () => {
+    stop();
     setBeadCount(0);
     if (stepIndex > 0) setStepIndex((i) => i - 1);
   };
@@ -312,7 +344,20 @@ const Rosary = () => {
             <p className="font-serif text-sm font-medium text-foreground">Holy Rosary</p>
             <p className="text-xs text-muted-foreground">{mysteries.label} Mysteries</p>
           </div>
-          <div className="w-9" />
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggle}
+              className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                isEnabled
+                  ? 'border-gold/40 bg-gold/10 text-gold'
+                  : 'border-border text-muted-foreground hover:text-foreground'
+              }`}
+              aria-label={isEnabled ? 'Disable audio' : 'Enable audio'}
+            >
+              {isEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            </button>
+            <div className="w-9" />
+          </div>
         </div>
         {/* Progress bar */}
         <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-secondary">
