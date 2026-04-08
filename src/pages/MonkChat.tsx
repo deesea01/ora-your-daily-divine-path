@@ -19,10 +19,12 @@ const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/monk-chat`;
 
 async function streamChat({
   messages,
+  preferences,
   onDelta,
   onDone,
 }: {
   messages: Msg[];
+  preferences?: { seeking?: string[]; experience_level?: string };
   onDelta: (t: string) => void;
   onDone: () => void;
 }) {
@@ -32,7 +34,7 @@ async function streamChat({
       'Content-Type': 'application/json',
       Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
     },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ messages, preferences }),
   });
 
   if (!resp.ok) {
