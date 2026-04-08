@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { LogOut, MessageCircle, Cross } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import PrayerCard from '@/components/PrayerCard';
 
 const prayers = [
