@@ -11,6 +11,7 @@ import PrayerDetail from "./pages/PrayerDetail.tsx";
 import Rosary from "./pages/Rosary.tsx";
 import Onboarding from "./pages/Onboarding.tsx";
 import GuideSelect from "./pages/GuideSelect.tsx";
+import Impact from "./pages/Impact.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
