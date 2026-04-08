@@ -100,6 +100,7 @@ function suggestedSet(): string {
 const Rosary = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { profile } = useUserProfile();
   const [mysterySet, setMysterySet] = useState<string | null>(null);
   const [stepIndex, setStepIndex] = useState(0);
   const [beadCount, setBeadCount] = useState(0);
