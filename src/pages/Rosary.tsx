@@ -67,6 +67,27 @@ function buildSteps(): StepType[] {
 
 const ALL_STEPS = buildSteps();
 
+function getPrayerTextForStep(
+  step: StepType,
+  prayers: typeof PRAYERS,
+  mysteries?: { label: string; names: string[] },
+  beadCount?: number,
+  explanation?: string
+): string {
+  switch (step.kind) {
+    case 'intro': return `${prayers.signOfCross} ${prayers.apostlesCreed}`;
+    case 'openingOurFather': case 'decadeOurFather': return prayers.ourFather;
+    case 'openingHailMarys': case 'decadeHailMarys': return prayers.hailMary;
+    case 'openingGloryBe': case 'decadeGloryBe': return prayers.gloryBe;
+    case 'fatimaPrayer': return prayers.fatimaPrayer;
+    case 'closing': return `${prayers.hailHolyQueen} ${prayers.signOfCross}`;
+    case 'mystery':
+      const name = mysteries?.names[step.decade] || '';
+      return explanation ? `${name}. ${explanation}` : name;
+    default: return '';
+  }
+}
+
 // Suggest a mystery set based on day of week (traditional assignment)
 function suggestedSet(): string {
   const day = new Date().getDay();
