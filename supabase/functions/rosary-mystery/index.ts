@@ -43,7 +43,7 @@ serve(async (req) => {
   }
 
   try {
-    const { mysterySet, decadeIndex } = await req.json();
+    const { mysterySet, decadeIndex, preferences } = await req.json();
 
     if (!mysterySet || !MYSTERIES[mysterySet] || decadeIndex == null || decadeIndex < 0 || decadeIndex > 4) {
       return new Response(
