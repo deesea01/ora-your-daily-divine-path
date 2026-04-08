@@ -85,7 +85,7 @@ serve(async (req) => {
         body: JSON.stringify({
           model: "google/gemini-3-flash-preview",
           messages: [
-            { role: "system", content: SYSTEM_PROMPTS[prayerType] },
+            { role: "system", content: systemPrompt },
             { role: "user", content: `Today is ${today}. Please generate today's ${prayerType} prayer.` },
           ],
           stream: true,
