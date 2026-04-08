@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { LogOut, MessageCircle, Cross } from 'lucide-react';
+import { LogOut, MessageCircle, Cross, Flame } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import PrayerCard from '@/components/PrayerCard';
@@ -12,15 +12,44 @@ const prayers = [
   { title: 'Night Compline', subtitle: 'Rest in His peace', time: 'night' as const },
 ];
 
+function computeStreak(dates: string[]): number {
+  if (dates.length === 0) return 0;
+  const unique = [...new Set(dates)].sort().reverse();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Check if the most recent completed day is today or yesterday
+  const mostRecent = new Date(unique[0] + 'T00:00:00');
+  const diffFromToday = Math.floor((today.getTime() - mostRecent.getTime()) / 86400000);
+  if (diffFromToday > 1) return 0;
+
+  let streak = 1;
+  for (let i = 0; i < unique.length - 1; i++) {
+    const curr = new Date(unique[i] + 'T00:00:00');
+    const prev = new Date(unique[i + 1] + 'T00:00:00');
+    const diff = Math.floor((curr.getTime() - prev.getTime()) / 86400000);
+    if (diff === 1) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
 const Index = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const { profile, loading: profileLoading } = useUserProfile();
   const [completions, setCompletions] = useState<Set<string>>(new Set());
+  const [streak, setStreak] = useState(0);
 
   useEffect(() => {
     if (!user) return;
+
     const today = new Date().toISOString().split('T')[0];
+
+    // Fetch today's completions
     supabase
       .from('prayer_completions')
       .select('prayer_type')
@@ -28,6 +57,27 @@ const Index = () => {
       .eq('prayer_date', today)
       .then(({ data }) => {
         if (data) setCompletions(new Set(data.map((d: any) => d.prayer_type)));
+      });
+
+    // Fetch dates where all 3 prayers were completed for streak calculation
+    supabase
+      .from('prayer_completions')
+      .select('prayer_date, prayer_type')
+      .eq('user_id', user.id)
+      .order('prayer_date', { ascending: false })
+      .limit(500)
+      .then(({ data }) => {
+        if (!data) return;
+        // Group by date, find dates with all 3 prayers
+        const byDate: Record<string, Set<string>> = {};
+        for (const row of data) {
+          if (!byDate[row.prayer_date]) byDate[row.prayer_date] = new Set();
+          byDate[row.prayer_date].add(row.prayer_type);
+        }
+        const fullDays = Object.keys(byDate).filter(
+          (d) => byDate[d].has('morning') && byDate[d].has('midday') && byDate[d].has('night')
+        );
+        setStreak(computeStreak(fullDays));
       });
   }, [user]);
 
@@ -42,15 +92,14 @@ const Index = () => {
   if (!user) return <Navigate to="/auth" replace />;
   if (!profile?.onboarding_completed) return <Navigate to="/onboarding" replace />;
 
-  if (!user) return <Navigate to="/auth" replace />;
-
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const todayCompleted = completions.size;
 
   return (
     <div className="min-h-screen bg-background px-6 pb-8 pt-safe">
       {/* Header */}
-      <header className="flex items-center justify-between pb-8 pt-6 animate-fade-in">
+      <header className="flex items-center justify-between pb-6 pt-6 animate-fade-in">
         <div>
           <p className="text-sm text-muted-foreground">{greeting}</p>
           <h1 className="font-serif text-2xl font-light text-foreground">Ora</h1>
@@ -63,6 +112,40 @@ const Index = () => {
           <LogOut className="h-4 w-4" />
         </button>
       </header>
+
+      {/* Streak + Progress Card */}
+      <section className="mb-8 animate-fade-in">
+        <div className="rounded-xl border border-gold/20 bg-card p-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`flex h-12 w-12 items-center justify-center rounded-full ${streak > 0 ? 'bg-gold/15' : 'bg-secondary'}`}>
+                <Flame className={`h-6 w-6 ${streak > 0 ? 'text-gold' : 'text-muted-foreground'}`} />
+              </div>
+              <div>
+                <p className="font-serif text-2xl font-medium text-foreground">
+                  {streak} <span className="text-base font-normal text-muted-foreground">{streak === 1 ? 'day' : 'days'}</span>
+                </p>
+                <p className="text-xs text-muted-foreground">Prayer streak</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-sm font-medium text-foreground">{todayCompleted}/3</p>
+              <p className="text-xs text-muted-foreground">today</p>
+            </div>
+          </div>
+          {/* Mini progress bar */}
+          <div className="mt-4 flex gap-1.5">
+            {prayers.map((p) => (
+              <div
+                key={p.time}
+                className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${
+                  completions.has(p.time) ? 'bg-gold' : 'bg-secondary'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Prayer Path */}
       <section className="mb-8">
