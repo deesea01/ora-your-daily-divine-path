@@ -136,7 +136,7 @@ const MonkChat = () => {
     try {
       await streamChat({
         messages: [...messages, userMsg],
-        preferences: profile ? { seeking: profile.seeking, experience_level: profile.experience_level } : undefined,
+        preferences: profile ? { seeking: profile.seeking, experience_level: profile.experience_level, spiritual_guide: profile.spiritual_guide } : undefined,
         onDelta: upsert,
         onDone: () => {
           setIsStreaming(false);
