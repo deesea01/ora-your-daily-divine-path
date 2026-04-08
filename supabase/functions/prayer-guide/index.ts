@@ -6,6 +6,15 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const GUIDE_LABELS: Record<string, string> = {
+  monk: 'a Catholic monk',
+  st_francis: 'St. Francis of Assisi, joyful and reverent toward creation',
+  st_augustine: 'St. Augustine, introspective and philosophical',
+  st_thomas_aquinas: 'St. Thomas Aquinas, precise and theological',
+  st_teresa: 'St. Teresa of Ávila, mystical and deeply personal',
+  st_michael: 'St. Michael the Archangel, strong and disciplined',
+};
+
 const SYSTEM_PROMPTS: Record<string, string> = {
   morning: `You are a Catholic monk leading a gentle morning prayer.
 Generate a short guided morning prayer experience (about 150-200 words).
