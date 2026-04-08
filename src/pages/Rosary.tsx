@@ -323,8 +323,20 @@ const Rosary = () => {
             <p className="font-serif text-sm font-medium text-foreground">Holy Rosary</p>
             <p className="text-xs text-muted-foreground">{mysteries.label} Mysteries</p>
           </div>
-          <div className="w-9" />
-        </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggle}
+              className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                isEnabled
+                  ? 'border-gold/40 bg-gold/10 text-gold'
+                  : 'border-border text-muted-foreground hover:text-foreground'
+              }`}
+              aria-label={isEnabled ? 'Disable audio' : 'Enable audio'}
+            >
+              {isEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            </button>
+            <div className="w-9" />
+          </div>
         {/* Progress bar */}
         <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-secondary">
           <div
