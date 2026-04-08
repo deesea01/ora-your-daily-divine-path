@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { ArrowLeft, ChevronRight, ChevronLeft, Loader2, Cross } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronLeft, Loader2, Cross, Volume2, VolumeX } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 
 const MYSTERIES: Record<string, { label: string; names: string[] }> = {
   joyful: {
