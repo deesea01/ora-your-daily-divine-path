@@ -45,13 +45,23 @@ serve(async (req) => {
   }
 
   try {
-    const { prayerType } = await req.json();
+    const { prayerType, preferences } = await req.json();
 
     if (!prayerType || !SYSTEM_PROMPTS[prayerType]) {
       return new Response(
         JSON.stringify({ error: "Invalid prayer type. Use: morning, midday, or night." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    let systemPrompt = SYSTEM_PROMPTS[prayerType];
+    if (preferences?.seeking?.length) {
+      systemPrompt += `\n\nThis person is seeking: ${preferences.seeking.join(', ')}. Weave these themes naturally into the prayer.`;
+    }
+    if (preferences?.experience_level === 'beginner') {
+      systemPrompt += `\nThey are new to prayer — keep language simple and welcoming.`;
+    } else if (preferences?.experience_level === 'advanced') {
+      systemPrompt += `\nThey are experienced — feel free to draw on deeper contemplative and theological traditions.`;
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
