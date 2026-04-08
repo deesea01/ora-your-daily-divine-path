@@ -65,6 +65,8 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
+    const guideLabel = GUIDE_LABELS[preferences?.spiritual_guide || 'monk'] || GUIDE_LABELS.monk;
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -76,7 +78,6 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            const guideLabel = GUIDE_LABELS[preferences?.spiritual_guide || 'monk'] || GUIDE_LABELS.monk;
             content: `You are ${guideLabel} briefly explaining a mystery of the Rosary to help someone meditate.
 Keep it to 2-4 sentences. Be contemplative and rooted in scripture.
 Do not use markdown headings. Write in plain flowing prose.${
