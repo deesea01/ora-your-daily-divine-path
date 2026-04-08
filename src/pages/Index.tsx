@@ -177,17 +177,35 @@ const Index = () => {
         </button>
       </section>
 
-      {/* Talk to a Monk */}
-      <section className="animate-fade-in-delay-3">
+      {/* Talk to a Monk / Guide */}
+      <section className="mb-4 animate-fade-in-delay-3">
         <button onClick={() => navigate('/monk-chat')} className="group w-full rounded-xl border border-gold/20 bg-card p-5 text-left transition-all hover:border-gold/40 hover:glow-gold active:scale-[0.98]">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gold/10">
               <MessageCircle className="h-5 w-5 text-gold" />
             </div>
             <div>
-              <h3 className="font-serif text-lg font-medium text-foreground">Talk to a Monk</h3>
+              <h3 className="font-serif text-lg font-medium text-foreground">
+                Talk to {guideData.label}
+              </h3>
               <p className="text-sm text-muted-foreground">Spiritual guidance, anytime</p>
             </div>
+          </div>
+        </button>
+      </section>
+
+      {/* Spiritual Guide Picker */}
+      <section className="animate-fade-in-delay-3">
+        <button onClick={() => navigate('/guide')} className="group w-full rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-gold/20 active:scale-[0.98]">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-xl">{guideData.emoji}</span>
+              <div>
+                <p className="text-sm font-medium text-foreground">Your Guide: {guideData.label}</p>
+                <p className="text-xs text-muted-foreground">{guideData.description}</p>
+              </div>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
           </div>
         </button>
       </section>
