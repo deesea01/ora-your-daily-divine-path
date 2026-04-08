@@ -1,13 +1,42 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { SPIRITUAL_GUIDES, SpiritualGuideKey } from '@/lib/guides';
 import { toast } from 'sonner';
+
+const GUIDE_PREVIEWS: Record<string, { question: string; answer: string }> = {
+  monk: {
+    question: "I feel anxious about the future.",
+    answer: "Take a breath. Return to the present moment — that is where God dwells. Say slowly: \"Lord, I trust in You.\" Repeat it until stillness settles. Anxiety pulls you forward; prayer draws you back to now.",
+  },
+  st_francis: {
+    question: "I feel anxious about the future.",
+    answer: "Dear friend, look at the birds — they do not worry about tomorrow, yet your Father feeds them. Let go of what you cannot carry. Be content with this moment, for it is a gift. Peace begins with trust.",
+  },
+  st_augustine: {
+    question: "I feel anxious about the future.",
+    answer: "I know this restlessness well — I lived in it for years. Your heart reaches for certainty it cannot grasp. But hear this: our hearts are restless until they rest in God. Let your anxiety become a prayer of longing.",
+  },
+  st_thomas_aquinas: {
+    question: "I feel anxious about the future.",
+    answer: "Anxiety arises when the mind attempts to control what belongs to Providence. Consider: God, who orders all things wisely, holds your future. Faith does not remove uncertainty — it provides a foundation to stand upon within it.",
+  },
+  st_teresa: {
+    question: "I feel anxious about the future.",
+    answer: "Come, let us go inward together. Close your eyes. God is not in the future — He is here, in the interior castle of your soul. Let nothing disturb you. All things pass, but God does not change. Patience obtains all things.",
+  },
+  st_michael: {
+    question: "I feel anxious about the future.",
+    answer: "Stand firm. Anxiety is not from God — it is a weapon of the enemy to paralyze you. You were not given a spirit of fear, but of power. Name the fear, face it, and take the next step with courage. God fights with you.",
+  },
+};
 
 const GuideSelect = () => {
   const navigate = useNavigate();
   const { profile, setGuide } = useUserProfile();
   const current = (profile?.spiritual_guide || 'monk') as SpiritualGuideKey;
+  const [expandedKey, setExpandedKey] = useState<string | null>(null);
 
   const handleSelect = async (key: string) => {
     if (key === current) return;
@@ -15,6 +44,11 @@ const GuideSelect = () => {
     if (!result?.error) {
       toast.success(`${SPIRITUAL_GUIDES[key as SpiritualGuideKey].label} is now your guide`);
     }
+  };
+
+  const togglePreview = (key: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpandedKey(prev => (prev === key ? null : key));
   };
 
   return (
@@ -36,28 +70,63 @@ const GuideSelect = () => {
         </p>
 
         <div className="space-y-3">
-          {Object.entries(SPIRITUAL_GUIDES).map(([key, guide]) => (
-            <button
-              key={key}
-              onClick={() => handleSelect(key)}
-              className={`flex w-full items-center gap-4 rounded-xl border px-5 py-4 text-left transition-all active:scale-[0.98] ${
-                key === current
-                  ? 'border-gold/50 bg-gold/10'
-                  : 'border-border bg-card hover:border-gold/20'
-              }`}
-            >
-              <span className="text-2xl">{guide.emoji}</span>
-              <div className="flex-1">
-                <p className="font-serif text-base font-medium text-foreground">{guide.label}</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">{guide.description}</p>
+          {Object.entries(SPIRITUAL_GUIDES).map(([key, guide]) => {
+            const preview = GUIDE_PREVIEWS[key];
+            const isExpanded = expandedKey === key;
+
+            return (
+              <div key={key} className="overflow-hidden rounded-xl border transition-all"
+                style={{
+                  borderColor: key === current ? 'hsl(var(--gold) / 0.5)' : undefined,
+                  backgroundColor: key === current ? 'hsl(var(--gold) / 0.1)' : undefined,
+                }}
+                className={`overflow-hidden rounded-xl border transition-all ${
+                  key === current
+                    ? 'border-gold/50 bg-gold/10'
+                    : 'border-border bg-card'
+                }`}
+              >
+                <button
+                  onClick={() => handleSelect(key)}
+                  className="flex w-full items-center gap-4 px-5 py-4 text-left active:scale-[0.98]"
+                >
+                  <span className="text-2xl">{guide.emoji}</span>
+                  <div className="flex-1">
+                    <p className="font-serif text-base font-medium text-foreground">{guide.label}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{guide.description}</p>
+                  </div>
+                  {key === current && (
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gold">
+                      <Check className="h-3.5 w-3.5 text-primary-foreground" />
+                    </div>
+                  )}
+                </button>
+
+                {preview && (
+                  <>
+                    <button
+                      onClick={(e) => togglePreview(key, e)}
+                      className="flex w-full items-center gap-1.5 px-5 pb-3 pt-0 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                      <span>{isExpanded ? 'Hide' : 'Preview'} example response</span>
+                    </button>
+
+                    {isExpanded && (
+                      <div className="mx-5 mb-4 rounded-lg border border-border bg-background p-4 space-y-2">
+                        <p className="text-xs font-medium text-muted-foreground italic">
+                          "{preview.question}"
+                        </p>
+                        <p className="text-sm text-foreground leading-relaxed">
+                          {preview.answer}
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
-              {key === current && (
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gold">
-                  <Check className="h-3.5 w-3.5 text-primary-foreground" />
-                </div>
-              )}
-            </button>
-          ))}
+            );
+          })}
         </div>
       </main>
     </div>
