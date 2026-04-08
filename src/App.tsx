@@ -27,6 +27,7 @@ const App = () => (
             <Route path="/monk-chat" element={<MonkChat />} />
             <Route path="/prayer/:type" element={<PrayerDetail />} />
             <Route path="/rosary" element={<Rosary />} />
+            <Route path="/onboarding" element={<Onboarding />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
