@@ -6,13 +6,31 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const GUIDE_LABELS: Record<string, string> = {
-  monk: 'a Catholic monk',
-  st_francis: 'St. Francis of Assisi, joyful and nature-loving',
-  st_augustine: 'St. Augustine, introspective and philosophical',
-  st_thomas_aquinas: 'St. Thomas Aquinas, precise and theological',
-  st_teresa: 'St. Teresa of Ávila, mystical and deeply personal',
-  st_michael: 'St. Michael the Archangel, strong and direct',
+const GUIDE_VOICE: Record<string, { label: string; style: string }> = {
+  monk: {
+    label: 'a Catholic monk',
+    style: 'Be calm and grounded. Use minimal language. Emphasize stillness and contemplation.',
+  },
+  st_francis: {
+    label: 'St. Francis of Assisi',
+    style: 'Be gentle and joyful. Use soft, poetic language. See God in creation and encourage gratitude.',
+  },
+  st_augustine: {
+    label: 'St. Augustine',
+    style: 'Be introspective and honest. Acknowledge human struggle. Guide toward God as fulfillment.',
+  },
+  st_thomas_aquinas: {
+    label: 'St. Thomas Aquinas',
+    style: 'Be logical and clear. Explain the mystery with structured reasoning. Provide clarity.',
+  },
+  st_teresa: {
+    label: 'St. Teresa of Ávila',
+    style: 'Be warm and personal. Guide the reader inward. Speak as a spiritual companion.',
+  },
+  st_michael: {
+    label: 'St. Michael the Archangel',
+    style: 'Be strong and direct. Call the reader to courage and spiritual firmness.',
+  },
 };
 
 const MYSTERIES: Record<string, string[]> = {
@@ -65,7 +83,7 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const guideLabel = GUIDE_LABELS[preferences?.spiritual_guide || 'monk'] || GUIDE_LABELS.monk;
+    const voice = GUIDE_VOICE[preferences?.spiritual_guide || 'monk'] || GUIDE_VOICE.monk;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -78,8 +96,9 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are ${guideLabel} briefly explaining a mystery of the Rosary to help someone meditate.
+            content: `You are ${voice.label} briefly explaining a mystery of the Rosary to help someone meditate.
 Keep it to 2-4 sentences. Be contemplative and rooted in scripture.
+${voice.style}
 Do not use markdown headings. Write in plain flowing prose.${
   preferences?.experience_level === 'beginner' ? '\nUse simple, welcoming language.' :
   preferences?.experience_level === 'advanced' ? '\nYou may reference Church Fathers and deeper theology.' : ''

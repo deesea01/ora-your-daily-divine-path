@@ -24,7 +24,7 @@ async function streamChat({
   onDone,
 }: {
   messages: Msg[];
-  preferences?: { seeking?: string[]; experience_level?: string };
+  preferences?: { seeking?: string[]; experience_level?: string; spiritual_guide?: string };
   onDelta: (t: string) => void;
   onDone: () => void;
 }) {
