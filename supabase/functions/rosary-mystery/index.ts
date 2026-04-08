@@ -69,7 +69,10 @@ serve(async (req) => {
             role: "system",
             content: `You are a Catholic monk briefly explaining a mystery of the Rosary to help someone meditate.
 Keep it to 2-4 sentences. Be contemplative, warm, and rooted in scripture.
-Do not use markdown headings. Write in plain flowing prose.`,
+Do not use markdown headings. Write in plain flowing prose.${
+  preferences?.experience_level === 'beginner' ? '\nUse simple, welcoming language.' :
+  preferences?.experience_level === 'advanced' ? '\nYou may reference Church Fathers and deeper theology.' : ''
+}${preferences?.seeking?.length ? `\nThis person is seeking: ${preferences.seeking.join(', ')}.` : ''}`,
           },
           {
             role: "user",
