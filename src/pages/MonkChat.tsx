@@ -79,16 +79,22 @@ async function streamChat({
 
 const MonkChat = () => {
   const { user, loading } = useAuth();
-  const { profile } = useUserProfile();
+  const { profile, setGuide } = useUserProfile();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const speech = useSpeechRecognition();
+  const tts = useSpeechSynthesis();
 
   const guideKey = (profile?.spiritual_guide || 'monk') as SpiritualGuideKey;
   const guide = SPIRITUAL_GUIDES[guideKey] || SPIRITUAL_GUIDES.monk;
+
+  const handleSwitchGuide = async (key: SpiritualGuideKey) => {
+    await setGuide(key);
+  };
 
   // Load history
   useEffect(() => {
