@@ -3,9 +3,16 @@ import { useNavigate, useParams, Navigate, useSearchParams } from 'react-router-
 import { ArrowLeft, Heart, Play, Pause, SkipForward, Volume2, RotateCcw, Gauge, BookOpen, Repeat } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { usePrayerLibrary } from '@/hooks/usePrayerLibrary';
-import { getPrayerById, SAINT_VOICE_THEMES, PRAYERS } from '@/lib/prayerLibrary';
+import { getPrayerById, SAINT_VOICE_THEMES, PRAYERS, GUIDE_TO_VOICE_THEME } from '@/lib/prayerLibrary';
+import { getPrayerTranslation } from '@/lib/prayerTranslations';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 type PlaybackMode = 'normal' | 'slow' | 'line-by-line';
+
+function splitLines(text: string): string[] {
+  return text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+}
 
 const PrayerView = () => {
   const { user, loading: authLoading } = useAuth();
@@ -13,18 +20,46 @@ const PrayerView = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { favorites, toggleFavorite, recordPractice, loading } = usePrayerLibrary();
+  const { language, t } = useLanguage();
+  const { profile } = useUserProfile();
 
   const prayer = prayerId ? getPrayerById(prayerId) : undefined;
+
+  // Get localized prayer content
+  const localizedPrayer = prayer ? (() => {
+    const tr = getPrayerTranslation(prayer.id, language);
+    if (!tr) return prayer;
+    return {
+      ...prayer,
+      title: tr.title,
+      description: tr.description,
+      text: tr.text,
+      lines: splitLines(tr.text),
+    };
+  })() : undefined;
 
   const [tab, setTab] = useState<'read' | 'listen' | 'practice'>('read');
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentLine, setCurrentLine] = useState(-1);
   const [playbackMode, setPlaybackMode] = useState<PlaybackMode>('normal');
   const [repeatMode, setRepeatMode] = useState(false);
-  const [voiceTheme, setVoiceTheme] = useState<string | null>(null);
+
+  // Auto-select voice theme based on user's spiritual guide
+  const defaultVoiceTheme = profile?.spiritual_guide
+    ? GUIDE_TO_VOICE_THEME[profile.spiritual_guide] || null
+    : null;
+  const [voiceTheme, setVoiceTheme] = useState<string | null>(defaultVoiceTheme);
   const [showThemes, setShowThemes] = useState(false);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const playingRef = useRef(false);
+
+  // Update voice theme when profile loads
+  useEffect(() => {
+    if (profile?.spiritual_guide && voiceTheme === null) {
+      const mapped = GUIDE_TO_VOICE_THEME[profile.spiritual_guide];
+      if (mapped) setVoiceTheme(mapped);
+    }
+  }, [profile?.spiritual_guide]);
 
   // Routine queue
   const routineIds: string[] = (() => {
@@ -55,7 +90,7 @@ const PrayerView = () => {
     );
   }
   if (!user) return <Navigate to="/auth" replace />;
-  if (!prayer) {
+  if (!prayer || !localizedPrayer) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <p className="text-muted-foreground">Prayer not found.</p>
@@ -66,8 +101,17 @@ const PrayerView = () => {
   const isFav = favorites.has(prayer.id);
   const theme = voiceTheme ? SAINT_VOICE_THEMES.find(t => t.key === voiceTheme) : null;
 
+  // Get the guide label for display
+  const guideLabel = profile?.spiritual_guide
+    ? (() => {
+      const mapped = GUIDE_TO_VOICE_THEME[profile.spiritual_guide];
+      const found = SAINT_VOICE_THEMES.find(t => t.key === mapped);
+      return found ? `${found.emoji} ${found.label}` : null;
+    })()
+    : null;
+
   const speakLine = (lineIndex: number) => {
-    if (lineIndex >= prayer.lines.length) {
+    if (lineIndex >= localizedPrayer.lines.length) {
       if (repeatMode) {
         speakLine(0);
       } else {
@@ -79,9 +123,15 @@ const PrayerView = () => {
     }
 
     setCurrentLine(lineIndex);
-    const utterance = new SpeechSynthesisUtterance(prayer.lines[lineIndex]);
+    const utterance = new SpeechSynthesisUtterance(localizedPrayer.lines[lineIndex]);
     utterance.rate = playbackMode === 'slow' ? 0.65 : (theme?.rate ?? 0.85);
     utterance.pitch = theme?.pitch ?? 0.9;
+
+    // Set language for proper pronunciation
+    const langMap: Record<string, string> = {
+      en: 'en-US', es: 'es-ES', it: 'it-IT', pt: 'pt-BR', fr: 'fr-FR', tl: 'fil-PH'
+    };
+    utterance.lang = langMap[language] || 'en-US';
 
     utterance.onend = () => {
       if (!playingRef.current) return;
@@ -125,12 +175,12 @@ const PrayerView = () => {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="flex items-center gap-3 border-b border-border px-4 py-4">
-        <button onClick={() => navigate('/prayer-library')} className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground" aria-label="Back">
+        <button onClick={() => navigate('/prayer-library')} className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground" aria-label={t.back}>
           <ArrowLeft className="h-4 w-4" />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="font-serif text-lg font-medium text-foreground truncate">{prayer.title}</h1>
-          <p className="text-xs text-muted-foreground">{prayer.estimatedMinutes} min</p>
+          <h1 className="font-serif text-lg font-medium text-foreground truncate">{localizedPrayer.title}</h1>
+          <p className="text-xs text-muted-foreground">{localizedPrayer.estimatedMinutes} min</p>
         </div>
         <button onClick={() => toggleFavorite(prayer.id)} className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground">
           <Heart className={`h-4 w-4 ${isFav ? 'text-gold fill-gold' : ''}`} />
@@ -139,16 +189,16 @@ const PrayerView = () => {
 
       {/* Tabs */}
       <div className="flex border-b border-border">
-        {(['read', 'listen', 'practice'] as const).map(t => (
+        {(['read', 'listen', 'practice'] as const).map(tabKey => (
           <button
-            key={t}
-            onClick={() => { setTab(t); if (t !== 'listen') stopSpeech(); }}
-            className={`flex-1 py-3 text-xs font-medium capitalize transition-all ${tab === t ? 'text-gold border-b-2 border-gold' : 'text-muted-foreground'}`}
+            key={tabKey}
+            onClick={() => { setTab(tabKey); if (tabKey !== 'listen') stopSpeech(); }}
+            className={`flex-1 py-3 text-xs font-medium capitalize transition-all ${tab === tabKey ? 'text-gold border-b-2 border-gold' : 'text-muted-foreground'}`}
           >
-            {t === 'read' && <BookOpen className="inline h-3.5 w-3.5 mr-1" />}
-            {t === 'listen' && <Volume2 className="inline h-3.5 w-3.5 mr-1" />}
-            {t === 'practice' && <Gauge className="inline h-3.5 w-3.5 mr-1" />}
-            {t}
+            {tabKey === 'read' && <BookOpen className="inline h-3.5 w-3.5 mr-1" />}
+            {tabKey === 'listen' && <Volume2 className="inline h-3.5 w-3.5 mr-1" />}
+            {tabKey === 'practice' && <Gauge className="inline h-3.5 w-3.5 mr-1" />}
+            {tabKey === 'read' ? t.readPrayer : tabKey === 'listen' ? t.listenPrayer : t.practicePrayer}
           </button>
         ))}
       </div>
@@ -157,9 +207,9 @@ const PrayerView = () => {
         {tab === 'read' && (
           <div className="animate-fade-in space-y-4">
             <div className="rounded-xl border border-gold/20 bg-card p-5">
-              <p className="font-serif text-base text-foreground leading-relaxed whitespace-pre-line">{prayer.text}</p>
+              <p className="font-serif text-base text-foreground leading-relaxed whitespace-pre-line">{localizedPrayer.text}</p>
             </div>
-            <p className="text-xs text-muted-foreground italic text-center">{prayer.description}</p>
+            <p className="text-xs text-muted-foreground italic text-center">{localizedPrayer.description}</p>
           </div>
         )}
 
@@ -172,6 +222,9 @@ const PrayerView = () => {
             >
               <p className="text-muted-foreground">
                 Voice theme: <span className="text-foreground">{theme ? theme.label : 'Default'}</span>
+                {voiceTheme === defaultVoiceTheme && defaultVoiceTheme && (
+                  <span className="text-gold ml-1">(your guide)</span>
+                )}
               </p>
             </button>
 
@@ -184,16 +237,22 @@ const PrayerView = () => {
                   <p className="font-medium text-foreground">Default Voice</p>
                   <p className="text-muted-foreground mt-0.5">Standard narration</p>
                 </button>
-                {SAINT_VOICE_THEMES.map(st => (
-                  <button
-                    key={st.key}
-                    onClick={() => { setVoiceTheme(st.key); setShowThemes(false); }}
-                    className={`w-full rounded-lg border p-3 text-left text-xs transition-all ${voiceTheme === st.key ? 'border-gold/40 bg-gold/10' : 'border-border'}`}
-                  >
-                    <p className="font-medium text-foreground">{st.emoji} {st.label}</p>
-                    <p className="text-muted-foreground mt-0.5">{st.description}</p>
-                  </button>
-                ))}
+                {SAINT_VOICE_THEMES.map(st => {
+                  const isGuideTheme = st.key === defaultVoiceTheme;
+                  return (
+                    <button
+                      key={st.key}
+                      onClick={() => { setVoiceTheme(st.key); setShowThemes(false); }}
+                      className={`w-full rounded-lg border p-3 text-left text-xs transition-all ${voiceTheme === st.key ? 'border-gold/40 bg-gold/10' : 'border-border'}`}
+                    >
+                      <p className="font-medium text-foreground">
+                        {st.emoji} {st.label}
+                        {isGuideTheme && <span className="text-gold ml-1 text-[10px]">★ Your Guide</span>}
+                      </p>
+                      <p className="text-muted-foreground mt-0.5">{st.description}</p>
+                    </button>
+                  );
+                })}
                 <p className="text-[10px] text-muted-foreground italic text-center pt-2">
                   These are devotional narration styles inspired by each saint's spirituality — not literal voices.
                 </p>
@@ -215,7 +274,7 @@ const PrayerView = () => {
 
             {/* Prayer text with highlighting */}
             <div className="rounded-xl border border-gold/20 bg-card p-5">
-              {prayer.lines.map((line, i) => (
+              {localizedPrayer.lines.map((line, i) => (
                 <p
                   key={i}
                   className={`font-serif text-base leading-relaxed transition-all duration-300 ${
@@ -248,7 +307,7 @@ const PrayerView = () => {
         )}
 
         {tab === 'practice' && (
-          <PracticeMode prayer={prayer} recordPractice={recordPractice} />
+          <PracticeMode prayer={localizedPrayer} recordPractice={recordPractice} />
         )}
       </main>
 
@@ -261,7 +320,14 @@ const PrayerView = () => {
           >
             <div>
               <p className="text-xs text-muted-foreground">Next in routine</p>
-              <p className="text-sm font-medium text-foreground">{PRAYERS.find(p => p.id === nextInRoutine)?.title}</p>
+              <p className="text-sm font-medium text-foreground">
+                {(() => {
+                  const np = PRAYERS.find(p => p.id === nextInRoutine);
+                  if (!np) return '';
+                  const tr = getPrayerTranslation(np.id, language);
+                  return tr?.title || np.title;
+                })()}
+              </p>
             </div>
             <SkipForward className="h-4 w-4 text-gold" />
           </button>
@@ -275,7 +341,7 @@ const PrayerView = () => {
 function PracticeMode({ prayer, recordPractice }: { prayer: { id: string; lines: string[]; title: string }; recordPractice: (id: string) => Promise<void> }) {
   const [mode, setMode] = useState<'full' | 'fill-blank' | 'progressive' | 'first-letter' | 'tap-reveal'>('full');
   const [revealedLines, setRevealedLines] = useState<Set<number>>(new Set());
-  const [hideLevel, setHideLevel] = useState(0); // 0-3 for progressive hide
+  const [hideLevel, setHideLevel] = useState(0);
   const [completed, setCompleted] = useState(false);
 
   const handleComplete = async () => {

@@ -52,6 +52,18 @@ export const SAINT_VOICE_THEMES: SaintVoiceTheme[] = [
   { key: 'st_teresa_avila', label: 'Inspired by St. Teresa of Ávila', emoji: '🔥', description: 'Warm, contemplative, personal — interior prayer and friendship with God', rate: 0.85, pitch: 0.95 },
 ];
 
+// Map spiritual guide keys to voice theme keys
+export const GUIDE_TO_VOICE_THEME: Record<string, string> = {
+  monk: 'st_benedict',
+  st_francis: 'st_francis',
+  st_augustine: 'st_augustine',
+  st_thomas_aquinas: 'st_ignatius', // closest match: disciplined, reflective
+  st_teresa: 'st_teresa_avila',
+  st_michael: 'st_benedict', // closest match: steady, disciplined
+  st_padre_pio: 'st_padre_pio',
+  st_joan_of_arc: 'st_joan',
+};
+
 function splitLines(text: string): string[] {
   return text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
 }
