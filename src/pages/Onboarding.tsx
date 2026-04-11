@@ -34,7 +34,10 @@ const Onboarding = () => {
 
   const handleFinish = async () => {
     setSaving(true);
-    await saveProfile(seeking, experience || 'beginner');
+    // Auto-set daily prayer goal based on experience level
+    const goalMap: Record<string, number> = { beginner: 1, intermediate: 2, advanced: 3 };
+    const goal = goalMap[experience] || 3;
+    await saveProfile(seeking, experience || 'beginner', goal);
     setSaving(false);
     navigate('/', { replace: true });
   };
