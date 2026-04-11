@@ -91,9 +91,12 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background px-6 pb-8 pt-safe">
       <header className="flex items-center justify-between pb-6 pt-6 animate-fade-in">
-        <div>
-          <p className="text-sm text-muted-foreground">{greeting}</p>
-          <h1 className="font-serif text-2xl font-light text-foreground">Ora</h1>
+        <div className="flex items-center gap-3">
+          <img src={logoImg} alt="Ora" className="w-10 h-10 object-contain" />
+          <div>
+            <p className="text-sm text-muted-foreground">{greeting}</p>
+            <h1 className="font-serif text-2xl font-light text-foreground">Ora</h1>
+          </div>
         </div>
         <button
           onClick={signOut}
