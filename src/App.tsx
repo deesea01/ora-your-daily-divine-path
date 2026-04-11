@@ -18,6 +18,9 @@ import ConfessionPrepSummary from "./pages/ConfessionPrepSummary.tsx";
 import LogConfession from "./pages/LogConfession.tsx";
 import ConfessionHistory from "./pages/ConfessionHistory.tsx";
 import ConfessionPrivacy from "./pages/ConfessionPrivacy.tsx";
+import PrayerLibrary from "./pages/PrayerLibrary.tsx";
+import PrayerView from "./pages/PrayerView.tsx";
+import PrayerRoutines from "./pages/PrayerRoutines.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -44,6 +47,9 @@ const App = () => (
             <Route path="/confession/log" element={<LogConfession />} />
             <Route path="/confession/history" element={<ConfessionHistory />} />
             <Route path="/confession/privacy" element={<ConfessionPrivacy />} />
+            <Route path="/prayer-library" element={<PrayerLibrary />} />
+            <Route path="/prayer-library/routines" element={<PrayerRoutines />} />
+            <Route path="/prayer-library/:prayerId" element={<PrayerView />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
