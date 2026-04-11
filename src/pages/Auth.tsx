@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
+import { lovable } from '@/integrations/lovable/index';
 
 const Auth = () => {
   const { user, loading, signIn, signUp, resetPasswordForEmail } = useAuth();
