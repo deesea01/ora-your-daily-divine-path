@@ -8,6 +8,7 @@ export interface UserProfile {
   onboarding_completed: boolean;
   spiritual_guide: string;
   preferred_language: string;
+  daily_prayer_goal: number;
 }
 
 export function useUserProfile() {
