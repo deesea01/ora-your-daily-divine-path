@@ -5,35 +5,24 @@ import { LogOut, MessageCircle, Cross, Flame, ChevronRight, Heart, Shield, BookO
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { SPIRITUAL_GUIDES, SpiritualGuideKey } from '@/lib/guides';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { LanguageSelector } from '@/components/LanguageSelector';
 import PrayerCard from '@/components/PrayerCard';
-
-const prayers = [
-  { title: 'Morning Lauds', subtitle: 'Start your day in grace', time: 'morning' as const },
-  { title: 'Midday Angelus', subtitle: 'Pause and remember', time: 'midday' as const },
-  { title: 'Night Compline', subtitle: 'Rest in His peace', time: 'night' as const },
-];
 
 function computeStreak(dates: string[]): number {
   if (dates.length === 0) return 0;
   const unique = [...new Set(dates)].sort().reverse();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
-  // Check if the most recent completed day is today or yesterday
   const mostRecent = new Date(unique[0] + 'T00:00:00');
   const diffFromToday = Math.floor((today.getTime() - mostRecent.getTime()) / 86400000);
   if (diffFromToday > 1) return 0;
-
   let streak = 1;
   for (let i = 0; i < unique.length - 1; i++) {
     const curr = new Date(unique[i] + 'T00:00:00');
     const prev = new Date(unique[i + 1] + 'T00:00:00');
     const diff = Math.floor((curr.getTime() - prev.getTime()) / 86400000);
-    if (diff === 1) {
-      streak++;
-    } else {
-      break;
-    }
+    if (diff === 1) { streak++; } else { break; }
   }
   return streak;
 }
@@ -42,15 +31,13 @@ const Index = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const { profile, loading: profileLoading } = useUserProfile();
+  const { t, language } = useLanguage();
   const [completions, setCompletions] = useState<Set<string>>(new Set());
   const [streak, setStreak] = useState(0);
 
   useEffect(() => {
     if (!user) return;
-
     const today = new Date().toISOString().split('T')[0];
-
-    // Fetch today's completions
     supabase
       .from('prayer_completions')
       .select('prayer_type')
@@ -59,8 +46,6 @@ const Index = () => {
       .then(({ data }) => {
         if (data) setCompletions(new Set(data.map((d: any) => d.prayer_type)));
       });
-
-    // Fetch dates where all 3 prayers were completed for streak calculation
     supabase
       .from('prayer_completions')
       .select('prayer_date, prayer_type')
@@ -69,7 +54,6 @@ const Index = () => {
       .limit(500)
       .then(({ data }) => {
         if (!data) return;
-        // Any prayer on a given day counts toward the streak
         const uniqueDays = [...new Set(data.map((r: any) => r.prayer_date))];
         setStreak(computeStreak(uniqueDays));
       });
@@ -87,14 +71,21 @@ const Index = () => {
   if (!profile?.onboarding_completed) return <Navigate to="/onboarding" replace />;
 
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const greeting = hour < 12 ? t.goodMorning : hour < 17 ? t.goodAfternoon : t.goodEvening;
   const todayCompleted = completions.size;
   const guideKey = (profile?.spiritual_guide || 'monk') as SpiritualGuideKey;
   const guideData = SPIRITUAL_GUIDES[guideKey];
 
+  const prayers = [
+    { title: t.morningLauds, subtitle: t.morningLaudsDesc, time: 'morning' as const },
+    { title: t.middayAngelus, subtitle: t.middayAngelusDesc, time: 'midday' as const },
+    { title: t.nightCompline, subtitle: t.nightComplineDesc, time: 'night' as const },
+  ];
+
+  const locale = language === 'tl' ? 'fil' : language;
+
   return (
     <div className="min-h-screen bg-background px-6 pb-8 pt-safe">
-      {/* Header */}
       <header className="flex items-center justify-between pb-6 pt-6 animate-fade-in">
         <div>
           <p className="text-sm text-muted-foreground">{greeting}</p>
@@ -103,13 +94,12 @@ const Index = () => {
         <button
           onClick={signOut}
           className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground hover:border-gold/30"
-          aria-label="Sign out"
+          aria-label={t.signOut}
         >
           <LogOut className="h-4 w-4" />
         </button>
       </header>
 
-      {/* Streak + Progress Card */}
       <section className="mb-8 animate-fade-in">
         <div className="rounded-xl border border-gold/20 bg-card p-5">
           <div className="flex items-center justify-between">
@@ -119,17 +109,16 @@ const Index = () => {
               </div>
               <div>
                 <p className="font-serif text-2xl font-medium text-foreground">
-                  {streak} <span className="text-base font-normal text-muted-foreground">{streak === 1 ? 'day' : 'days'}</span>
+                  {streak} <span className="text-base font-normal text-muted-foreground">{streak === 1 ? t.day : t.days}</span>
                 </p>
-                <p className="text-xs text-muted-foreground">Prayer streak</p>
+                <p className="text-xs text-muted-foreground">{t.prayerStreak}</p>
               </div>
             </div>
             <div className="text-right">
               <p className="text-sm font-medium text-foreground">{todayCompleted}/3</p>
-              <p className="text-xs text-muted-foreground">today</p>
+              <p className="text-xs text-muted-foreground">{t.today}</p>
             </div>
           </div>
-          {/* Mini progress bar */}
           <div className="mt-4 flex gap-1.5">
             {prayers.map((p) => (
               <div
@@ -143,13 +132,11 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Prayer Path */}
       <section className="mb-8">
-        <h2 className="mb-1 font-serif text-xl text-gold animate-fade-in">Today's Prayer Path</h2>
+        <h2 className="mb-1 font-serif text-xl text-gold animate-fade-in">{t.todaysPrayerPath}</h2>
         <p className="mb-5 text-sm text-muted-foreground animate-fade-in">
-          {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+          {new Date().toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric' })}
         </p>
-
         <div className="space-y-3">
           {prayers.map((prayer, i) => (
             <PrayerCard key={prayer.time} {...prayer} index={i} completed={completions.has(prayer.time)} />
@@ -157,14 +144,12 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Divider */}
       <div className="mb-8 flex items-center gap-3 animate-fade-in-delay-3">
         <div className="h-px flex-1 bg-border" />
         <span className="text-xs text-gold/40 animate-pulse-soft">✝</span>
         <div className="h-px flex-1 bg-border" />
       </div>
 
-      {/* Holy Rosary */}
       <section className="mb-4 animate-fade-in-delay-3">
         <button onClick={() => navigate('/rosary')} className="group w-full rounded-xl border border-gold/20 bg-card p-5 text-left transition-all hover:border-gold/40 hover:glow-gold active:scale-[0.98]">
           <div className="flex items-center gap-4">
@@ -172,14 +157,13 @@ const Index = () => {
               <Cross className="h-5 w-5 text-gold" />
             </div>
             <div>
-              <h3 className="font-serif text-lg font-medium text-foreground">Holy Rosary</h3>
-              <p className="text-sm text-muted-foreground">Guided decade by decade</p>
+              <h3 className="font-serif text-lg font-medium text-foreground">{t.holyRosary}</h3>
+              <p className="text-sm text-muted-foreground">{t.holyRosaryDesc}</p>
             </div>
           </div>
         </button>
       </section>
 
-      {/* Prayer Library */}
       <section className="mb-4 animate-fade-in-delay-3">
         <button onClick={() => navigate('/prayer-library')} className="group w-full rounded-xl border border-gold/20 bg-card p-5 text-left transition-all hover:border-gold/40 hover:glow-gold active:scale-[0.98]">
           <div className="flex items-center gap-4">
@@ -187,14 +171,13 @@ const Index = () => {
               <BookOpen className="h-5 w-5 text-gold" />
             </div>
             <div>
-              <h3 className="font-serif text-lg font-medium text-foreground">Prayer Library</h3>
-              <p className="text-sm text-muted-foreground">Read, listen, and memorize Catholic prayers</p>
+              <h3 className="font-serif text-lg font-medium text-foreground">{t.prayerLibrary}</h3>
+              <p className="text-sm text-muted-foreground">{t.prayerLibraryDesc}</p>
             </div>
           </div>
         </button>
       </section>
 
-      {/* Spiritual Journal */}
       <section className="mb-4 animate-fade-in-delay-3">
         <button onClick={() => navigate('/journal')} className="group w-full rounded-xl border border-gold/20 bg-card p-5 text-left transition-all hover:border-gold/40 hover:glow-gold active:scale-[0.98]">
           <div className="flex items-center gap-4">
@@ -202,14 +185,13 @@ const Index = () => {
               <PenLine className="h-5 w-5 text-gold" />
             </div>
             <div>
-              <h3 className="font-serif text-lg font-medium text-foreground">Spiritual Journal</h3>
-              <p className="text-sm text-muted-foreground">Reflect, give thanks, and grow closer to God</p>
+              <h3 className="font-serif text-lg font-medium text-foreground">{t.spiritualJournal}</h3>
+              <p className="text-sm text-muted-foreground">{t.spiritualJournalDesc}</p>
             </div>
           </div>
         </button>
       </section>
 
-      {/* Confession Tracker */}
       <section className="mb-4 animate-fade-in-delay-3">
         <button onClick={() => navigate('/confession')} className="group w-full rounded-xl border border-gold/20 bg-card p-5 text-left transition-all hover:border-gold/40 hover:glow-gold active:scale-[0.98]">
           <div className="flex items-center gap-4">
@@ -217,12 +199,13 @@ const Index = () => {
               <Shield className="h-5 w-5 text-gold" />
             </div>
             <div>
-              <h3 className="font-serif text-lg font-medium text-foreground">Confession Tracker</h3>
-              <p className="text-sm text-muted-foreground">Prepare, reflect, and stay consistent</p>
+              <h3 className="font-serif text-lg font-medium text-foreground">{t.confessionTracker}</h3>
+              <p className="text-sm text-muted-foreground">{t.confessionTrackerDesc}</p>
             </div>
           </div>
         </button>
       </section>
+
       <section className="mb-4 animate-fade-in-delay-3">
         <button onClick={() => navigate('/monk-chat')} className="group w-full rounded-xl border border-gold/20 bg-card p-5 text-left transition-all hover:border-gold/40 hover:glow-gold active:scale-[0.98]">
           <div className="flex items-center gap-4">
@@ -231,22 +214,21 @@ const Index = () => {
             </div>
             <div>
               <h3 className="font-serif text-lg font-medium text-foreground">
-                Talk to {guideData.label}
+                {t.talkTo} {guideData.label}
               </h3>
-              <p className="text-sm text-muted-foreground">Spiritual guidance, anytime</p>
+              <p className="text-sm text-muted-foreground">{t.spiritualGuidance}</p>
             </div>
           </div>
         </button>
       </section>
 
-      {/* Spiritual Guide Picker */}
       <section className="mb-4 animate-fade-in-delay-3">
         <button onClick={() => navigate('/guide')} className="group w-full rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-gold/20 active:scale-[0.98]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-xl">{guideData.emoji}</span>
               <div>
-                <p className="text-sm font-medium text-foreground">Your Guide: {guideData.label}</p>
+                <p className="text-sm font-medium text-foreground">{t.yourGuide}: {guideData.label}</p>
                 <p className="text-xs text-muted-foreground">{guideData.description}</p>
               </div>
             </div>
@@ -255,7 +237,11 @@ const Index = () => {
         </button>
       </section>
 
-      {/* Impact */}
+      {/* Language Selector */}
+      <section className="mb-4 animate-fade-in-delay-3">
+        <LanguageSelector />
+      </section>
+
       <section className="animate-fade-in-delay-3">
         <button onClick={() => navigate('/impact')} className="group w-full rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-gold/20 active:scale-[0.98]">
           <div className="flex items-center justify-between">
@@ -264,8 +250,8 @@ const Index = () => {
                 <Heart className="h-4 w-4 text-gold" />
               </div>
               <div>
-                <p className="text-sm font-medium text-foreground">Impact</p>
-                <p className="text-xs text-muted-foreground">See how your subscription gives back</p>
+                <p className="text-sm font-medium text-foreground">{t.impact}</p>
+                <p className="text-xs text-muted-foreground">{t.impactDesc}</p>
               </div>
             </div>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />

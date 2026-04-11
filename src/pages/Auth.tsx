@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
-import { Cross } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
 
 const Auth = () => {
   const { user, loading, signIn, signUp } = useAuth();
+  const { t, language, setLanguage } = useLanguage();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -39,29 +41,46 @@ const Auth = () => {
     setSubmitting(false);
   };
 
+  const currentLang = SUPPORTED_LANGUAGES.find(l => l.code === language);
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-6 bg-background">
       <div className="w-full max-w-sm animate-fade-in">
+        {/* Language picker - top right */}
+        <div className="flex justify-end mb-4">
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value as any)}
+            className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-gold/50"
+          >
+            {SUPPORTED_LANGUAGES.map(lang => (
+              <option key={lang.code} value={lang.code}>
+                {lang.flag} {lang.nativeLabel}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {/* Logo area */}
         <div className="mb-12 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full border border-gold/30 mb-6 glow-gold">
             <span className="text-gold text-2xl">✝</span>
           </div>
-          <h1 className="font-serif text-4xl font-light tracking-wide text-foreground">Ora</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Pray without ceasing</p>
+          <h1 className="font-serif text-4xl font-light tracking-wide text-foreground">{t.authTitle}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{t.authSubtitle}</p>
         </div>
 
         {signUpSuccess ? (
           <div className="text-center animate-fade-in">
-            <p className="text-gold mb-2">Check your email</p>
-            <p className="text-sm text-muted-foreground">We've sent you a confirmation link to verify your account.</p>
+            <p className="text-gold mb-2">{t.checkEmail}</p>
+            <p className="text-sm text-muted-foreground">{t.checkEmailDesc}</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <input
                 type="email"
-                placeholder="Email"
+                placeholder={t.email}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -71,7 +90,7 @@ const Auth = () => {
             <div>
               <input
                 type="password"
-                placeholder="Password"
+                placeholder={t.password}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -87,17 +106,17 @@ const Auth = () => {
               disabled={submitting}
               className="w-full rounded-lg bg-gold py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
             >
-              {submitting ? '...' : isSignUp ? 'Create Account' : 'Sign In'}
+              {submitting ? '...' : isSignUp ? t.createAccount : t.signIn}
             </button>
 
             <p className="text-center text-sm text-muted-foreground">
-              {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
+              {isSignUp ? t.alreadyHaveAccount : t.dontHaveAccount}{' '}
               <button
                 type="button"
                 onClick={() => { setIsSignUp(!isSignUp); setError(''); }}
                 className="text-gold hover:underline"
               >
-                {isSignUp ? 'Sign in' : 'Sign up'}
+                {isSignUp ? t.signIn : t.signUp}
               </button>
             </p>
           </form>
