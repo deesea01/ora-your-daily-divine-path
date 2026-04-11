@@ -87,9 +87,9 @@ const MonkChat = () => {
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const speech = useSpeechRecognition();
-  const tts = useSpeechSynthesis();
-
   const guideKey = (profile?.spiritual_guide || 'monk') as SpiritualGuideKey;
+  const tts = useSpeechSynthesis(guideKey);
+
   const guide = SPIRITUAL_GUIDES[guideKey] || SPIRITUAL_GUIDES.monk;
 
   const handleSwitchGuide = async (key: SpiritualGuideKey) => {
