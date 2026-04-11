@@ -12,6 +12,12 @@ import Rosary from "./pages/Rosary.tsx";
 import Onboarding from "./pages/Onboarding.tsx";
 import GuideSelect from "./pages/GuideSelect.tsx";
 import Impact from "./pages/Impact.tsx";
+import ConfessionDashboard from "./pages/ConfessionDashboard.tsx";
+import ExaminationOfConscience from "./pages/ExaminationOfConscience.tsx";
+import ConfessionPrepSummary from "./pages/ConfessionPrepSummary.tsx";
+import LogConfession from "./pages/LogConfession.tsx";
+import ConfessionHistory from "./pages/ConfessionHistory.tsx";
+import ConfessionPrivacy from "./pages/ConfessionPrivacy.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -32,6 +38,12 @@ const App = () => (
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/guide" element={<GuideSelect />} />
             <Route path="/impact" element={<Impact />} />
+            <Route path="/confession" element={<ConfessionDashboard />} />
+            <Route path="/confession/examine" element={<ExaminationOfConscience />} />
+            <Route path="/confession/prep" element={<ConfessionPrepSummary />} />
+            <Route path="/confession/log" element={<LogConfession />} />
+            <Route path="/confession/history" element={<ConfessionHistory />} />
+            <Route path="/confession/privacy" element={<ConfessionPrivacy />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -38,6 +38,108 @@ export type Database = {
         }
         Relationships: []
       }
+      confession_prep_notes: {
+        Row: {
+          category: string
+          checked_items: Json
+          created_at: string
+          id: string
+          is_draft: boolean
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          checked_items?: Json
+          created_at?: string
+          id?: string
+          is_draft?: boolean
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          checked_items?: Json
+          created_at?: string
+          id?: string
+          is_draft?: boolean
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      confession_settings: {
+        Row: {
+          auto_delete_prep: boolean
+          created_at: string
+          hide_previews: boolean
+          id: string
+          local_only: boolean
+          passcode_enabled: boolean
+          target_rhythm: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_delete_prep?: boolean
+          created_at?: string
+          hide_previews?: boolean
+          id?: string
+          local_only?: boolean
+          passcode_enabled?: boolean
+          target_rhythm?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_delete_prep?: boolean
+          created_at?: string
+          hide_previews?: boolean
+          id?: string
+          local_only?: boolean
+          passcode_enabled?: boolean
+          target_rhythm?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      confessions: {
+        Row: {
+          confession_date: string
+          created_at: string
+          id: string
+          mood: string | null
+          parish_name: string | null
+          priest_name: string | null
+          reflection: string | null
+          user_id: string
+        }
+        Insert: {
+          confession_date?: string
+          created_at?: string
+          id?: string
+          mood?: string | null
+          parish_name?: string | null
+          priest_name?: string | null
+          reflection?: string | null
+          user_id: string
+        }
+        Update: {
+          confession_date?: string
+          created_at?: string
+          id?: string
+          mood?: string | null
+          parish_name?: string | null
+          priest_name?: string | null
+          reflection?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       prayer_completions: {
         Row: {
           completed_at: string
