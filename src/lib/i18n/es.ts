@@ -29,6 +29,7 @@ export const es: Translations = {
   day: 'día',
   days: 'días',
   todaysPrayerPath: 'Camino de Oración de Hoy',
+  dailyPrayerGoal: 'Meta diaria de oración',
   morningLauds: 'Laudes Matutinos',
   morningLaudsDesc: 'Comienza tu día en gracia',
   middayAngelus: 'Ángelus del Mediodía',

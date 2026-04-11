@@ -8,6 +8,7 @@ export interface UserProfile {
   onboarding_completed: boolean;
   spiritual_guide: string;
   preferred_language: string;
+  daily_prayer_goal: number;
 }
 
 export function useUserProfile() {
@@ -24,7 +25,7 @@ export function useUserProfile() {
 
     supabase
       .from('user_profiles')
-      .select('seeking, experience_level, onboarding_completed, spiritual_guide, preferred_language')
+      .select('seeking, experience_level, onboarding_completed, spiritual_guide, preferred_language, daily_prayer_goal')
       .eq('user_id', user.id)
       .maybeSingle()
       .then(({ data }) => {
@@ -33,16 +34,17 @@ export function useUserProfile() {
       });
   }, [user]);
 
-  const saveProfile = async (seeking: string[], experienceLevel: string) => {
+  const saveProfile = async (seeking: string[], experienceLevel: string, dailyGoal?: number) => {
     if (!user) return;
 
-    const payload = {
+    const payload: any = {
       user_id: user.id,
       seeking,
       experience_level: experienceLevel,
       onboarding_completed: true,
       updated_at: new Date().toISOString(),
     };
+    if (dailyGoal !== undefined) payload.daily_prayer_goal = dailyGoal;
 
     const { error } = await supabase
       .from('user_profiles')
@@ -50,7 +52,7 @@ export function useUserProfile() {
 
     if (!error) {
       setProfile((prev) => ({
-        ...(prev || { seeking: [], experience_level: 'beginner', onboarding_completed: true, spiritual_guide: 'monk', preferred_language: 'en' }),
+        ...(prev || { seeking: [], experience_level: 'beginner', onboarding_completed: true, spiritual_guide: 'monk', preferred_language: 'en', daily_prayer_goal: 3 }),
         seeking,
         experience_level: experienceLevel,
         onboarding_completed: true,
@@ -73,5 +75,19 @@ export function useUserProfile() {
     return { error };
   };
 
-  return { profile, loading, saveProfile, setGuide };
+  const setDailyPrayerGoal = async (goal: number) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ daily_prayer_goal: goal, updated_at: new Date().toISOString() })
+      .eq('user_id', user.id);
+
+    if (!error && profile) {
+      setProfile({ ...profile, daily_prayer_goal: goal });
+    }
+    return { error };
+  };
+
+  return { profile, loading, saveProfile, setGuide, setDailyPrayerGoal };
 }
