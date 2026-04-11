@@ -96,4 +96,8 @@ export const en: Translations = {
   readPrayer: 'Read',
   listenPrayer: 'Listen',
   practicePrayer: 'Practice',
+
+  preparingPrayer: 'Preparing your prayer…',
+  markComplete: 'Mark as Complete',
+  completed: 'Completed',
 };
