@@ -62,9 +62,9 @@ const ConfessionDashboard = () => {
         {/* Status card */}
         <div className="rounded-xl border border-gold/20 bg-card p-5 animate-fade-in">
           <div className="flex items-center gap-3 mb-4">
-            <div className={`flex h-10 w-10 items-center justify-center rounded-full ${onTrack ? 'bg-green-500/10' : 'bg-destructive/10'}`}>
+            <div className={`flex h-10 w-10 items-center justify-center rounded-full ${onTrack ? 'bg-gold/10' : 'bg-destructive/10'}`}>
               {onTrack ? (
-                <CheckCircle className="h-5 w-5 text-green-400" />
+                <CheckCircle className="h-5 w-5 text-gold" />
               ) : (
                 <AlertCircle className="h-5 w-5 text-destructive" />
               )}
