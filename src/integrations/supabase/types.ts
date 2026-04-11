@@ -368,6 +368,7 @@ export type Database = {
       user_profiles: {
         Row: {
           created_at: string
+          daily_prayer_goal: number
           experience_level: string
           id: string
           onboarding_completed: boolean
@@ -379,6 +380,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          daily_prayer_goal?: number
           experience_level?: string
           id?: string
           onboarding_completed?: boolean
@@ -390,6 +392,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          daily_prayer_goal?: number
           experience_level?: string
           id?: string
           onboarding_completed?: boolean
