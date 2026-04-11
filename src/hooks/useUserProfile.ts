@@ -24,7 +24,7 @@ export function useUserProfile() {
 
     supabase
       .from('user_profiles')
-      .select('seeking, experience_level, onboarding_completed, spiritual_guide')
+      .select('seeking, experience_level, onboarding_completed, spiritual_guide, preferred_language')
       .eq('user_id', user.id)
       .maybeSingle()
       .then(({ data }) => {
