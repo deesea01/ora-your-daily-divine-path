@@ -39,6 +39,16 @@ export interface Translations {
   dontHaveAccount: string;
   checkEmail: string;
   checkEmailDesc: string;
+  forgotPassword: string;
+  resetPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
+  passwordsDoNotMatch: string;
+  passwordResetSent: string;
+  passwordResetSentDesc: string;
+  passwordUpdated: string;
+  passwordUpdatedDesc: string;
+  updatePassword: string;
 
   // Index / Home
   goodMorning: string;
