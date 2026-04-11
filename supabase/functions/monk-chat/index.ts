@@ -6,6 +6,15 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const LANGUAGE_NAMES: Record<string, string> = {
+  en: 'English',
+  it: 'Italian',
+  es: 'Spanish',
+  pt: 'Portuguese',
+  fr: 'French',
+  tl: 'Tagalog (Filipino)',
+};
+
 const GUIDE_PERSONAS: Record<string, { label: string; systemPrompt: string }> = {
   monk: {
     label: 'a Catholic monk',
@@ -76,10 +85,17 @@ Incorporate scripture when relevant. Keep responses concise (3-6 sentences). Be 
   },
 };
 
-function buildSystemPrompt(preferences?: { seeking?: string[]; experience_level?: string; spiritual_guide?: string }) {
+function buildSystemPrompt(preferences?: { seeking?: string[]; experience_level?: string; spiritual_guide?: string; language?: string }) {
   const guide = GUIDE_PERSONAS[preferences?.spiritual_guide || 'monk'] || GUIDE_PERSONAS.monk;
+  const lang = preferences?.language || 'en';
+  const langName = LANGUAGE_NAMES[lang] || 'English';
 
   let prompt = guide.systemPrompt;
+
+  // Language instruction
+  if (lang !== 'en') {
+    prompt += `\n\nIMPORTANT: You MUST respond entirely in ${langName}. All your responses — including scripture quotes, prayers, and spiritual guidance — must be in ${langName}. Use the traditional ${langName} forms of prayers when they exist (e.g., use the traditional ${langName} translation of the Our Father, Hail Mary, etc.). Keep your spiritual persona and tone, but communicate fully in ${langName}.`;
+  }
 
   if (preferences?.seeking?.length) {
     prompt += `\n\nThis person is seeking: ${preferences.seeking.join(', ')}. Gently orient your guidance toward these intentions.`;
