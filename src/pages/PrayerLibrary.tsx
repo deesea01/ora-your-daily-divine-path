@@ -4,6 +4,8 @@ import { ArrowLeft, Search, Heart, BookOpen, ChevronRight, Star } from 'lucide-r
 import { useAuth } from '@/hooks/useAuth';
 import { usePrayerLibrary } from '@/hooks/usePrayerLibrary';
 import { PRAYER_CATEGORIES, PRAYERS, getPrayersByCategory, PRESET_ROUTINES } from '@/lib/prayerLibrary';
+import { getCategoryTranslation, getPrayerTranslation } from '@/lib/prayerTranslations';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Input } from '@/components/ui/input';
 
 const DIFFICULTY_COLORS: Record<string, string> = {
@@ -16,6 +18,7 @@ const PrayerLibrary = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { favorites, progress, loading } = usePrayerLibrary();
+  const { language, t } = useLanguage();
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showFavorites, setShowFavorites] = useState(false);
@@ -29,23 +32,46 @@ const PrayerLibrary = () => {
   }
   if (!user) return <Navigate to="/auth" replace />;
 
+  // Helper to get localized prayer data
+  const getLocalizedPrayer = (prayer: typeof PRAYERS[0]) => {
+    const tr = getPrayerTranslation(prayer.id, language);
+    return {
+      ...prayer,
+      title: tr?.title || prayer.title,
+      description: tr?.description || prayer.description,
+    };
+  };
+
   const filteredPrayers = (() => {
     let list = selectedCategory ? getPrayersByCategory(selectedCategory) : PRAYERS;
     if (showFavorites) list = list.filter(p => favorites.has(p.id));
     if (search.trim()) {
       const q = search.toLowerCase();
-      list = list.filter(p => p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q));
+      list = list.filter(p => {
+        const lp = getLocalizedPrayer(p);
+        return lp.title.toLowerCase().includes(q) || lp.description.toLowerCase().includes(q);
+      });
     }
     return list;
   })();
 
+  // Localized category helper
+  const getCatLabel = (cat: typeof PRAYER_CATEGORIES[0]) => {
+    const tr = getCategoryTranslation(cat.key, language);
+    return tr?.label || cat.label;
+  };
+  const getCatDesc = (cat: typeof PRAYER_CATEGORIES[0]) => {
+    const tr = getCategoryTranslation(cat.key, language);
+    return tr?.description || cat.description;
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="flex items-center gap-3 border-b border-border px-4 py-4">
-        <button onClick={() => navigate('/')} className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground" aria-label="Back">
+        <button onClick={() => navigate('/')} className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground" aria-label={t.back}>
           <ArrowLeft className="h-4 w-4" />
         </button>
-        <h1 className="font-serif text-lg font-medium text-foreground">Prayer Library</h1>
+        <h1 className="font-serif text-lg font-medium text-foreground">{t.prayerLibrary}</h1>
         <button onClick={() => navigate('/prayer-library/routines')} className="ml-auto flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground" aria-label="Routines">
           <BookOpen className="h-4 w-4" />
         </button>
@@ -78,7 +104,7 @@ const PrayerLibrary = () => {
               onClick={() => setSelectedCategory(null)}
               className="rounded-full border border-gold/40 bg-gold/10 px-3 py-1.5 text-xs text-gold"
             >
-              {PRAYER_CATEGORIES.find(c => c.key === selectedCategory)?.emoji} {PRAYER_CATEGORIES.find(c => c.key === selectedCategory)?.label} ✕
+              {PRAYER_CATEGORIES.find(c => c.key === selectedCategory)?.emoji} {getCatLabel(PRAYER_CATEGORIES.find(c => c.key === selectedCategory)!)} ✕
             </button>
           )}
         </div>
@@ -98,7 +124,7 @@ const PrayerLibrary = () => {
                     style={{ animationDelay: `${i * 30}ms`, animationFillMode: 'both' }}
                   >
                     <span className="text-lg">{cat.emoji}</span>
-                    <p className="text-xs font-medium text-foreground mt-1 leading-tight">{cat.label}</p>
+                    <p className="text-xs font-medium text-foreground mt-1 leading-tight">{getCatLabel(cat)}</p>
                     <p className="text-[10px] text-muted-foreground mt-0.5">{count} prayer{count !== 1 ? 's' : ''}</p>
                   </button>
                 );
@@ -116,6 +142,7 @@ const PrayerLibrary = () => {
               </div>
             ) : (
               filteredPrayers.map((prayer, i) => {
+                const lp = getLocalizedPrayer(prayer);
                 const prog = progress.get(prayer.id);
                 const diff = prog?.difficulty || 'beginner';
                 const isFav = favorites.has(prayer.id);
@@ -129,10 +156,10 @@ const PrayerLibrary = () => {
                     <div className="flex items-start justify-between">
                       <div className="flex-1 pr-3">
                         <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium text-foreground">{prayer.title}</p>
+                          <p className="text-sm font-medium text-foreground">{lp.title}</p>
                           {isFav && <Heart className="h-3 w-3 text-gold fill-gold" />}
                         </div>
-                        <p className="text-xs text-muted-foreground mt-0.5">{prayer.description}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{lp.description}</p>
                         <div className="flex items-center gap-3 mt-2">
                           <span className="text-[10px] text-muted-foreground">{prayer.estimatedMinutes} min</span>
                           <span className={`text-[10px] capitalize ${DIFFICULTY_COLORS[diff]}`}>
