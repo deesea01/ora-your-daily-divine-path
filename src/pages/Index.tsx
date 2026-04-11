@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { LogOut, MessageCircle, Cross, Flame, ChevronRight, Heart, Shield } from 'lucide-react';
+import { LogOut, MessageCircle, Cross, Flame, ChevronRight, Heart, Shield, BookOpen } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { SPIRITUAL_GUIDES, SpiritualGuideKey } from '@/lib/guides';
@@ -174,6 +174,21 @@ const Index = () => {
             <div>
               <h3 className="font-serif text-lg font-medium text-foreground">Holy Rosary</h3>
               <p className="text-sm text-muted-foreground">Guided decade by decade</p>
+            </div>
+          </div>
+        </button>
+      </section>
+
+      {/* Prayer Library */}
+      <section className="mb-4 animate-fade-in-delay-3">
+        <button onClick={() => navigate('/prayer-library')} className="group w-full rounded-xl border border-gold/20 bg-card p-5 text-left transition-all hover:border-gold/40 hover:glow-gold active:scale-[0.98]">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gold/10">
+              <BookOpen className="h-5 w-5 text-gold" />
+            </div>
+            <div>
+              <h3 className="font-serif text-lg font-medium text-foreground">Prayer Library</h3>
+              <p className="text-sm text-muted-foreground">Read, listen, and memorize Catholic prayers</p>
             </div>
           </div>
         </button>
