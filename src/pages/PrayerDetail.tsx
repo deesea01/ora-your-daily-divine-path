@@ -4,21 +4,23 @@ import { ArrowLeft, Check, Sun, CloudSun, Moon, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { useLanguage } from '@/contexts/LanguageContext';
 import ReactMarkdown from 'react-markdown';
 
-const prayerMeta = {
-  morning: { title: 'Morning Lauds', subtitle: 'Start your day in grace', Icon: Sun },
-  midday: { title: 'Midday Angelus', subtitle: 'Pause and remember', Icon: CloudSun },
-  night: { title: 'Night Compline', subtitle: 'Rest in His peace', Icon: Moon },
-} as const;
+type PrayerType = 'morning' | 'midday' | 'night';
 
-type PrayerType = keyof typeof prayerMeta;
+const prayerIcons = {
+  morning: Sun,
+  midday: CloudSun,
+  night: Moon,
+} as const;
 
 const PrayerDetail = () => {
   const { type } = useParams<{ type: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { profile } = useUserProfile();
+  const { t, language } = useLanguage();
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);
   const [completed, setCompleted] = useState(false);
@@ -26,11 +28,24 @@ const PrayerDetail = () => {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const prayerType = type as PrayerType;
-  const meta = prayerMeta[prayerType];
+  const Icon = prayerIcons[prayerType];
+
+  const titleMap: Record<PrayerType, string> = {
+    morning: t.morningLauds,
+    midday: t.middayAngelus,
+    night: t.nightCompline,
+  };
+  const subtitleMap: Record<PrayerType, string> = {
+    morning: t.morningLaudsDesc,
+    midday: t.middayAngelusDesc,
+    night: t.nightComplineDesc,
+  };
+  const title = titleMap[prayerType];
+  const subtitle = subtitleMap[prayerType];
 
   // Check completion status
   useEffect(() => {
-    if (!user || !meta) return;
+    if (!user || !Icon) return;
     const today = new Date().toISOString().split('T')[0];
     supabase
       .from('prayer_completions')
@@ -46,7 +61,7 @@ const PrayerDetail = () => {
 
   // Fetch AI-generated prayer
   useEffect(() => {
-    if (!user || !meta) return;
+    if (!user || !Icon) return;
     setLoading(true);
     setContent('');
 
@@ -63,6 +78,7 @@ const PrayerDetail = () => {
             },
             body: JSON.stringify({
               prayerType,
+              language,
               preferences: profile ? { seeking: profile.seeking, experience_level: profile.experience_level, spiritual_guide: profile.spiritual_guide } : undefined,
             }),
           }
@@ -98,7 +114,7 @@ const PrayerDetail = () => {
       }
     };
     fetchPrayer();
-  }, [user, prayerType]);
+  }, [user, prayerType, language]);
 
   // Auto-scroll as content streams
   useEffect(() => {
@@ -127,9 +143,7 @@ const PrayerDetail = () => {
   }
 
   if (!user) return <Navigate to="/auth" replace />;
-  if (!meta) return <Navigate to="/" replace />;
-
-  const { Icon } = meta;
+  if (!Icon) return <Navigate to="/" replace />;
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -147,8 +161,8 @@ const PrayerDetail = () => {
             <Icon className="h-4 w-4 text-gold" />
           </div>
           <div>
-            <h1 className="font-serif text-lg font-medium text-foreground">{meta.title}</h1>
-            <p className="text-xs text-muted-foreground">{meta.subtitle}</p>
+            <h1 className="font-serif text-lg font-medium text-foreground">{title}</h1>
+            <p className="text-xs text-muted-foreground">{subtitle}</p>
           </div>
         </div>
       </header>
@@ -158,7 +172,7 @@ const PrayerDetail = () => {
         {loading && !content && (
           <div className="flex flex-col items-center gap-3 pt-16 text-center">
             <Loader2 className="h-6 w-6 animate-spin text-gold" />
-            <p className="text-sm text-muted-foreground">Preparing your prayer…</p>
+            <p className="text-sm text-muted-foreground">{t.preparingPrayer}</p>
           </div>
         )}
 
@@ -186,10 +200,10 @@ const PrayerDetail = () => {
           ) : completed ? (
             <>
               <Check className="h-4 w-4" />
-              <span>Completed</span>
+              <span>{t.completed}</span>
             </>
           ) : (
-            <span>Mark as Complete</span>
+            <span>{t.markComplete}</span>
           )}
         </button>
       </footer>

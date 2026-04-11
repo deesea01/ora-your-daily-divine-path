@@ -31,6 +31,23 @@ const GUIDE_VOICE: Record<string, { label: string; style: string }> = {
     label: 'St. Michael the Archangel',
     style: 'Use a strong, direct, disciplined tone. Encourage action and firmness. Frame struggles as battles to be won. Call the user to courage. Avoid fear-mongering.',
   },
+  st_padre_pio: {
+    label: 'St. Padre Pio',
+    style: 'Use a devout, humble, suffering-aware tone. Emphasize the value of the cross, prayer, and trust in God\'s mercy. Speak with tenderness and deep faith.',
+  },
+  st_joan_of_arc: {
+    label: 'St. Joan of Arc',
+    style: 'Use a bold, faith-filled, courageous tone. Encourage the reader to follow God\'s call with bravery. Frame prayer as preparation for mission.',
+  },
+};
+
+const LANGUAGE_NAMES: Record<string, string> = {
+  en: 'English',
+  it: 'Italian',
+  es: 'Spanish',
+  pt: 'Portuguese',
+  fr: 'French',
+  tl: 'Tagalog',
 };
 
 const SYSTEM_PROMPTS: Record<string, string> = {
@@ -42,6 +59,7 @@ Include:
 - A brief meditation or reflection
 - A closing prayer or blessing for the day ahead
 {STYLE}
+{LANGUAGE}
 Format with clear sections using markdown headings (##).`,
 
   midday: `You are {GUIDE} guiding a midday reflection.
@@ -51,6 +69,7 @@ Include:
 - One thought-provoking reflection question for the reader to sit with
 - A short prayer related to the question
 {STYLE}
+{LANGUAGE}
 Format with clear sections using markdown headings (##).`,
 
   night: `You are {GUIDE} guiding a nightly Examen.
@@ -63,6 +82,7 @@ Include:
   3. Where did I fall short, and how can I grow?
 - A short closing prayer of surrender and peace
 {STYLE}
+{LANGUAGE}
 Format with clear sections using markdown headings (##).`,
 };
 
@@ -72,7 +92,7 @@ serve(async (req) => {
   }
 
   try {
-    const { prayerType, preferences } = await req.json();
+    const { prayerType, preferences, language } = await req.json();
 
     if (!prayerType || !SYSTEM_PROMPTS[prayerType]) {
       return new Response(
@@ -82,9 +102,15 @@ serve(async (req) => {
     }
 
     const voice = GUIDE_VOICE[preferences?.spiritual_guide || 'monk'] || GUIDE_VOICE.monk;
+    const langName = LANGUAGE_NAMES[language || 'en'] || 'English';
+    const langInstruction = language && language !== 'en'
+      ? `IMPORTANT: You MUST write the ENTIRE prayer in ${langName}. All headings, prayers, scripture, reflections, and text must be in ${langName}. Use traditional Catholic prayer forms in ${langName}.`
+      : 'Write the entire prayer in English.';
+
     let systemPrompt = SYSTEM_PROMPTS[prayerType]
       .replace('{GUIDE}', voice.label)
-      .replace('{STYLE}', voice.style);
+      .replace('{STYLE}', voice.style)
+      .replace('{LANGUAGE}', langInstruction);
     if (preferences?.seeking?.length) {
       systemPrompt += `\n\nThis person is seeking: ${preferences.seeking.join(', ')}. Weave these themes naturally into the prayer.`;
     }

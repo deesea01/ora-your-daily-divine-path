@@ -119,4 +119,9 @@ export interface Translations {
   readPrayer: string;
   listenPrayer: string;
   practicePrayer: string;
+
+  // Daily prayer
+  preparingPrayer: string;
+  markComplete: string;
+  completed: string;
 }

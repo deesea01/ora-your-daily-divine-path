@@ -96,4 +96,7 @@ export const es: Translations = {
   passwordUpdated: 'Contraseña actualizada',
   passwordUpdatedDesc: 'Tu contraseña ha sido actualizada. Ya puedes iniciar sesión.',
   updatePassword: 'Actualizar Contraseña',
+  preparingPrayer: 'Preparando tu oración…',
+  markComplete: 'Marcar como completada',
+  completed: 'Completada',
 };
