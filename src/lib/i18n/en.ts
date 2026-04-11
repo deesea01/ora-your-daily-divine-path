@@ -31,6 +31,9 @@ export const en: Translations = {
   passwordUpdated: 'Password updated',
   passwordUpdatedDesc: 'Your password has been updated. You can now sign in.',
   updatePassword: 'Update Password',
+  signInWithGoogle: 'Sign in with Google',
+  signUpWithGoogle: 'Sign up with Google',
+  or: 'or',
 
   goodMorning: 'Good morning',
   goodAfternoon: 'Good afternoon',

@@ -96,4 +96,7 @@ export const fr: Translations = {
   passwordUpdated: 'Mot de passe mis à jour',
   passwordUpdatedDesc: 'Votre mot de passe a été mis à jour. Vous pouvez maintenant vous connecter.',
   updatePassword: 'Mettre à Jour le Mot de Passe',
+  signInWithGoogle: 'Se connecter avec Google',
+  signUpWithGoogle: "S'inscrire avec Google",
+  or: 'ou',
 };

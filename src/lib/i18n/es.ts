@@ -96,4 +96,7 @@ export const es: Translations = {
   passwordUpdated: 'Contraseña actualizada',
   passwordUpdatedDesc: 'Tu contraseña ha sido actualizada. Ya puedes iniciar sesión.',
   updatePassword: 'Actualizar Contraseña',
+  signInWithGoogle: 'Iniciar sesión con Google',
+  signUpWithGoogle: 'Registrarse con Google',
+  or: 'o',
 };
