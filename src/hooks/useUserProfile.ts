@@ -34,16 +34,17 @@ export function useUserProfile() {
       });
   }, [user]);
 
-  const saveProfile = async (seeking: string[], experienceLevel: string) => {
+  const saveProfile = async (seeking: string[], experienceLevel: string, dailyGoal?: number) => {
     if (!user) return;
 
-    const payload = {
+    const payload: any = {
       user_id: user.id,
       seeking,
       experience_level: experienceLevel,
       onboarding_completed: true,
       updated_at: new Date().toISOString(),
     };
+    if (dailyGoal !== undefined) payload.daily_prayer_goal = dailyGoal;
 
     const { error } = await supabase
       .from('user_profiles')
