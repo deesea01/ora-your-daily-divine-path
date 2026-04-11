@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import Index from "./pages/Index.tsx";
 import Auth from "./pages/Auth.tsx";
+import ResetPassword from "./pages/ResetPassword.tsx";
 import MonkChat from "./pages/MonkChat.tsx";
 import PrayerDetail from "./pages/PrayerDetail.tsx";
 import Rosary from "./pages/Rosary.tsx";
@@ -43,6 +44,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/monk-chat" element={<MonkChat />} />
               <Route path="/prayer/:type" element={<PrayerDetail />} />
               <Route path="/rosary" element={<Rosary />} />
