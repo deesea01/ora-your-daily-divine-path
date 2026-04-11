@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import logoImg from '@/assets/logo.png';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -95,8 +96,8 @@ const Auth = () => {
 
         {/* Logo area */}
         <div className="mb-12 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full border border-gold/30 mb-6 glow-gold">
-            <span className="text-gold text-2xl">✝</span>
+          <div className="inline-flex items-center justify-center w-20 h-20 mb-6">
+            <img src={logoImg} alt="Ora logo" className="w-20 h-20 object-contain" />
           </div>
           <h1 className="font-serif text-4xl font-light tracking-wide text-foreground">{t.authTitle}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{t.authSubtitle}</p>
