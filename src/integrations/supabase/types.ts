@@ -140,6 +140,123 @@ export type Database = {
         }
         Relationships: []
       }
+      examen_entries: {
+        Row: {
+          created_at: string
+          entry_date: string
+          id: string
+          is_draft: boolean
+          response: string | null
+          step_name: string
+          step_number: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entry_date?: string
+          id?: string
+          is_draft?: boolean
+          response?: string | null
+          step_name: string
+          step_number: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entry_date?: string
+          id?: string
+          is_draft?: boolean
+          response?: string | null
+          step_name?: string
+          step_number?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      journal_entries: {
+        Row: {
+          body: string | null
+          created_at: string
+          emotional_state: string | null
+          entry_date: string
+          entry_type: string
+          id: string
+          prayer_intention: string | null
+          saint_theme: string | null
+          scripture_verse: string | null
+          spiritual_state: string | null
+          tags: string[]
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          emotional_state?: string | null
+          entry_date?: string
+          entry_type?: string
+          id?: string
+          prayer_intention?: string | null
+          saint_theme?: string | null
+          scripture_verse?: string | null
+          spiritual_state?: string | null
+          tags?: string[]
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          emotional_state?: string | null
+          entry_date?: string
+          entry_type?: string
+          id?: string
+          prayer_intention?: string | null
+          saint_theme?: string | null
+          scripture_verse?: string | null
+          spiritual_state?: string | null
+          tags?: string[]
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      journal_settings: {
+        Row: {
+          created_at: string
+          hide_previews: boolean
+          id: string
+          local_only: boolean
+          passcode_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          hide_previews?: boolean
+          id?: string
+          local_only?: boolean
+          passcode_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          hide_previews?: boolean
+          id?: string
+          local_only?: boolean
+          passcode_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       prayer_completions: {
         Row: {
           completed_at: string
