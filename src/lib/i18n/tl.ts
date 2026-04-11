@@ -29,6 +29,7 @@ export const tl: Translations = {
   day: 'araw',
   days: 'araw',
   todaysPrayerPath: 'Landas ng Panalangin Ngayon',
+  dailyPrayerGoal: 'Layunin sa panalangin araw-araw',
   morningLauds: 'Panalangin sa Umaga',
   morningLaudsDesc: 'Simulan ang araw mo sa biyaya',
   middayAngelus: 'Angelus sa Tanghali',
