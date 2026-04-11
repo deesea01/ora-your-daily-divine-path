@@ -74,5 +74,19 @@ export function useUserProfile() {
     return { error };
   };
 
-  return { profile, loading, saveProfile, setGuide };
+  const setDailyPrayerGoal = async (goal: number) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ daily_prayer_goal: goal, updated_at: new Date().toISOString() })
+      .eq('user_id', user.id);
+
+    if (!error && profile) {
+      setProfile({ ...profile, daily_prayer_goal: goal });
+    }
+    return { error };
+  };
+
+  return { profile, loading, saveProfile, setGuide, setDailyPrayerGoal };
 }
