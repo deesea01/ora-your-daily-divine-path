@@ -95,12 +95,11 @@ const Auth = () => {
         </div>
 
         {/* Logo area */}
-        <div className="mb-12 text-center">
-          <div className="inline-flex items-center justify-center w-36 h-36 mb-6">
-            <img src={logoImg} alt="Ora logo" className="w-36 h-36 object-contain" />
+        <div className="mb-10 text-center">
+          <div className="inline-flex items-center justify-center w-44 h-44 mb-4">
+            <img src={logoImg} alt="Ora logo" className="w-44 h-44 object-contain" />
           </div>
-          <h1 className="font-serif text-4xl font-light tracking-wide text-foreground">{t.authTitle}</h1>
-          <p className="mt-2 text-sm text-muted-foreground">{t.authSubtitle}</p>
+          <p className="text-sm text-muted-foreground">{t.authSubtitle}</p>
         </div>
 
         {signUpSuccess ? (
