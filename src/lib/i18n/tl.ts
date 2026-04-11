@@ -96,4 +96,7 @@ export const tl: Translations = {
   passwordUpdated: 'Na-update na ang password',
   passwordUpdatedDesc: 'Na-update na ang iyong password. Maaari ka nang mag-sign in.',
   updatePassword: 'I-update ang Password',
+  preparingPrayer: 'Inihahanda ang iyong panalangin…',
+  markComplete: 'Markahan bilang tapos',
+  completed: 'Tapos na',
 };
