@@ -48,6 +48,9 @@ export interface Translations {
   passwordResetSentDesc: string;
   passwordUpdated: string;
   passwordUpdatedDesc: string;
+  signInWithGoogle: string;
+  signUpWithGoogle: string;
+  or: string;
   updatePassword: string;
 
   // Index / Home
