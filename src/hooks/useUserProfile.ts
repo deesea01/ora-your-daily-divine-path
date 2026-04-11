@@ -7,6 +7,7 @@ export interface UserProfile {
   experience_level: string;
   onboarding_completed: boolean;
   spiritual_guide: string;
+  preferred_language: string;
 }
 
 export function useUserProfile() {
