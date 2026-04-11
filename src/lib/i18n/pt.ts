@@ -96,7 +96,7 @@ export const pt: Translations = {
   passwordUpdated: 'Senha atualizada',
   passwordUpdatedDesc: 'Sua senha foi atualizada. Agora você pode entrar.',
   updatePassword: 'Atualizar Senha',
-  preparingPrayer: 'Preparando sua oração…',
-  markComplete: 'Marcar como concluída',
-  completed: 'Concluída',
+  signInWithGoogle: 'Entrar com Google',
+  signUpWithGoogle: 'Cadastrar com Google',
+  or: 'ou',
 };

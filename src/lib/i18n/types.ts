@@ -48,6 +48,9 @@ export interface Translations {
   passwordResetSentDesc: string;
   passwordUpdated: string;
   passwordUpdatedDesc: string;
+  signInWithGoogle: string;
+  signUpWithGoogle: string;
+  or: string;
   updatePassword: string;
 
   // Index / Home
@@ -119,9 +122,4 @@ export interface Translations {
   readPrayer: string;
   listenPrayer: string;
   practicePrayer: string;
-
-  // Daily prayer
-  preparingPrayer: string;
-  markComplete: string;
-  completed: string;
 }
