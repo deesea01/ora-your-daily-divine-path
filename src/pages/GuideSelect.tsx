@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { SPIRITUAL_GUIDES, SpiritualGuideKey } from '@/lib/guides';
+import { SaintAvatar } from '@/components/SaintAvatar';
 import { toast } from 'sonner';
 
 const GUIDE_PREVIEWS: Record<string, { question: string; answer: string }> = {
@@ -29,6 +30,14 @@ const GUIDE_PREVIEWS: Record<string, { question: string; answer: string }> = {
   st_michael: {
     question: "I feel anxious about the future.",
     answer: "Stand firm. Anxiety is not from God — it is a weapon of the enemy to paralyze you. You were not given a spirit of fear, but of power. Name the fear, face it, and take the next step with courage. God fights with you.",
+  },
+  st_padre_pio: {
+    question: "I feel anxious about the future.",
+    answer: "Pray, hope, and don't worry. Worry is useless — God knows your needs before you speak them. Offer your anxiety to Him as a small sacrifice, united to the Cross. He will carry what you cannot.",
+  },
+  st_joan_of_arc: {
+    question: "I feel anxious about the future.",
+    answer: "Do not be afraid. God has called you, and He does not abandon those He calls. Even when the path is dark and the voices of doubt are loud, trust that He who began this work in you will see it through. Be brave — He is with you.",
   },
 };
 
@@ -86,10 +95,10 @@ const GuideSelect = () => {
                   onClick={() => handleSelect(key)}
                   className="flex w-full items-center gap-4 px-5 py-4 text-left active:scale-[0.98]"
                 >
-                  <span className="text-2xl">{guide.emoji}</span>
+                  <SaintAvatar guideKey={key as SpiritualGuideKey} size="sm" />
                   <div className="flex-1">
                     <p className="font-serif text-base font-medium text-foreground">{guide.label}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">{guide.description}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{guide.era} · {guide.description}</p>
                   </div>
                   {key === current && (
                     <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gold">
@@ -113,12 +122,24 @@ const GuideSelect = () => {
                       style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}
                     >
                       <div className="overflow-hidden">
-                        <div className={`mx-5 mb-4 rounded-lg border border-border bg-background p-4 space-y-2 transition-opacity duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0'}`}>
+                        <div className={`mx-5 mb-4 rounded-lg border border-border bg-background p-4 space-y-3 transition-opacity duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0'}`}>
+                          {/* Bio section */}
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            {guide.biography}
+                          </p>
+                          <div className="flex flex-wrap gap-2 text-[10px]">
+                            <span className="rounded-full bg-gold/10 px-2 py-0.5 text-gold">{guide.prayerSpecialty.split(',')[0]}</span>
+                          </div>
+                          <hr className="border-border" />
+                          {/* Preview conversation */}
                           <p className="text-xs font-medium text-muted-foreground italic">
                             "{preview.question}"
                           </p>
                           <p className="text-sm text-foreground leading-relaxed">
                             {preview.answer}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground/60 italic">
+                            {guide.disclaimer}
                           </p>
                         </div>
                       </div>
