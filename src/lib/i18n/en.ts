@@ -11,7 +11,7 @@ export const en: Translations = {
   today: 'today',
 
   authTitle: 'Ora',
-  authSubtitle: 'Pray without ceasing',
+  authSubtitle: 'Pray Without Ceasing',
   email: 'Email',
   password: 'Password',
   signIn: 'Sign In',
