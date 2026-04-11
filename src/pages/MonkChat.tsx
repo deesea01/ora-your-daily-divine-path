@@ -168,9 +168,10 @@ const MonkChat = () => {
         onDelta: upsert,
         onDone: () => {
           setIsStreaming(false);
-          // Save assistant message
+          // Save assistant message & speak it if TTS enabled
           if (assistantContent) {
             supabase.from('chat_messages').insert({ user_id: user.id, role: 'assistant', content: assistantContent });
+            tts.speak(assistantContent.replace(/[#*_`>]/g, ''));
           }
         },
       });
@@ -201,14 +202,26 @@ const MonkChat = () => {
           <ArrowLeft className="h-5 w-5" />
         </button>
         <SaintAvatar guideKey={guideKey} size="sm" state={avatarState as any} />
-        <div className="flex-1">
-          <h1 className="font-serif text-base font-medium text-foreground">{guide.label}</h1>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1">
+            <h1 className="font-serif text-base font-medium text-foreground truncate">{guide.label}</h1>
+            <GuideSwitcher currentGuide={guideKey} onSelect={handleSwitchGuide} />
+          </div>
           <p className="text-[10px] text-muted-foreground">
             {isStreaming
               ? (lastMsg?.role === 'assistant' ? 'Speaking…' : 'Listening…')
-              : 'Spiritual guidance, anytime'}
+              : speech.isListening
+                ? '🎙️ Listening to you…'
+                : 'Spiritual guidance, anytime'}
           </p>
         </div>
+        <button
+          onClick={tts.toggle}
+          className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground"
+          title={tts.isEnabled ? 'Mute voice' : 'Enable voice'}
+        >
+          {tts.isEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+        </button>
       </header>
 
       {/* Messages */}
@@ -295,13 +308,27 @@ const MonkChat = () => {
           onSubmit={e => { e.preventDefault(); send(input); }}
           className="flex items-end gap-2"
         >
+          {speech.isSupported && (
+            <button
+              type="button"
+              onClick={speech.toggle}
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all active:scale-95 ${
+                speech.isListening
+                  ? 'bg-destructive text-destructive-foreground animate-pulse'
+                  : 'bg-card border border-border text-muted-foreground hover:text-foreground'
+              }`}
+              title={speech.isListening ? 'Stop listening' : 'Speak to saint'}
+            >
+              {speech.isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            </button>
+          )}
           <textarea
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(input); }
             }}
-            placeholder={`Ask ${guide.label}...`}
+            placeholder={speech.isListening ? 'Listening…' : `Ask ${guide.label}...`}
             rows={1}
             className="flex-1 resize-none rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 transition-colors"
           />
