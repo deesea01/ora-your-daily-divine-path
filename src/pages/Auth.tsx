@@ -95,8 +95,8 @@ const Auth = () => {
         </div>
 
         {/* Logo area */}
-        <div className="mb-10 text-center">
-          <div className="inline-flex items-center justify-center w-44 h-44 mb-4">
+        <div className="mb-2 text-center">
+          <div className="inline-flex items-center justify-center w-44 h-44 mb-1">
             <img src={logoImg} alt="Ora logo" className="w-44 h-44 object-contain" />
           </div>
           <p className="text-sm text-muted-foreground">{t.authSubtitle}</p>
