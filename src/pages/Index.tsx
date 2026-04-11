@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { LogOut, MessageCircle, Cross, Flame, ChevronRight, Heart, Shield, BookOpen, PenLine } from 'lucide-react';
+import { LogOut, MessageCircle, Cross, Flame, ChevronRight, Heart, Shield, BookOpen, PenLine, Settings } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { SPIRITUAL_GUIDES, SpiritualGuideKey } from '@/lib/guides';
@@ -30,10 +30,11 @@ function computeStreak(dates: string[]): number {
 const Index = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
-  const { profile, loading: profileLoading } = useUserProfile();
+  const { profile, loading: profileLoading, setDailyPrayerGoal } = useUserProfile();
   const { t, language } = useLanguage();
   const [completions, setCompletions] = useState<Set<string>>(new Set());
   const [streak, setStreak] = useState(0);
+  const [showGoalPicker, setShowGoalPicker] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -72,15 +73,17 @@ const Index = () => {
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? t.goodMorning : hour < 17 ? t.goodAfternoon : t.goodEvening;
+  const dailyGoal = profile?.daily_prayer_goal || 3;
   const todayCompleted = completions.size;
   const guideKey = (profile?.spiritual_guide || 'monk') as SpiritualGuideKey;
   const guideData = SPIRITUAL_GUIDES[guideKey];
 
-  const prayers = [
+  const allPrayers = [
     { title: t.morningLauds, subtitle: t.morningLaudsDesc, time: 'morning' as const },
     { title: t.middayAngelus, subtitle: t.middayAngelusDesc, time: 'midday' as const },
     { title: t.nightCompline, subtitle: t.nightComplineDesc, time: 'night' as const },
   ];
+  const prayers = allPrayers.slice(0, dailyGoal);
 
   const locale = language === 'tl' ? 'fil' : language;
 
@@ -115,7 +118,12 @@ const Index = () => {
               </div>
             </div>
             <div className="text-right">
-              <p className="text-sm font-medium text-foreground">{todayCompleted}/3</p>
+              <button
+                onClick={() => setShowGoalPicker(!showGoalPicker)}
+                className="text-sm font-medium text-foreground hover:text-gold transition-colors"
+              >
+                {todayCompleted}/{dailyGoal}
+              </button>
               <p className="text-xs text-muted-foreground">{t.today}</p>
             </div>
           </div>
@@ -129,6 +137,26 @@ const Index = () => {
               />
             ))}
           </div>
+          {showGoalPicker && (
+            <div className="mt-3 flex items-center justify-between rounded-lg border border-border bg-background p-3 animate-fade-in">
+              <p className="text-xs text-muted-foreground">{t.dailyPrayerGoal || 'Daily prayer goal'}</p>
+              <div className="flex gap-2">
+                {[1, 2, 3].map((g) => (
+                  <button
+                    key={g}
+                    onClick={async () => { await setDailyPrayerGoal(g); setShowGoalPicker(false); }}
+                    className={`h-8 w-8 rounded-full border text-xs font-medium transition-all ${
+                      dailyGoal === g
+                        ? 'border-gold bg-gold/20 text-gold'
+                        : 'border-border text-muted-foreground hover:border-gold/30'
+                    }`}
+                  >
+                    {g}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
