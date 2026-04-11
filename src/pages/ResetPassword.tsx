@@ -37,8 +37,8 @@ const ResetPassword = () => {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center px-6 bg-background">
         <div className="w-full max-w-sm text-center animate-fade-in">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full border border-gold/30 mb-6 glow-gold">
-            <span className="text-gold text-2xl">✝</span>
+          <div className="inline-flex items-center justify-center w-20 h-20 mb-6">
+            <img src={logoImg} alt="Ora logo" className="w-20 h-20 object-contain" />
           </div>
           <p className="text-gold mb-2">{t.passwordUpdated}</p>
           <p className="text-sm text-muted-foreground">{t.passwordUpdatedDesc}</p>
@@ -51,8 +51,8 @@ const ResetPassword = () => {
     <div className="flex min-h-screen flex-col items-center justify-center px-6 bg-background">
       <div className="w-full max-w-sm animate-fade-in">
         <div className="mb-12 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full border border-gold/30 mb-6 glow-gold">
-            <span className="text-gold text-2xl">✝</span>
+          <div className="inline-flex items-center justify-center w-20 h-20 mb-6">
+            <img src={logoImg} alt="Ora logo" className="w-20 h-20 object-contain" />
           </div>
           <h1 className="font-serif text-4xl font-light tracking-wide text-foreground">{t.resetPassword}</h1>
         </div>

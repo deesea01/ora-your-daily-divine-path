@@ -174,7 +174,7 @@ const Index = () => {
 
       <div className="mb-8 flex items-center gap-3 animate-fade-in-delay-3">
         <div className="h-px flex-1 bg-border" />
-        <span className="text-xs text-gold/40 animate-pulse-soft">✝</span>
+        <img src={logoImg} alt="Ora" className="w-6 h-6 object-contain opacity-40 animate-pulse-soft" />
         <div className="h-px flex-1 bg-border" />
       </div>
 
