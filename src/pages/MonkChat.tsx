@@ -115,6 +115,20 @@ const MonkChat = () => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages]);
 
+  // Speech recognition → input
+  useEffect(() => {
+    if (speech.transcript) {
+      setInput(speech.transcript);
+    }
+  }, [speech.transcript]);
+
+  // Auto-send when speech recognition ends with content
+  useEffect(() => {
+    if (!speech.isListening && speech.transcript) {
+      send(speech.transcript);
+    }
+  }, [speech.isListening]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
