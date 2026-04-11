@@ -6,6 +6,8 @@ import { ArrowLeft, Send } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { SaintAvatar } from '@/components/SaintAvatar';
+import { SPIRITUAL_GUIDES, SpiritualGuideKey } from '@/lib/guides';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 
@@ -82,6 +84,9 @@ const MonkChat = () => {
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const guideKey = (profile?.spiritual_guide || 'monk') as SpiritualGuideKey;
+  const guide = SPIRITUAL_GUIDES[guideKey] || SPIRITUAL_GUIDES.monk;
+
   // Load history
   useEffect(() => {
     if (!user) return;
@@ -154,9 +159,17 @@ const MonkChat = () => {
 
   const showSuggestions = messages.length === 0 && historyLoaded;
 
+  // Determine avatar state
+  const lastMsg = messages[messages.length - 1];
+  const avatarState = isStreaming
+    ? (lastMsg?.role === 'assistant' ? 'speaking' : 'listening')
+    : messages.length > 0
+      ? 'reflecting'
+      : 'idle';
+
   return (
     <div className="flex h-screen flex-col bg-background">
-      {/* Header */}
+      {/* Header with avatar */}
       <header className="flex items-center gap-3 border-b border-border px-4 py-3">
         <button
           onClick={() => navigate('/')}
@@ -164,9 +177,14 @@ const MonkChat = () => {
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <div>
-          <h1 className="font-serif text-lg font-medium text-foreground">Talk to a Monk</h1>
-          <p className="text-xs text-muted-foreground">Spiritual guidance, anytime</p>
+        <SaintAvatar guideKey={guideKey} size="sm" state={avatarState as any} />
+        <div className="flex-1">
+          <h1 className="font-serif text-base font-medium text-foreground">{guide.label}</h1>
+          <p className="text-[10px] text-muted-foreground">
+            {isStreaming
+              ? (lastMsg?.role === 'assistant' ? 'Speaking…' : 'Listening…')
+              : 'Spiritual guidance, anytime'}
+          </p>
         </div>
       </header>
 
@@ -174,10 +192,10 @@ const MonkChat = () => {
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {showSuggestions && (
           <div className="flex flex-col items-center justify-center h-full gap-6 animate-fade-in">
-            <div className="text-center">
-              <p className="text-xs text-muted-foreground animate-pulse-soft">✝</p>
-              <h2 className="font-serif text-xl text-foreground mt-2">How can I help you today?</h2>
-              <p className="text-sm text-muted-foreground mt-1">Ask anything about prayer or faith</p>
+            <SaintAvatar guideKey={guideKey} size="xl" state="idle" showName showQuote />
+            <div className="text-center mt-2">
+              <h2 className="font-serif text-lg text-foreground">How can I help you today?</h2>
+              <p className="text-xs text-muted-foreground mt-1">Ask anything about prayer or faith</p>
             </div>
             <div className="flex flex-wrap justify-center gap-2">
               {SUGGESTED_PROMPTS.map(p => (
@@ -194,9 +212,23 @@ const MonkChat = () => {
         )}
 
         {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+          <div key={i} className={`flex items-end gap-2 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            {m.role === 'assistant' && (
+              <div className="shrink-0 mb-1">
+                <SaintAvatar
+                  guideKey={guideKey}
+                  size="sm"
+                  state={
+                    isStreaming && i === messages.length - 1
+                      ? 'speaking'
+                      : 'reflecting'
+                  }
+                  className="h-8 w-8 [&>div>div:first-child]:h-8 [&>div>div:first-child]:w-8"
+                />
+              </div>
+            )}
             <div
-              className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+              className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                 m.role === 'user'
                   ? 'bg-primary text-primary-foreground rounded-br-md'
                   : 'bg-card text-card-foreground rounded-bl-md border border-border'
@@ -214,7 +246,15 @@ const MonkChat = () => {
         ))}
 
         {isStreaming && messages[messages.length - 1]?.role !== 'assistant' && (
-          <div className="flex justify-start">
+          <div className="flex items-end gap-2 justify-start">
+            <div className="shrink-0 mb-1">
+              <SaintAvatar
+                guideKey={guideKey}
+                size="sm"
+                state="listening"
+                className="h-8 w-8 [&>div>div:first-child]:h-8 [&>div>div:first-child]:w-8"
+              />
+            </div>
             <div className="rounded-2xl rounded-bl-md bg-card border border-border px-4 py-2.5">
               <div className="flex gap-1">
                 <span className="h-2 w-2 rounded-full bg-muted-foreground animate-pulse" />
@@ -238,7 +278,7 @@ const MonkChat = () => {
             onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(input); }
             }}
-            placeholder="Ask the monk..."
+            placeholder={`Ask ${guide.label}...`}
             rows={1}
             className="flex-1 resize-none rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 transition-colors"
           />
