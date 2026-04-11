@@ -47,6 +47,9 @@ const App = () => (
             <Route path="/confession/log" element={<LogConfession />} />
             <Route path="/confession/history" element={<ConfessionHistory />} />
             <Route path="/confession/privacy" element={<ConfessionPrivacy />} />
+            <Route path="/prayer-library" element={<PrayerLibrary />} />
+            <Route path="/prayer-library/routines" element={<PrayerRoutines />} />
+            <Route path="/prayer-library/:prayerId" element={<PrayerView />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
