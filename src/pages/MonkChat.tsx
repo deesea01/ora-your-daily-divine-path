@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Send, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
+import { ArrowLeft, Send, Mic, MicOff, Volume2, VolumeX, Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -94,21 +94,55 @@ const MonkChat = () => {
 
   const handleSwitchGuide = async (key: SpiritualGuideKey) => {
     await setGuide(key);
+    // History will reload via the guideKey effect below
   };
 
-  // Load history
+  // Load history filtered by current guide
   useEffect(() => {
     if (!user) return;
+    setHistoryLoaded(false);
+    setMessages([]);
     supabase
       .from('chat_messages')
       .select('role, content')
       .eq('user_id', user.id)
+      .eq('role', 'user')
       .order('created_at', { ascending: true })
-      .then(({ data }) => {
-        if (data) setMessages(data as Msg[]);
-        setHistoryLoaded(true);
+      .then(() => {
+        // Load all messages for this guide
+        supabase
+          .from('chat_messages')
+          .select('role, content')
+          .eq('user_id', user.id)
+          .ilike('content', `%[guide:${guideKey}]%`)
+          .order('created_at', { ascending: true })
+          .then(({ data: taggedData }) => {
+            // Also load untagged messages (legacy) if no tagged messages exist
+            if (taggedData && taggedData.length > 0) {
+              setMessages(taggedData.map(m => ({
+                ...m,
+                content: m.content.replace(/\s*\[guide:\w+\]\s*/g, ''),
+              })) as Msg[]);
+              setHistoryLoaded(true);
+            } else {
+              // Fallback: load all untagged messages for backward compat
+              supabase
+                .from('chat_messages')
+                .select('role, content')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: true })
+                .then(({ data }) => {
+                  if (data) {
+                    // Filter out any tagged messages for other guides
+                    const filtered = data.filter(m => !m.content.match(/\[guide:\w+\]/));
+                    setMessages(filtered as Msg[]);
+                  }
+                  setHistoryLoaded(true);
+                });
+            }
+          });
       });
-  }, [user]);
+  }, [user, guideKey]);
 
   // Auto-scroll
   useEffect(() => {
@@ -139,6 +173,38 @@ const MonkChat = () => {
 
   if (!user) return <Navigate to="/auth" replace />;
 
+  const clearConversation = async () => {
+    if (!user) return;
+    // Delete all messages for this guide (tagged)
+    await supabase
+      .from('chat_messages')
+      .delete()
+      .eq('user_id', user.id)
+      .ilike('content', `%[guide:${guideKey}]%`);
+    
+    // Also delete untagged legacy messages if we're clearing
+    const { data: untagged } = await supabase
+      .from('chat_messages')
+      .select('id, content')
+      .eq('user_id', user.id);
+    
+    if (untagged) {
+      const legacyIds = untagged
+        .filter(m => !m.content.match(/\[guide:\w+\]/))
+        .map(m => m.id);
+      if (legacyIds.length > 0) {
+        await supabase
+          .from('chat_messages')
+          .delete()
+          .in('id', legacyIds);
+      }
+    }
+
+    setMessages([]);
+    tts.stop();
+    toast.success('Conversation cleared');
+  };
+
   const send = async (text: string) => {
     if (!text.trim() || isStreaming) return;
     const userMsg: Msg = { role: 'user', content: text.trim() };
@@ -146,8 +212,12 @@ const MonkChat = () => {
     setInput('');
     setIsStreaming(true);
 
-    // Save user message
-    supabase.from('chat_messages').insert({ user_id: user.id, role: 'user', content: userMsg.content });
+    // Save user message with guide tag
+    supabase.from('chat_messages').insert({
+      user_id: user.id,
+      role: 'user',
+      content: `${userMsg.content} [guide:${guideKey}]`,
+    });
 
     let assistantContent = '';
     const upsert = (chunk: string) => {
@@ -168,9 +238,12 @@ const MonkChat = () => {
         onDelta: upsert,
         onDone: () => {
           setIsStreaming(false);
-          // Save assistant message & speak it if TTS enabled
           if (assistantContent) {
-            supabase.from('chat_messages').insert({ user_id: user.id, role: 'assistant', content: assistantContent });
+            supabase.from('chat_messages').insert({
+              user_id: user.id,
+              role: 'assistant',
+              content: `${assistantContent} [guide:${guideKey}]`,
+            });
             tts.speak(assistantContent.replace(/[#*_`>]/g, ''));
           }
         },
@@ -183,7 +256,6 @@ const MonkChat = () => {
 
   const showSuggestions = messages.length === 0 && historyLoaded;
 
-  // Determine avatar state
   const lastMsg = messages[messages.length - 1];
   const avatarState = isStreaming
     ? (lastMsg?.role === 'assistant' ? 'speaking' : 'listening')
@@ -193,7 +265,6 @@ const MonkChat = () => {
 
   return (
     <div className="flex h-screen flex-col bg-background">
-      {/* Header with avatar */}
       <header className="flex items-center gap-3 border-b border-border px-4 py-3">
         <button
           onClick={() => navigate('/')}
@@ -215,6 +286,15 @@ const MonkChat = () => {
                 : 'Spiritual guidance, anytime'}
           </p>
         </div>
+        {messages.length > 0 && (
+          <button
+            onClick={clearConversation}
+            className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-destructive"
+            title="Clear conversation"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        )}
         <button
           onClick={tts.toggle}
           className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground"
@@ -224,7 +304,6 @@ const MonkChat = () => {
         </button>
       </header>
 
-      {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {showSuggestions && (
           <div className="flex flex-col items-center justify-center h-full gap-6 animate-fade-in">
@@ -302,7 +381,6 @@ const MonkChat = () => {
         )}
       </div>
 
-      {/* Input */}
       <div className="border-t border-border px-4 py-3 pb-safe">
         <form
           onSubmit={e => { e.preventDefault(); send(input); }}
