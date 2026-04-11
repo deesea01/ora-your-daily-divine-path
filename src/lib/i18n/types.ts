@@ -61,6 +61,7 @@ export interface Translations {
   day: string;
   days: string;
   todaysPrayerPath: string;
+  dailyPrayerGoal: string;
   morningLauds: string;
   morningLaudsDesc: string;
   middayAngelus: string;
