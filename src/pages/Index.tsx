@@ -194,6 +194,21 @@ const Index = () => {
         </button>
       </section>
 
+      {/* Spiritual Journal */}
+      <section className="mb-4 animate-fade-in-delay-3">
+        <button onClick={() => navigate('/journal')} className="group w-full rounded-xl border border-gold/20 bg-card p-5 text-left transition-all hover:border-gold/40 hover:glow-gold active:scale-[0.98]">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gold/10">
+              <PenLine className="h-5 w-5 text-gold" />
+            </div>
+            <div>
+              <h3 className="font-serif text-lg font-medium text-foreground">Spiritual Journal</h3>
+              <p className="text-sm text-muted-foreground">Reflect, give thanks, and grow closer to God</p>
+            </div>
+          </div>
+        </button>
+      </section>
+
       {/* Confession Tracker */}
       <section className="mb-4 animate-fade-in-delay-3">
         <button onClick={() => navigate('/confession')} className="group w-full rounded-xl border border-gold/20 bg-card p-5 text-left transition-all hover:border-gold/40 hover:glow-gold active:scale-[0.98]">
