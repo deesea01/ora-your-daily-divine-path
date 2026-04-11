@@ -371,6 +371,7 @@ export type Database = {
           experience_level: string
           id: string
           onboarding_completed: boolean
+          preferred_language: string
           seeking: string[]
           spiritual_guide: string
           updated_at: string
@@ -381,6 +382,7 @@ export type Database = {
           experience_level?: string
           id?: string
           onboarding_completed?: boolean
+          preferred_language?: string
           seeking?: string[]
           spiritual_guide?: string
           updated_at?: string
@@ -391,6 +393,7 @@ export type Database = {
           experience_level?: string
           id?: string
           onboarding_completed?: boolean
+          preferred_language?: string
           seeking?: string[]
           spiritual_guide?: string
           updated_at?: string

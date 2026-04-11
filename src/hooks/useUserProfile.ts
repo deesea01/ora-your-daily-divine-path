@@ -7,6 +7,7 @@ export interface UserProfile {
   experience_level: string;
   onboarding_completed: boolean;
   spiritual_guide: string;
+  preferred_language: string;
 }
 
 export function useUserProfile() {
@@ -23,7 +24,7 @@ export function useUserProfile() {
 
     supabase
       .from('user_profiles')
-      .select('seeking, experience_level, onboarding_completed, spiritual_guide')
+      .select('seeking, experience_level, onboarding_completed, spiritual_guide, preferred_language')
       .eq('user_id', user.id)
       .maybeSingle()
       .then(({ data }) => {
@@ -49,7 +50,7 @@ export function useUserProfile() {
 
     if (!error) {
       setProfile((prev) => ({
-        ...(prev || { seeking: [], experience_level: 'beginner', onboarding_completed: true, spiritual_guide: 'monk' }),
+        ...(prev || { seeking: [], experience_level: 'beginner', onboarding_completed: true, spiritual_guide: 'monk', preferred_language: 'en' }),
         seeking,
         experience_level: experienceLevel,
         onboarding_completed: true,

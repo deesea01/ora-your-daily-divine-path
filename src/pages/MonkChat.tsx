@@ -11,14 +11,9 @@ import { GuideSwitcher } from '@/components/GuideSwitcher';
 import { SPIRITUAL_GUIDES, SpiritualGuideKey } from '@/lib/guides';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
-
-const SUGGESTED_PROMPTS = [
-  'Help me pray',
-  'I feel anxious',
-  'Guide my reflection',
-];
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/monk-chat`;
 
@@ -29,7 +24,7 @@ async function streamChat({
   onDone,
 }: {
   messages: Msg[];
-  preferences?: { seeking?: string[]; experience_level?: string; spiritual_guide?: string };
+  preferences?: { seeking?: string[]; experience_level?: string; spiritual_guide?: string; language?: string };
   onDelta: (t: string) => void;
   onDone: () => void;
 }) {
@@ -80,6 +75,7 @@ async function streamChat({
 const MonkChat = () => {
   const { user, loading } = useAuth();
   const { profile, setGuide } = useUserProfile();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
@@ -92,12 +88,16 @@ const MonkChat = () => {
 
   const guide = SPIRITUAL_GUIDES[guideKey] || SPIRITUAL_GUIDES.monk;
 
+  const SUGGESTED_PROMPTS = [
+    t.helpMePray,
+    t.iFeelAnxious,
+    t.guideMyReflection,
+  ];
+
   const handleSwitchGuide = async (key: SpiritualGuideKey) => {
     await setGuide(key);
-    // History will reload via the guideKey effect below
   };
 
-  // Load history filtered by current guide
   useEffect(() => {
     if (!user) return;
     setHistoryLoaded(false);
@@ -106,57 +106,42 @@ const MonkChat = () => {
       .from('chat_messages')
       .select('role, content')
       .eq('user_id', user.id)
-      .eq('role', 'user')
+      .ilike('content', `%[guide:${guideKey}]%`)
       .order('created_at', { ascending: true })
-      .then(() => {
-        // Load all messages for this guide
-        supabase
-          .from('chat_messages')
-          .select('role, content')
-          .eq('user_id', user.id)
-          .ilike('content', `%[guide:${guideKey}]%`)
-          .order('created_at', { ascending: true })
-          .then(({ data: taggedData }) => {
-            // Also load untagged messages (legacy) if no tagged messages exist
-            if (taggedData && taggedData.length > 0) {
-              setMessages(taggedData.map(m => ({
-                ...m,
-                content: m.content.replace(/\s*\[guide:\w+\]\s*/g, ''),
-              })) as Msg[]);
+      .then(({ data: taggedData }) => {
+        if (taggedData && taggedData.length > 0) {
+          setMessages(taggedData.map(m => ({
+            ...m,
+            content: m.content.replace(/\s*\[guide:\w+\]\s*/g, ''),
+          })) as Msg[]);
+          setHistoryLoaded(true);
+        } else {
+          supabase
+            .from('chat_messages')
+            .select('role, content')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: true })
+            .then(({ data }) => {
+              if (data) {
+                const filtered = data.filter(m => !m.content.match(/\[guide:\w+\]/));
+                setMessages(filtered as Msg[]);
+              }
               setHistoryLoaded(true);
-            } else {
-              // Fallback: load all untagged messages for backward compat
-              supabase
-                .from('chat_messages')
-                .select('role, content')
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: true })
-                .then(({ data }) => {
-                  if (data) {
-                    // Filter out any tagged messages for other guides
-                    const filtered = data.filter(m => !m.content.match(/\[guide:\w+\]/));
-                    setMessages(filtered as Msg[]);
-                  }
-                  setHistoryLoaded(true);
-                });
-            }
-          });
+            });
+        }
       });
   }, [user, guideKey]);
 
-  // Auto-scroll
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages]);
 
-  // Speech recognition → input
   useEffect(() => {
     if (speech.transcript) {
       setInput(speech.transcript);
     }
   }, [speech.transcript]);
 
-  // Auto-send when speech recognition ends with content
   useEffect(() => {
     if (!speech.isListening && speech.transcript) {
       send(speech.transcript);
@@ -175,14 +160,12 @@ const MonkChat = () => {
 
   const clearConversation = async () => {
     if (!user) return;
-    // Delete all messages for this guide (tagged)
     await supabase
       .from('chat_messages')
       .delete()
       .eq('user_id', user.id)
       .ilike('content', `%[guide:${guideKey}]%`);
     
-    // Also delete untagged legacy messages if we're clearing
     const { data: untagged } = await supabase
       .from('chat_messages')
       .select('id, content')
@@ -202,7 +185,7 @@ const MonkChat = () => {
 
     setMessages([]);
     tts.stop();
-    toast.success('Conversation cleared');
+    toast.success(t.conversationCleared);
   };
 
   const send = async (text: string) => {
@@ -212,7 +195,6 @@ const MonkChat = () => {
     setInput('');
     setIsStreaming(true);
 
-    // Save user message with guide tag
     supabase.from('chat_messages').insert({
       user_id: user.id,
       role: 'user',
@@ -234,7 +216,12 @@ const MonkChat = () => {
     try {
       await streamChat({
         messages: [...messages, userMsg],
-        preferences: profile ? { seeking: profile.seeking, experience_level: profile.experience_level, spiritual_guide: profile.spiritual_guide } : undefined,
+        preferences: profile ? {
+          seeking: profile.seeking,
+          experience_level: profile.experience_level,
+          spiritual_guide: profile.spiritual_guide,
+          language,
+        } : { language },
         onDelta: upsert,
         onDone: () => {
           setIsStreaming(false);
@@ -280,17 +267,17 @@ const MonkChat = () => {
           </div>
           <p className="text-[10px] text-muted-foreground">
             {isStreaming
-              ? (lastMsg?.role === 'assistant' ? 'Speaking…' : 'Listening…')
+              ? (lastMsg?.role === 'assistant' ? t.speaking : t.listening)
               : speech.isListening
-                ? '🎙️ Listening to you…'
-                : 'Spiritual guidance, anytime'}
+                ? t.listeningToYou
+                : t.spiritualGuidanceAnytime}
           </p>
         </div>
         {messages.length > 0 && (
           <button
             onClick={clearConversation}
             className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-destructive"
-            title="Clear conversation"
+            title={t.clearConversation}
           >
             <Trash2 className="h-4 w-4" />
           </button>
@@ -298,7 +285,7 @@ const MonkChat = () => {
         <button
           onClick={tts.toggle}
           className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground"
-          title={tts.isEnabled ? 'Mute voice' : 'Enable voice'}
+          title={tts.isEnabled ? t.muteVoice : t.enableVoice}
         >
           {tts.isEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
         </button>
@@ -309,8 +296,8 @@ const MonkChat = () => {
           <div className="flex flex-col items-center justify-center h-full gap-6 animate-fade-in">
             <SaintAvatar guideKey={guideKey} size="xl" state="idle" showName showQuote />
             <div className="text-center mt-2">
-              <h2 className="font-serif text-lg text-foreground">How can I help you today?</h2>
-              <p className="text-xs text-muted-foreground mt-1">Ask anything about prayer or faith</p>
+              <h2 className="font-serif text-lg text-foreground">{t.helpYouToday}</h2>
+              <p className="text-xs text-muted-foreground mt-1">{t.askAnything}</p>
             </div>
             <div className="flex flex-wrap justify-center gap-2">
               {SUGGESTED_PROMPTS.map(p => (
@@ -333,11 +320,7 @@ const MonkChat = () => {
                 <SaintAvatar
                   guideKey={guideKey}
                   size="sm"
-                  state={
-                    isStreaming && i === messages.length - 1
-                      ? 'speaking'
-                      : 'reflecting'
-                  }
+                  state={isStreaming && i === messages.length - 1 ? 'speaking' : 'reflecting'}
                   className="h-8 w-8 [&>div>div:first-child]:h-8 [&>div>div:first-child]:w-8"
                 />
               </div>
@@ -395,7 +378,7 @@ const MonkChat = () => {
                   ? 'bg-destructive text-destructive-foreground animate-pulse'
                   : 'bg-card border border-border text-muted-foreground hover:text-foreground'
               }`}
-              title={speech.isListening ? 'Stop listening' : 'Speak to saint'}
+              title={speech.isListening ? t.stopListening : t.speakToSaint}
             >
               {speech.isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
             </button>
@@ -406,7 +389,7 @@ const MonkChat = () => {
             onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(input); }
             }}
-            placeholder={speech.isListening ? 'Listening…' : `Ask ${guide.label}...`}
+            placeholder={speech.isListening ? `${t.listening}` : `${t.askSaint} ${guide.label}...`}
             rows={1}
             className="flex-1 resize-none rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 transition-colors"
           />
