@@ -75,33 +75,33 @@ const ConfessionPrivacy = () => {
           </div>
 
           {/* Passcode (informational for now) */}
-          <div className="flex items-center justify-between rounded-xl border border-border bg-card p-4 opacity-60">
+          <div className="relative flex items-center justify-between rounded-xl border border-border bg-card p-4 opacity-60">
             <div className="pr-4">
               <p className="text-sm font-medium text-foreground">Require passcode / biometric</p>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Lock the confession tracker behind device authentication
               </p>
+              <p className="text-[10px] text-gold mt-1">Coming soon</p>
             </div>
             <Switch
               checked={settings.passcode_enabled}
               disabled
             />
-            <span className="absolute right-12 text-[10px] text-muted-foreground">Coming soon</span>
           </div>
 
           {/* Local only (informational) */}
-          <div className="flex items-center justify-between rounded-xl border border-border bg-card p-4 opacity-60">
+          <div className="relative flex items-center justify-between rounded-xl border border-border bg-card p-4 opacity-60">
             <div className="pr-4">
               <p className="text-sm font-medium text-foreground">Store data locally only</p>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Keep all confession data on this device only
               </p>
+              <p className="text-[10px] text-gold mt-1">Coming soon</p>
             </div>
             <Switch
               checked={settings.local_only}
               disabled
             />
-            <span className="absolute right-12 text-[10px] text-muted-foreground">Coming soon</span>
           </div>
         </div>
 
