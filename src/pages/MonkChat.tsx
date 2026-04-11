@@ -2,12 +2,15 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Send } from 'lucide-react';
+import { ArrowLeft, Send, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { SaintAvatar } from '@/components/SaintAvatar';
+import { GuideSwitcher } from '@/components/GuideSwitcher';
 import { SPIRITUAL_GUIDES, SpiritualGuideKey } from '@/lib/guides';
+import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
+import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 
