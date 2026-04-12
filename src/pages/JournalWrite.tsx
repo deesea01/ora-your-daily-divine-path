@@ -20,6 +20,7 @@ const JournalWrite = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { saveJournalEntry, loading } = useJournal();
+  const { isListening, transcript, interimTranscript, isSupported, toggle, resetTranscript } = useSpeechRecognition(true);
 
   const entryType = searchParams.get('type') || 'freeform';
   const promptText = searchParams.get('prompt') || '';
