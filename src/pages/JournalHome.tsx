@@ -2,6 +2,7 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { ArrowLeft, Flame, PenLine, Heart, Crosshair, Trophy, AlertCircle, ChevronRight, Shield, BookOpen, TrendingUp, Calendar, Target, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useJournal } from '@/hooks/useJournal';
+import { useSpiritualGrowth } from '@/hooks/useSpiritualGrowth';
 import { getDailyPrompt, EMOTIONAL_STATES } from '@/lib/journalData';
 
 const JournalHome = () => {
