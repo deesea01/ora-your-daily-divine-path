@@ -427,6 +427,13 @@ const JournalInsights = () => {
                     <p className="text-sm text-foreground/80 italic leading-relaxed">{growthPlan.plan_prayer}</p>
                   </div>
                 )}
+
+                <button
+                  onClick={() => exportGrowthPlanPdf(growthPlan)}
+                  className="w-full rounded-xl border border-gold/30 py-3 text-sm font-medium text-gold transition-all hover:bg-gold/10 active:scale-[0.98] flex items-center justify-center gap-2"
+                >
+                  <Download className="h-4 w-4" /> Export as PDF
+                </button>
               </div>
             )}
 
