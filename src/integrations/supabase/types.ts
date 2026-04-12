@@ -176,6 +176,51 @@ export type Database = {
         }
         Relationships: []
       }
+      growth_plans: {
+        Row: {
+          created_at: string
+          day1_action: string | null
+          day2_action: string | null
+          day3_action: string | null
+          focus_area: string | null
+          id: string
+          is_active: boolean
+          plan_prayer: string | null
+          scripture_anchor: string | null
+          start_date: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day1_action?: string | null
+          day2_action?: string | null
+          day3_action?: string | null
+          focus_area?: string | null
+          id?: string
+          is_active?: boolean
+          plan_prayer?: string | null
+          scripture_anchor?: string | null
+          start_date?: string
+          title?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day1_action?: string | null
+          day2_action?: string | null
+          day3_action?: string | null
+          focus_area?: string | null
+          id?: string
+          is_active?: boolean
+          plan_prayer?: string | null
+          scripture_anchor?: string | null
+          start_date?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       journal_entries: {
         Row: {
           body: string | null
@@ -365,6 +410,113 @@ export type Database = {
         }
         Relationships: []
       }
+      reflection_analyses: {
+        Row: {
+          actionable_step: string | null
+          affirmation: string | null
+          ai_summary: string | null
+          created_at: string
+          detected_emotions: string[]
+          detected_struggles: string[]
+          detected_virtues: string[]
+          emotional_tone: string | null
+          entry_date: string
+          entry_id: string | null
+          gentle_correction: string | null
+          id: string
+          personalized_prayer: string | null
+          reflection_text: string | null
+          scripture: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actionable_step?: string | null
+          affirmation?: string | null
+          ai_summary?: string | null
+          created_at?: string
+          detected_emotions?: string[]
+          detected_struggles?: string[]
+          detected_virtues?: string[]
+          emotional_tone?: string | null
+          entry_date?: string
+          entry_id?: string | null
+          gentle_correction?: string | null
+          id?: string
+          personalized_prayer?: string | null
+          reflection_text?: string | null
+          scripture?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actionable_step?: string | null
+          affirmation?: string | null
+          ai_summary?: string | null
+          created_at?: string
+          detected_emotions?: string[]
+          detected_struggles?: string[]
+          detected_virtues?: string[]
+          emotional_tone?: string | null
+          entry_date?: string
+          entry_id?: string | null
+          gentle_correction?: string | null
+          id?: string
+          personalized_prayer?: string | null
+          reflection_text?: string | null
+          scripture?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reflection_analyses_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "journal_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spiritual_patterns: {
+        Row: {
+          analysis_period_end: string
+          analysis_period_start: string
+          common_triggers: Json
+          created_at: string
+          emotional_trends: Json
+          entry_count: number
+          growing_virtues: Json
+          id: string
+          recurring_struggles: Json
+          user_id: string
+        }
+        Insert: {
+          analysis_period_end: string
+          analysis_period_start: string
+          common_triggers?: Json
+          created_at?: string
+          emotional_trends?: Json
+          entry_count?: number
+          growing_virtues?: Json
+          id?: string
+          recurring_struggles?: Json
+          user_id: string
+        }
+        Update: {
+          analysis_period_end?: string
+          analysis_period_start?: string
+          common_triggers?: Json
+          created_at?: string
+          emotional_trends?: Json
+          entry_count?: number
+          growing_virtues?: Json
+          id?: string
+          recurring_struggles?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           created_at: string
@@ -401,6 +553,48 @@ export type Database = {
           spiritual_guide?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      weekly_reports: {
+        Row: {
+          created_at: string
+          divine_invitation: string | null
+          full_report: Json
+          growth_areas: string | null
+          id: string
+          overall_summary: string | null
+          struggle_patterns: string | null
+          user_id: string
+          week_end: string
+          week_start: string
+          weekly_focus: string | null
+        }
+        Insert: {
+          created_at?: string
+          divine_invitation?: string | null
+          full_report?: Json
+          growth_areas?: string | null
+          id?: string
+          overall_summary?: string | null
+          struggle_patterns?: string | null
+          user_id: string
+          week_end: string
+          week_start: string
+          weekly_focus?: string | null
+        }
+        Update: {
+          created_at?: string
+          divine_invitation?: string | null
+          full_report?: Json
+          growth_areas?: string | null
+          id?: string
+          overall_summary?: string | null
+          struggle_patterns?: string | null
+          user_id?: string
+          week_end?: string
+          week_start?: string
+          weekly_focus?: string | null
         }
         Relationships: []
       }
