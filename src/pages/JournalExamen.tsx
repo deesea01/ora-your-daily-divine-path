@@ -11,11 +11,13 @@ const JournalExamen = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { examenEntries, saveExamenStep, completeExamen, loading } = useJournal();
+  const { analyzeReflection, actionLoading } = useSpiritualGrowth();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [responses, setResponses] = useState<Record<number, string>>({});
   const [saving, setSaving] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const [analysis, setAnalysis] = useState<ReflectionAnalysis | null>(null);
 
   // Hydrate from existing drafts
   useEffect(() => {
