@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { ArrowLeft, Flame, Heart, TrendingUp, BookOpen, Target, Calendar, Sparkles, ChevronRight, Loader2 } from 'lucide-react';
+import { ArrowLeft, Flame, Heart, TrendingUp, BookOpen, Target, Calendar, Sparkles, ChevronRight, Loader2, Download } from 'lucide-react';
+import { exportWeeklyReportPdf, exportGrowthPlanPdf } from '@/lib/exportPdf';
 import { useAuth } from '@/hooks/useAuth';
 import { useJournal } from '@/hooks/useJournal';
 import { useSpiritualGrowth } from '@/hooks/useSpiritualGrowth';
