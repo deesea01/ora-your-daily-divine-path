@@ -102,7 +102,7 @@ export function useSpiritualGrowth() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${session.access_token}`,
       },
-      body: JSON.stringify({ action, ...extra }),
+      body: JSON.stringify({ action, guide: profile?.spiritual_guide, ...extra }),
     });
 
     if (!resp.ok) {
