@@ -99,13 +99,44 @@ const JournalWrite = () => {
         <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Title (optional)" className="bg-card border-border font-serif" maxLength={200} />
 
         {/* Body */}
-        <Textarea
-          value={body}
-          onChange={e => setBody(e.target.value)}
-          placeholder={entryType === 'gratitude' ? 'What am I grateful for today?' : entryType === 'intention' ? 'What intention do I place before the Lord?' : entryType === 'wins' ? 'Where did I see God working today? What was hard?' : 'Write freely…'}
-          className="min-h-[200px] bg-card border-border resize-none font-serif text-sm leading-relaxed"
-          maxLength={5000}
-        />
+        <div className="relative">
+          <Textarea
+            value={body + (interimTranscript ? (body && !body.endsWith(' ') && !body.endsWith('\n') ? ' ' : '') + interimTranscript : '')}
+            onChange={e => setBody(e.target.value)}
+            placeholder={isListening ? 'Listening… speak freely' : (entryType === 'gratitude' ? 'What am I grateful for today?' : entryType === 'intention' ? 'What intention do I place before the Lord?' : entryType === 'wins' ? 'Where did I see God working today? What was hard?' : 'Write freely…')}
+            className={`min-h-[200px] bg-card border-border resize-none font-serif text-sm leading-relaxed pr-12 transition-all ${isListening ? 'border-gold/50 ring-1 ring-gold/20' : ''}`}
+            maxLength={5000}
+            readOnly={isListening}
+          />
+
+          {isSupported && (
+            <button
+              onClick={toggle}
+              className={`absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full transition-all ${
+                isListening
+                  ? 'bg-destructive/15 text-destructive animate-pulse'
+                  : 'bg-gold/10 text-gold hover:bg-gold/20'
+              }`}
+              aria-label={isListening ? 'Stop recording' : 'Start voice input'}
+              type="button"
+            >
+              {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            </button>
+          )}
+        </div>
+
+        {isListening && (
+          <div className="flex items-center gap-2 animate-fade-in">
+            <div className="flex gap-0.5">
+              <div className="h-2 w-0.5 rounded-full bg-gold animate-pulse" style={{ animationDelay: '0ms' }} />
+              <div className="h-3 w-0.5 rounded-full bg-gold animate-pulse" style={{ animationDelay: '150ms' }} />
+              <div className="h-2 w-0.5 rounded-full bg-gold animate-pulse" style={{ animationDelay: '300ms' }} />
+              <div className="h-4 w-0.5 rounded-full bg-gold animate-pulse" style={{ animationDelay: '100ms' }} />
+              <div className="h-2 w-0.5 rounded-full bg-gold animate-pulse" style={{ animationDelay: '250ms' }} />
+            </div>
+            <p className="text-xs text-gold">Listening…</p>
+          </div>
+        )}
 
         {/* Emotional state */}
         <div>
