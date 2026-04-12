@@ -1,5 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+const LANG_MAP: Record<string, string> = {
+  en: 'en-US',
+  es: 'es-ES',
+  fr: 'fr-FR',
+  it: 'it-IT',
+  pt: 'pt-BR',
+  tl: 'fil-PH',
+};
+
 interface SpeechRecognitionHook {
   isListening: boolean;
   transcript: string;
@@ -11,7 +20,7 @@ interface SpeechRecognitionHook {
   resetTranscript: () => void;
 }
 
-export function useSpeechRecognition(continuous = false): SpeechRecognitionHook {
+export function useSpeechRecognition(continuous = false, language = 'en'): SpeechRecognitionHook {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [interimTranscript, setInterimTranscript] = useState('');
@@ -37,7 +46,7 @@ export function useSpeechRecognition(continuous = false): SpeechRecognitionHook 
     const recognition = new SpeechRecognition();
     recognition.continuous = continuous;
     recognition.interimResults = true;
-    recognition.lang = 'en-US';
+    recognition.lang = LANG_MAP[language] || LANG_MAP.en;
 
     recognition.onresult = (event: any) => {
       let final = '';
@@ -67,7 +76,7 @@ export function useSpeechRecognition(continuous = false): SpeechRecognitionHook 
     recognitionRef.current = recognition;
     recognition.start();
     setIsListening(true);
-  }, [SpeechRecognition, stop, continuous]);
+  }, [SpeechRecognition, stop, continuous, language]);
 
   const toggle = useCallback(() => {
     if (isListening) stop();
