@@ -3,15 +3,18 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 interface SpeechRecognitionHook {
   isListening: boolean;
   transcript: string;
+  interimTranscript: string;
   isSupported: boolean;
   start: () => void;
   stop: () => void;
   toggle: () => void;
+  resetTranscript: () => void;
 }
 
-export function useSpeechRecognition(): SpeechRecognitionHook {
+export function useSpeechRecognition(continuous = false): SpeechRecognitionHook {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
+  const [interimTranscript, setInterimTranscript] = useState('');
   const recognitionRef = useRef<any>(null);
 
   const SpeechRecognition =
@@ -24,6 +27,7 @@ export function useSpeechRecognition(): SpeechRecognitionHook {
   const stop = useCallback(() => {
     recognitionRef.current?.stop();
     setIsListening(false);
+    setInterimTranscript('');
   }, []);
 
   const start = useCallback(() => {
@@ -31,7 +35,7 @@ export function useSpeechRecognition(): SpeechRecognitionHook {
     stop();
 
     const recognition = new SpeechRecognition();
-    recognition.continuous = false;
+    recognition.continuous = continuous;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
 
@@ -45,26 +49,39 @@ export function useSpeechRecognition(): SpeechRecognitionHook {
           interim += event.results[i][0].transcript;
         }
       }
-      setTranscript(final || interim);
+      if (final) {
+        setTranscript(prev => prev + (prev ? ' ' : '') + final.trim());
+      }
+      setInterimTranscript(interim);
     };
 
-    recognition.onend = () => setIsListening(false);
-    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => {
+      setIsListening(false);
+      setInterimTranscript('');
+    };
+    recognition.onerror = () => {
+      setIsListening(false);
+      setInterimTranscript('');
+    };
 
     recognitionRef.current = recognition;
     recognition.start();
     setIsListening(true);
-    setTranscript('');
-  }, [SpeechRecognition, stop]);
+  }, [SpeechRecognition, stop, continuous]);
 
   const toggle = useCallback(() => {
     if (isListening) stop();
     else start();
   }, [isListening, start, stop]);
 
+  const resetTranscript = useCallback(() => {
+    setTranscript('');
+    setInterimTranscript('');
+  }, []);
+
   useEffect(() => {
     return () => { recognitionRef.current?.stop(); };
   }, []);
 
-  return { isListening, transcript, isSupported, start, stop, toggle };
+  return { isListening, transcript, interimTranscript, isSupported, start, stop, toggle, resetTranscript };
 }
