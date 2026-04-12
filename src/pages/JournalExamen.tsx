@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2 } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2, Mic, MicOff } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useJournal } from '@/hooks/useJournal';
 import { useSpiritualGrowth, ReflectionAnalysis } from '@/hooks/useSpiritualGrowth';
+import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { EXAMEN_STEPS } from '@/lib/journalData';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -12,6 +13,7 @@ const JournalExamen = () => {
   const navigate = useNavigate();
   const { examenEntries, saveExamenStep, completeExamen, loading } = useJournal();
   const { analyzeReflection, actionLoading } = useSpiritualGrowth();
+  const { isListening, transcript, interimTranscript, isSupported, toggle, resetTranscript } = useSpeechRecognition(true);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [responses, setResponses] = useState<Record<number, string>>({});
@@ -27,6 +29,27 @@ const JournalExamen = () => {
       setResponses(r);
     }
   }, [examenEntries]);
+
+  // Append speech transcript to current step's response
+  useEffect(() => {
+    if (transcript) {
+      const step = EXAMEN_STEPS[currentStep];
+      setResponses(prev => {
+        const existing = prev[step.number] || '';
+        const separator = existing && !existing.endsWith(' ') ? ' ' : '';
+        return { ...prev, [step.number]: existing + separator + transcript };
+      });
+      resetTranscript();
+    }
+  }, [transcript, currentStep, resetTranscript]);
+
+  // Stop listening when changing steps
+  useEffect(() => {
+    if (isListening) {
+      toggle();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentStep]);
 
   if (authLoading || loading) {
     return (
@@ -181,18 +204,53 @@ const JournalExamen = () => {
             ))}
           </div>
 
-          {/* Response */}
-          <Textarea
-            value={responses[step.number] || ''}
-            onChange={e => setResponses(prev => ({ ...prev, [step.number]: e.target.value }))}
-            placeholder="Write from the heart…"
-            className="min-h-[150px] bg-card border-border resize-none font-serif text-sm"
-            maxLength={2000}
-          />
+          {/* Response area with voice input */}
+          <div className="relative">
+            <Textarea
+              value={(responses[step.number] || '') + (interimTranscript ? (responses[step.number] ? ' ' : '') + interimTranscript : '')}
+              onChange={e => setResponses(prev => ({ ...prev, [step.number]: e.target.value }))}
+              placeholder={isListening ? 'Listening… speak from the heart' : 'Write or speak from the heart…'}
+              className={`min-h-[150px] bg-card border-border resize-none font-serif text-sm pr-12 transition-all ${isListening ? 'border-gold/50 ring-1 ring-gold/20' : ''}`}
+              maxLength={2000}
+              readOnly={isListening}
+            />
 
-          <button onClick={handleSaveDraft} disabled={saving} className="mt-2 text-xs text-gold underline disabled:opacity-50">
-            {saving ? 'Saving…' : 'Save draft'}
-          </button>
+            {/* Mic button */}
+            {isSupported && (
+              <button
+                onClick={toggle}
+                className={`absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full transition-all ${
+                  isListening
+                    ? 'bg-destructive/15 text-destructive animate-pulse'
+                    : 'bg-gold/10 text-gold hover:bg-gold/20'
+                }`}
+                aria-label={isListening ? 'Stop recording' : 'Start voice input'}
+                type="button"
+              >
+                {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              </button>
+            )}
+          </div>
+
+          {/* Voice indicator */}
+          {isListening && (
+            <div className="mt-2 flex items-center gap-2 animate-fade-in">
+              <div className="flex gap-0.5">
+                <div className="h-2 w-0.5 rounded-full bg-gold animate-pulse" style={{ animationDelay: '0ms' }} />
+                <div className="h-3 w-0.5 rounded-full bg-gold animate-pulse" style={{ animationDelay: '150ms' }} />
+                <div className="h-2 w-0.5 rounded-full bg-gold animate-pulse" style={{ animationDelay: '300ms' }} />
+                <div className="h-4 w-0.5 rounded-full bg-gold animate-pulse" style={{ animationDelay: '100ms' }} />
+                <div className="h-2 w-0.5 rounded-full bg-gold animate-pulse" style={{ animationDelay: '250ms' }} />
+              </div>
+              <p className="text-xs text-gold">Listening…</p>
+            </div>
+          )}
+
+          {!isListening && (
+            <button onClick={handleSaveDraft} disabled={saving} className="mt-2 text-xs text-gold underline disabled:opacity-50">
+              {saving ? 'Saving…' : 'Save draft'}
+            </button>
+          )}
         </div>
 
         {/* Navigation */}
