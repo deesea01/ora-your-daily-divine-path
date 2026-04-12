@@ -58,6 +58,14 @@ const JournalExamen = () => {
     await completeExamen();
     setSaving(false);
     setCompleted(true);
+
+    // Trigger AI analysis in background
+    const fullReflection = EXAMEN_STEPS.map(s => `**${s.name}**: ${responses[s.number] || ''}`).filter(r => r.length > 10).join('\n\n');
+    if (fullReflection.length > 20) {
+      analyzeReflection(fullReflection).then(result => {
+        if (result) setAnalysis(result);
+      });
+    }
   };
 
   if (completed) {
