@@ -140,6 +140,58 @@ const JournalHome = () => {
           </button>
         </div>
 
+        {/* Spiritual Growth */}
+        <div className="space-y-2 animate-fade-in">
+          <h2 className="font-serif text-base text-foreground">Spiritual Growth</h2>
+
+          <button onClick={() => navigate('/journal/insights')} className="w-full rounded-xl border border-gold/20 bg-card p-4 text-left transition-all hover:border-gold/40 active:scale-[0.98]">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gold/10">
+                  <Sparkles className="h-5 w-5 text-gold" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">Insights & Patterns</p>
+                  <p className="text-xs text-muted-foreground">
+                    {hasEnoughForPatterns ? 'View your spiritual patterns' : `${entryCount}/5 reflections to unlock`}
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </div>
+          </button>
+
+          <button onClick={() => navigate('/journal/insights?tab=report')} className="w-full rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-gold/20 active:scale-[0.98]">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Calendar className="h-4 w-4 text-gold" />
+                <div>
+                  <p className="text-sm text-foreground">Weekly Report</p>
+                  {weeklyReport && (
+                    <p className="text-xs text-muted-foreground line-clamp-1">{weeklyReport.weekly_focus || 'View your latest report'}</p>
+                  )}
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </div>
+          </button>
+
+          <button onClick={() => navigate('/journal/insights?tab=plan')} className="w-full rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-gold/20 active:scale-[0.98]">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Target className="h-4 w-4 text-gold" />
+                <div>
+                  <p className="text-sm text-foreground">Growth Plan</p>
+                  {growthPlan && (
+                    <p className="text-xs text-muted-foreground line-clamp-1">{growthPlan.title}</p>
+                  )}
+                </div>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+            </div>
+          </button>
+        </div>
+
         {/* Mood trend */}
         {moodTrend.length > 0 && (
           <div className="animate-fade-in">
