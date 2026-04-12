@@ -400,6 +400,93 @@ You are creating a personalized 3-day spiritual growth plan, speaking in the voi
       });
     }
 
+    if (action === "confession_prep") {
+      // Fetch patterns and recent analyses for struggle context
+      const [{ data: patterns }, { data: analyses }] = await Promise.all([
+        supabase.from("spiritual_patterns").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1),
+        supabase.from("reflection_analyses").select("detected_struggles, detected_emotions, ai_summary, entry_date").eq("user_id", user.id).order("entry_date", { ascending: false }).limit(10),
+      ]);
+
+      const struggles: string[] = [];
+      if (patterns?.[0]?.recurring_struggles) {
+        (patterns[0].recurring_struggles as any[]).forEach((s: any) => struggles.push(s.name || s));
+      }
+      analyses?.forEach((a: any) => {
+        a.detected_struggles?.forEach((s: string) => {
+          if (!struggles.includes(s)) struggles.push(s);
+        });
+      });
+
+      if (struggles.length === 0) {
+        return new Response(JSON.stringify({ error: "No detected struggles yet. Complete some Daily Examen reflections first." }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const context = patterns?.[0]
+        ? `Recurring struggles: ${JSON.stringify(patterns[0].recurring_struggles)}. Recent reflections: ${analyses?.map((a: any) => `${a.entry_date}: struggles=${a.detected_struggles.join(",")}, summary=${a.ai_summary}`).join("; ")}`
+        : `Recent struggles from reflections: ${analyses?.map((a: any) => `${a.entry_date}: ${a.detected_struggles.join(",")}`).join("; ")}`;
+
+      const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [
+            {
+              role: "system",
+              content: `${persona}
+
+You are helping a Catholic prepare for the Sacrament of Reconciliation (Confession), speaking in the voice of ${guideName}. Based on the user's detected spiritual struggles and patterns, generate personalized confession preparation suggestions. Be compassionate, never judgmental, and always point toward God's mercy.
+
+Return JSON with:
+- examination_points: array of 3-5 objects with {struggle, question, reflection} — each maps a detected struggle to a specific examination question and a brief reflection prompt
+- act_of_contrition_focus: a 2-3 sentence personalized focus for their act of contrition
+- preparation_prayer: a short prayer (3-4 sentences) to pray before confession, in the voice of ${guideName}
+- encouragement: 2-3 sentences of encouragement about approaching the sacrament, in the voice of ${guideName}
+- suggested_penance_intentions: array of 2-3 brief penance intentions they might offer
+
+This is a spiritual aid, NOT a substitute for the Sacrament. Return ONLY valid JSON.`
+            },
+            { role: "user", content: `Generate confession preparation based on these patterns:\n${context}` }
+          ],
+          tools: [{
+            type: "function",
+            function: {
+              name: "confession_prep",
+              description: "Generate personalized confession preparation",
+              parameters: {
+                type: "object",
+                properties: {
+                  examination_points: { type: "array", items: { type: "object", properties: { struggle: { type: "string" }, question: { type: "string" }, reflection: { type: "string" } }, required: ["struggle", "question", "reflection"] } },
+                  act_of_contrition_focus: { type: "string" },
+                  preparation_prayer: { type: "string" },
+                  encouragement: { type: "string" },
+                  suggested_penance_intentions: { type: "array", items: { type: "string" } }
+                },
+                required: ["examination_points", "act_of_contrition_focus", "preparation_prayer", "encouragement", "suggested_penance_intentions"],
+                additionalProperties: false
+              }
+            }
+          }],
+          tool_choice: { type: "function", function: { name: "confession_prep" } }
+        }),
+      });
+
+      if (!aiResponse.ok) {
+        if (aiResponse.status === 429) return new Response(JSON.stringify({ error: "Rate limited" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        if (aiResponse.status === 402) return new Response(JSON.stringify({ error: "Payment required" }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        throw new Error("AI error");
+      }
+
+      const aiData = await aiResponse.json();
+      const prep = JSON.parse(aiData.choices[0].message.tool_calls[0].function.arguments);
+
+      return new Response(JSON.stringify({ confession_prep: prep }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     return new Response(JSON.stringify({ error: "Unknown action" }), {
       status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
