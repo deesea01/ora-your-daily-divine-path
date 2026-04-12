@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useJournal } from '@/hooks/useJournal';
 import { useSpiritualGrowth, ReflectionAnalysis } from '@/hooks/useSpiritualGrowth';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { EXAMEN_STEPS } from '@/lib/journalData';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -13,7 +14,8 @@ const JournalExamen = () => {
   const navigate = useNavigate();
   const { examenEntries, saveExamenStep, completeExamen, loading } = useJournal();
   const { analyzeReflection, actionLoading } = useSpiritualGrowth();
-  const { isListening, transcript, interimTranscript, isSupported, toggle, resetTranscript } = useSpeechRecognition(true);
+  const { profile } = useUserProfile();
+  const { isListening, transcript, interimTranscript, isSupported, toggle, resetTranscript } = useSpeechRecognition(true, profile?.preferred_language || 'en');
 
   const [currentStep, setCurrentStep] = useState(0);
   const [responses, setResponses] = useState<Record<number, string>>({});
