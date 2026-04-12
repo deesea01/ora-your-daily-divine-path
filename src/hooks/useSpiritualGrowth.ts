@@ -61,6 +61,14 @@ export interface GrowthPlan {
   created_at: string;
 }
 
+export interface ConfessionPrep {
+  examination_points: { struggle: string; question: string; reflection: string }[];
+  act_of_contrition_focus: string;
+  preparation_prayer: string;
+  encouragement: string;
+  suggested_penance_intentions: string[];
+}
+
 export function useSpiritualGrowth() {
   const { user } = useAuth();
   const { profile } = useUserProfile();
@@ -172,10 +180,23 @@ export function useSpiritualGrowth() {
     }
   };
 
+  const generateConfessionPrep = async (guideOverride?: string): Promise<ConfessionPrep | null> => {
+    setActionLoading('confession');
+    try {
+      const result = await callEdgeFunction('confession_prep', {}, guideOverride);
+      if (result?.confession_prep) {
+        return result.confession_prep as ConfessionPrep;
+      }
+      return null;
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   return {
     analyses, patterns, weeklyReport, growthPlan,
     loading, actionLoading,
-    analyzeReflection, generatePatterns, generateWeeklyReport, generateGrowthPlan,
+    analyzeReflection, generatePatterns, generateWeeklyReport, generateGrowthPlan, generateConfessionPrep,
     refetch: fetchAll,
     entryCount: analyses.length,
     hasEnoughForPatterns: analyses.length >= 5,
