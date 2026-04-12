@@ -63,6 +63,7 @@ export interface GrowthPlan {
 
 export function useSpiritualGrowth() {
   const { user } = useAuth();
+  const { profile } = useUserProfile();
   const { toast } = useToast();
   const [analyses, setAnalyses] = useState<ReflectionAnalysis[]>([]);
   const [patterns, setPatterns] = useState<SpiritualPattern | null>(null);
