@@ -269,7 +269,7 @@ const JournalInsights = () => {
             ) : (
               <>
                 <button
-                  onClick={generatePatterns}
+                  onClick={() => generatePatterns(activeGuide)}
                   disabled={actionLoading === 'patterns'}
                   className="w-full rounded-xl bg-gold py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50 active:scale-[0.98] flex items-center justify-center gap-2"
                 >
@@ -353,7 +353,7 @@ const JournalInsights = () => {
         {activeTab === 'report' && (
           <>
             <button
-              onClick={generateWeeklyReport}
+              onClick={() => generateWeeklyReport(activeGuide)}
               disabled={actionLoading === 'report'}
               className="w-full rounded-xl bg-gold py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50 active:scale-[0.98] flex items-center justify-center gap-2"
             >
@@ -413,7 +413,7 @@ const JournalInsights = () => {
         {activeTab === 'plan' && (
           <>
             <button
-              onClick={generateGrowthPlan}
+              onClick={() => generateGrowthPlan(activeGuide)}
               disabled={actionLoading === 'plan'}
               className="w-full rounded-xl bg-gold py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50 active:scale-[0.98] flex items-center justify-center gap-2"
             >
