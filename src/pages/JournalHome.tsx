@@ -9,6 +9,7 @@ const JournalHome = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { entries, streak, todayEntry, hasExamenToday, settings, loading } = useJournal();
+  const { analyses, weeklyReport, growthPlan, hasEnoughForPatterns, entryCount } = useSpiritualGrowth();
 
   if (authLoading || loading) {
     return (
