@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { ArrowLeft, ChevronRight, ChevronLeft, Check } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useJournal } from '@/hooks/useJournal';
+import { useSpiritualGrowth, ReflectionAnalysis } from '@/hooks/useSpiritualGrowth';
 import { EXAMEN_STEPS } from '@/lib/journalData';
 import { Textarea } from '@/components/ui/textarea';
 
