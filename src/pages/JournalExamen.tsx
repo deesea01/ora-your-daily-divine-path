@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { ArrowLeft, ChevronRight, ChevronLeft, Check } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ChevronLeft, Check, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useJournal } from '@/hooks/useJournal';
+import { useSpiritualGrowth, ReflectionAnalysis } from '@/hooks/useSpiritualGrowth';
 import { EXAMEN_STEPS } from '@/lib/journalData';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -10,11 +11,13 @@ const JournalExamen = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { examenEntries, saveExamenStep, completeExamen, loading } = useJournal();
+  const { analyzeReflection, actionLoading } = useSpiritualGrowth();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [responses, setResponses] = useState<Record<number, string>>({});
   const [saving, setSaving] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const [analysis, setAnalysis] = useState<ReflectionAnalysis | null>(null);
 
   // Hydrate from existing drafts
   useEffect(() => {
@@ -55,17 +58,88 @@ const JournalExamen = () => {
     await completeExamen();
     setSaving(false);
     setCompleted(true);
+
+    // Trigger AI analysis in background
+    const fullReflection = EXAMEN_STEPS.map(s => `**${s.name}**: ${responses[s.number] || ''}`).filter(r => r.length > 10).join('\n\n');
+    if (fullReflection.length > 20) {
+      analyzeReflection(fullReflection).then(result => {
+        if (result) setAnalysis(result);
+      });
+    }
   };
 
   if (completed) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6 animate-fade-in">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gold/15 mb-4">
-          <Check className="h-8 w-8 text-gold" />
+      <div className="flex min-h-screen flex-col bg-background px-6 py-8 overflow-y-auto">
+        <div className="flex flex-col items-center animate-fade-in mb-6">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gold/15 mb-4">
+            <Check className="h-8 w-8 text-gold" />
+          </div>
+          <p className="font-serif text-xl text-foreground">Examen Complete</p>
+          <p className="text-sm text-muted-foreground mt-2 text-center">Go in peace. The Lord walks with you.</p>
         </div>
-        <p className="font-serif text-xl text-foreground">Examen Complete</p>
-        <p className="text-sm text-muted-foreground mt-2 text-center">Go in peace. The Lord walks with you.</p>
-        <button onClick={() => navigate('/journal')} className="mt-6 text-sm text-gold underline">Return to Journal</button>
+
+        {/* AI Analysis */}
+        {actionLoading === 'analyze' && (
+          <div className="flex items-center justify-center gap-2 py-8 animate-fade-in">
+            <Loader2 className="h-4 w-4 animate-spin text-gold" />
+            <p className="text-sm text-muted-foreground">Reflecting on your words…</p>
+          </div>
+        )}
+
+        {analysis && (
+          <div className="space-y-4 animate-fade-in">
+            {analysis.affirmation && (
+              <div className="rounded-xl border border-emerald-500/20 bg-card p-4">
+                <p className="text-xs text-emerald-400 uppercase tracking-wider mb-2">Affirmation</p>
+                <p className="text-sm text-foreground/80 leading-relaxed">{analysis.affirmation}</p>
+              </div>
+            )}
+
+            {analysis.gentle_correction && (
+              <div className="rounded-xl border border-amber-500/20 bg-card p-4">
+                <p className="text-xs text-amber-400 uppercase tracking-wider mb-2">Gentle Correction</p>
+                <p className="text-sm text-foreground/80 leading-relaxed">{analysis.gentle_correction}</p>
+              </div>
+            )}
+
+            {analysis.scripture && (
+              <div className="rounded-xl border border-border bg-card p-4">
+                <p className="text-xs text-gold uppercase tracking-wider mb-2">Scripture</p>
+                <p className="text-sm text-foreground/80 italic leading-relaxed">{analysis.scripture}</p>
+              </div>
+            )}
+
+            {analysis.actionable_step && (
+              <div className="rounded-xl border border-gold/20 bg-card p-4">
+                <p className="text-xs text-gold uppercase tracking-wider mb-2">For Tomorrow</p>
+                <p className="text-sm text-foreground/80 leading-relaxed">{analysis.actionable_step}</p>
+              </div>
+            )}
+
+            {analysis.personalized_prayer && (
+              <div className="rounded-xl border border-gold/20 bg-gold/5 p-4">
+                <p className="text-xs text-gold uppercase tracking-wider mb-2">Prayer for You</p>
+                <p className="text-sm text-foreground/80 italic leading-relaxed">{analysis.personalized_prayer}</p>
+              </div>
+            )}
+
+            {/* Tags */}
+            <div className="flex flex-wrap gap-1.5">
+              {analysis.detected_virtues.map(v => (
+                <span key={v} className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] text-emerald-400 capitalize">{v}</span>
+              ))}
+              {analysis.detected_struggles.map(s => (
+                <span key={s} className="rounded-full bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[10px] text-amber-400 capitalize">{s}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-6 flex flex-col items-center gap-3">
+          <button onClick={() => navigate('/journal/insights')} className="text-sm text-gold underline">View Insights</button>
+          <button onClick={() => navigate('/journal')} className="text-sm text-muted-foreground underline">Return to Journal</button>
+        </div>
       </div>
     );
   }
