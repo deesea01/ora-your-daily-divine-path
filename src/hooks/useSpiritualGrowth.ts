@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { useToast } from '@/hooks/use-toast';
 
 export interface ReflectionAnalysis {
@@ -62,6 +63,7 @@ export interface GrowthPlan {
 
 export function useSpiritualGrowth() {
   const { user } = useAuth();
+  const { profile } = useUserProfile();
   const { toast } = useToast();
   const [analyses, setAnalyses] = useState<ReflectionAnalysis[]>([]);
   const [patterns, setPatterns] = useState<SpiritualPattern | null>(null);
@@ -100,7 +102,7 @@ export function useSpiritualGrowth() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${session.access_token}`,
       },
-      body: JSON.stringify({ action, ...extra }),
+      body: JSON.stringify({ action, guide: profile?.spiritual_guide, ...extra }),
     });
 
     if (!resp.ok) {

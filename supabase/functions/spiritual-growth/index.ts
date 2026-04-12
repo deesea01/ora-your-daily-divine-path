@@ -6,6 +6,35 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const GUIDE_PERSONAS: Record<string, string> = {
+  monk: "You are a wise, calm Catholic spiritual director. You are compassionate but truthful, never judgmental. You always point toward hope, growth, and God's mercy.",
+  francis: "You are St. Francis of Assisi — joyful, humble, deeply connected to creation. You speak with simplicity and warmth, always pointing to poverty of spirit, love for the poor, and finding God in all creatures. You often reference nature and emphasize radical simplicity and peace.",
+  augustine: "You are St. Augustine of Hippo — deeply intellectual yet profoundly moved by grace. You speak from personal experience of conversion and struggle. You emphasize the restless heart finding rest in God, the battle between flesh and spirit, and the transforming power of divine grace. You sometimes quote your Confessions.",
+  aquinas: "You are St. Thomas Aquinas — systematic, clear, and profoundly wise. You approach spiritual matters with both reason and faith. You help organize thoughts logically while pointing to deeper theological truths. You emphasize virtue ethics, the natural law, and the harmony of faith and reason.",
+  teresa: "You are St. Teresa of Ávila — warm, witty, and mystical. You speak as a dear friend who has experienced the depths of prayer. You emphasize the interior castle of the soul, stages of prayer, and intimate friendship with Christ. You are practical and sometimes humorous.",
+  michael: "You are inspired by St. Michael the Archangel — bold, protective, and unwavering. You speak with clarity about spiritual warfare, guarding against evil, and standing firm in truth. You emphasize courage, vigilance, and the triumph of good over darkness.",
+  padre_pio: "You are St. Padre Pio — deeply devoted, mystical, and direct. You speak with the authority of one who has suffered greatly for Christ. You emphasize the power of the Cross, the Eucharist, and perseverance through suffering. You are warm but unflinchingly honest.",
+  joan: "You are St. Joan of Arc — courageous, mission-driven, and trusting in God's call. You speak with youthful boldness and unwavering faith. You emphasize listening to God's voice, courage in adversity, and faithfulness to one's divine mission even when others doubt.",
+};
+
+function getGuidePersona(guide: string): string {
+  return GUIDE_PERSONAS[guide] || GUIDE_PERSONAS.monk;
+}
+
+function getGuideName(guide: string): string {
+  const names: Record<string, string> = {
+    monk: "your spiritual director",
+    francis: "St. Francis of Assisi",
+    augustine: "St. Augustine",
+    aquinas: "St. Thomas Aquinas",
+    teresa: "St. Teresa of Ávila",
+    michael: "St. Michael the Archangel",
+    padre_pio: "St. Padre Pio",
+    joan: "St. Joan of Arc",
+  };
+  return names[guide] || names.monk;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -19,15 +48,29 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    // Get user from token
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     if (authError || !user) throw new Error("Unauthorized");
 
-    const { action, reflection_text, entry_id, entry_date } = await req.json();
+    const body = await req.json();
+    const { action, reflection_text, entry_id, entry_date } = body;
+
+    // Resolve guide: from request body, or from user profile
+    let guide = body.guide as string | undefined;
+    if (!guide) {
+      const { data: profile } = await supabase
+        .from("user_profiles")
+        .select("spiritual_guide")
+        .eq("user_id", user.id)
+        .limit(1)
+        .single();
+      guide = profile?.spiritual_guide || "monk";
+    }
+
+    const persona = getGuidePersona(guide);
+    const guideName = getGuideName(guide);
 
     if (action === "analyze_reflection") {
-      // Analyze a single reflection
       const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
@@ -36,19 +79,19 @@ serve(async (req) => {
           messages: [
             {
               role: "system",
-              content: `You are a wise, calm Catholic spiritual director. You are compassionate but truthful, never judgmental. You always point toward hope, growth, and God's mercy.
+              content: `${persona}
 
 Analyze the following spiritual reflection and return a JSON object with these fields:
 - detected_emotions: array of 1-3 emotions (e.g., "gratitude", "frustration", "peace", "anxiety", "hope", "sadness", "joy", "guilt", "love")
 - detected_virtues: array of 0-2 virtues present (e.g., "patience", "humility", "charity", "discipline", "courage", "faith", "hope", "temperance", "fortitude", "prudence")
 - detected_struggles: array of 0-2 struggles (e.g., "anger", "pride", "lust", "laziness", "envy", "gluttony", "greed", "impatience", "doubt", "fear", "distraction")
 - emotional_tone: one word describing the overall tone
-- ai_summary: 2-3 sentence summary of the reflection
-- affirmation: highlight a virtue or good seen in the reflection (2-3 sentences)
-- gentle_correction: gently identify a struggle area with compassion (2-3 sentences)
-- scripture: a specific, relevant scripture verse with reference
-- actionable_step: one concrete step for tomorrow
-- personalized_prayer: a short personalized prayer (3-4 sentences)
+- ai_summary: 2-3 sentence summary of the reflection, written in the voice of ${guideName}
+- affirmation: highlight a virtue or good seen in the reflection (2-3 sentences), in the voice of ${guideName}
+- gentle_correction: gently identify a struggle area with compassion (2-3 sentences), in the voice of ${guideName}
+- scripture: a specific, relevant scripture verse with reference that ${guideName} would choose
+- actionable_step: one concrete step for tomorrow, suggested in the style of ${guideName}
+- personalized_prayer: a short personalized prayer (3-4 sentences) in the voice of ${guideName}
 
 Return ONLY valid JSON, no markdown.`
             },
@@ -95,7 +138,6 @@ Return ONLY valid JSON, no markdown.`
       
       const analysis = JSON.parse(toolCall.function.arguments);
 
-      // Store the analysis
       const { data: stored, error: storeError } = await supabase.from("reflection_analyses").insert({
         user_id: user.id,
         entry_id: entry_id || null,
@@ -112,7 +154,6 @@ Return ONLY valid JSON, no markdown.`
     }
 
     if (action === "generate_patterns") {
-      // Fetch recent analyses
       const { data: analyses } = await supabase
         .from("reflection_analyses")
         .select("*")
@@ -138,7 +179,9 @@ Return ONLY valid JSON, no markdown.`
           messages: [
             {
               role: "system",
-              content: `You are a wise Catholic spiritual director analyzing patterns across multiple spiritual reflections. Be compassionate and insightful. Return JSON with:
+              content: `${persona}
+
+You are analyzing patterns across multiple spiritual reflections. Be compassionate and insightful, speaking in the voice of ${guideName}. Return JSON with:
 - recurring_struggles: array of objects with {name, frequency, description} ranked by frequency
 - growing_virtues: array of objects with {name, evidence, growth_note}
 - common_triggers: array of objects with {trigger, context}
@@ -225,12 +268,14 @@ Return ONLY valid JSON.`
           messages: [
             {
               role: "system",
-              content: `You are a wise Catholic spiritual director creating a weekly spiritual report. Be warm, insightful, and hopeful. Return JSON with:
+              content: `${persona}
+
+You are creating a weekly spiritual report, speaking in the voice of ${guideName}. Be warm, insightful, and hopeful. Return JSON with:
 - overall_summary: 2-3 sentence summary titled "This Week with God"
 - growth_areas: Specific examples of virtue growth titled "Where You Grew" (2-3 sentences)
 - struggle_patterns: Patterns, not one-offs, titled "Where You Struggled" (2-3 sentences)
 - divine_invitation: Insightful directional guidance titled "God May Be Inviting You To…" (2-3 sentences)
-- weekly_focus: ONE clear focus for next week (e.g., patience, discipline, surrender) with brief explanation`
+- weekly_focus: ONE clear focus for next week with brief explanation`
             },
             { role: "user", content: `Weekly entries:\n${summaryText}` }
           ],
@@ -280,7 +325,6 @@ Return ONLY valid JSON.`
     }
 
     if (action === "generate_growth_plan") {
-      // Get latest patterns + recent analyses
       const [{ data: patterns }, { data: analyses }] = await Promise.all([
         supabase.from("spiritual_patterns").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1),
         supabase.from("reflection_analyses").select("*").eq("user_id", user.id).order("entry_date", { ascending: false }).limit(7),
@@ -298,13 +342,15 @@ Return ONLY valid JSON.`
           messages: [
             {
               role: "system",
-              content: `You are a wise Catholic spiritual director creating a personalized 3-day spiritual growth plan. Make it practical, actionable, and rooted in Catholic tradition. Return JSON with:
+              content: `${persona}
+
+You are creating a personalized 3-day spiritual growth plan, speaking in the voice of ${guideName}. Make it practical, actionable, and rooted in Catholic tradition — especially in the spirituality and charism of ${guideName}. Return JSON with:
 - focus_area: the main area to focus on
-- day1_action: Day 1 - a specific behavioral action
+- day1_action: Day 1 - a specific behavioral action inspired by ${guideName}'s spirituality
 - day2_action: Day 2 - a prayer or reflection exercise
 - day3_action: Day 3 - a challenge or sacrifice
-- scripture_anchor: one relevant scripture verse with reference
-- plan_prayer: a short personalized prayer (3-4 sentences)`
+- scripture_anchor: one relevant scripture verse with reference that ${guideName} would choose
+- plan_prayer: a short personalized prayer (3-4 sentences) in the voice of ${guideName}`
             },
             { role: "user", content: `Create a growth plan based on: ${context}` }
           ],
@@ -341,7 +387,6 @@ Return ONLY valid JSON.`
       const aiData = await aiResponse.json();
       const plan = JSON.parse(aiData.choices[0].message.tool_calls[0].function.arguments);
 
-      // Deactivate previous plans
       await supabase.from("growth_plans").update({ is_active: false }).eq("user_id", user.id).eq("is_active", true);
 
       const { data: stored } = await supabase.from("growth_plans").insert({
