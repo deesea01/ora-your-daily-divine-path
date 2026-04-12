@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, Mic, MicOff } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useJournal } from '@/hooks/useJournal';
+import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { EMOTIONAL_STATES, SPIRITUAL_STATES } from '@/lib/journalData';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
