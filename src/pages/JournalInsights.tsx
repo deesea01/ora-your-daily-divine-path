@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { ArrowLeft, Flame, Heart, TrendingUp, BookOpen, Target, Calendar, Sparkles, ChevronRight, Loader2 } from 'lucide-react';
+import { ArrowLeft, Flame, Heart, TrendingUp, BookOpen, Target, Calendar, Sparkles, ChevronRight, Loader2, Download } from 'lucide-react';
+import { exportWeeklyReportPdf, exportGrowthPlanPdf } from '@/lib/exportPdf';
 import { useAuth } from '@/hooks/useAuth';
 import { useJournal } from '@/hooks/useJournal';
 import { useSpiritualGrowth } from '@/hooks/useSpiritualGrowth';
@@ -359,6 +360,13 @@ const JournalInsights = () => {
                   <h3 className="font-serif text-sm text-gold mb-2">🎯 Focus for Next Week</h3>
                   <p className="text-sm text-foreground leading-relaxed font-medium">{weeklyReport.weekly_focus}</p>
                 </div>
+
+                <button
+                  onClick={() => exportWeeklyReportPdf(weeklyReport)}
+                  className="w-full rounded-xl border border-gold/30 py-3 text-sm font-medium text-gold transition-all hover:bg-gold/10 active:scale-[0.98] flex items-center justify-center gap-2"
+                >
+                  <Download className="h-4 w-4" /> Export as PDF
+                </button>
               </div>
             )}
 
@@ -419,6 +427,13 @@ const JournalInsights = () => {
                     <p className="text-sm text-foreground/80 italic leading-relaxed">{growthPlan.plan_prayer}</p>
                   </div>
                 )}
+
+                <button
+                  onClick={() => exportGrowthPlanPdf(growthPlan)}
+                  className="w-full rounded-xl border border-gold/30 py-3 text-sm font-medium text-gold transition-all hover:bg-gold/10 active:scale-[0.98] flex items-center justify-center gap-2"
+                >
+                  <Download className="h-4 w-4" /> Export as PDF
+                </button>
               </div>
             )}
 
