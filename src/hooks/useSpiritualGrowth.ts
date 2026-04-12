@@ -92,17 +92,18 @@ export function useSpiritualGrowth() {
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
-  const callEdgeFunction = async (action: string, extra: Record<string, any> = {}) => {
+  const callEdgeFunction = async (action: string, extra: Record<string, any> = {}, guideOverride?: string) => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error("Not authenticated");
 
+    const guide = guideOverride || profile?.spiritual_guide;
     const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/spiritual-growth`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${session.access_token}`,
       },
-      body: JSON.stringify({ action, guide: profile?.spiritual_guide, ...extra }),
+      body: JSON.stringify({ action, guide, ...extra }),
     });
 
     if (!resp.ok) {
@@ -129,10 +130,10 @@ export function useSpiritualGrowth() {
     }
   };
 
-  const generatePatterns = async () => {
+  const generatePatterns = async (guideOverride?: string) => {
     setActionLoading('patterns');
     try {
-      const result = await callEdgeFunction('generate_patterns');
+      const result = await callEdgeFunction('generate_patterns', {}, guideOverride);
       if (result?.patterns) {
         setPatterns(result.patterns);
         return result.patterns as SpiritualPattern;
@@ -143,10 +144,10 @@ export function useSpiritualGrowth() {
     }
   };
 
-  const generateWeeklyReport = async () => {
+  const generateWeeklyReport = async (guideOverride?: string) => {
     setActionLoading('report');
     try {
-      const result = await callEdgeFunction('generate_weekly_report');
+      const result = await callEdgeFunction('generate_weekly_report', {}, guideOverride);
       if (result?.report) {
         setWeeklyReport(result.report);
         return result.report as WeeklyReport;
@@ -157,10 +158,10 @@ export function useSpiritualGrowth() {
     }
   };
 
-  const generateGrowthPlan = async () => {
+  const generateGrowthPlan = async (guideOverride?: string) => {
     setActionLoading('plan');
     try {
-      const result = await callEdgeFunction('generate_growth_plan');
+      const result = await callEdgeFunction('generate_growth_plan', {}, guideOverride);
       if (result?.plan) {
         setGrowthPlan(result.plan);
         return result.plan as GrowthPlan;

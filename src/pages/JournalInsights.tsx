@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useJournal } from '@/hooks/useJournal';
 import { useSpiritualGrowth } from '@/hooks/useSpiritualGrowth';
 import { EMOTIONAL_STATES, SPIRITUAL_STATES } from '@/lib/journalData';
+import { SPIRITUAL_GUIDES } from '@/lib/guides';
 
 const JournalInsights = () => {
   const { user, loading: authLoading } = useAuth();
@@ -19,6 +20,10 @@ const JournalInsights = () => {
   } = useSpiritualGrowth();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'patterns' | 'report' | 'plan'>('overview');
+  const [selectedGuide, setSelectedGuide] = useState<string>('');
+
+  const guideKeys = Object.keys(SPIRITUAL_GUIDES);
+  const activeGuide = selectedGuide || undefined;
 
   if (authLoading || loading || growthLoading) {
     return (
@@ -71,6 +76,31 @@ const JournalInsights = () => {
         </button>
         <h1 className="font-serif text-lg font-medium text-foreground">Spiritual Growth</h1>
       </header>
+
+      {/* Guide Selector */}
+      <div className="px-4 py-3 border-b border-border">
+        <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Saint's Perspective</p>
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          {guideKeys.map(key => {
+            const g = SPIRITUAL_GUIDES[key];
+            const isActive = selectedGuide === key || (!selectedGuide && key === 'monk');
+            return (
+              <button
+                key={key}
+                onClick={() => setSelectedGuide(key)}
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs whitespace-nowrap border transition-all ${
+                  isActive
+                    ? 'border-gold bg-gold/10 text-gold'
+                    : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/20'
+                }`}
+              >
+                <img src={g.avatar} alt={g.label} className="h-5 w-5 rounded-full object-cover" />
+                {g.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Tabs */}
       <div className="flex border-b border-border px-4">
@@ -239,7 +269,7 @@ const JournalInsights = () => {
             ) : (
               <>
                 <button
-                  onClick={generatePatterns}
+                  onClick={() => generatePatterns(activeGuide)}
                   disabled={actionLoading === 'patterns'}
                   className="w-full rounded-xl bg-gold py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50 active:scale-[0.98] flex items-center justify-center gap-2"
                 >
@@ -323,7 +353,7 @@ const JournalInsights = () => {
         {activeTab === 'report' && (
           <>
             <button
-              onClick={generateWeeklyReport}
+              onClick={() => generateWeeklyReport(activeGuide)}
               disabled={actionLoading === 'report'}
               className="w-full rounded-xl bg-gold py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50 active:scale-[0.98] flex items-center justify-center gap-2"
             >
@@ -383,7 +413,7 @@ const JournalInsights = () => {
         {activeTab === 'plan' && (
           <>
             <button
-              onClick={generateGrowthPlan}
+              onClick={() => generateGrowthPlan(activeGuide)}
               disabled={actionLoading === 'plan'}
               className="w-full rounded-xl bg-gold py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50 active:scale-[0.98] flex items-center justify-center gap-2"
             >
