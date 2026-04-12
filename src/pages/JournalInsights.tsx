@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useJournal } from '@/hooks/useJournal';
 import { useSpiritualGrowth } from '@/hooks/useSpiritualGrowth';
 import { EMOTIONAL_STATES, SPIRITUAL_STATES } from '@/lib/journalData';
+import { SPIRITUAL_GUIDES } from '@/lib/guides';
 
 const JournalInsights = () => {
   const { user, loading: authLoading } = useAuth();
@@ -19,6 +20,10 @@ const JournalInsights = () => {
   } = useSpiritualGrowth();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'patterns' | 'report' | 'plan'>('overview');
+  const [selectedGuide, setSelectedGuide] = useState<string>('');
+
+  const guideKeys = Object.keys(SPIRITUAL_GUIDES);
+  const activeGuide = selectedGuide || undefined;
 
   if (authLoading || loading || growthLoading) {
     return (
