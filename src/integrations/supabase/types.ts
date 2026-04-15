@@ -185,6 +185,42 @@ export type Database = {
         }
         Relationships: []
       }
+      journal_entries: {
+        Row: {
+          content: string
+          created_at: string
+          entry_type: string
+          examen_data: Json | null
+          id: string
+          mood: string | null
+          tags: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          entry_type?: string
+          examen_data?: Json | null
+          id?: string
+          mood?: string | null
+          tags?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          entry_type?: string
+          examen_data?: Json | null
+          id?: string
+          mood?: string | null
+          tags?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       prayer_completions: {
         Row: {
           completed_at: string
@@ -349,6 +385,39 @@ export type Database = {
           reflection_text?: string | null
           scripture?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      spiritual_insights: {
+        Row: {
+          entry_count: number
+          generated_at: string
+          id: string
+          patterns: Json
+          strengths: Json
+          suggested_focus: string | null
+          summary: string | null
+          user_id: string
+        }
+        Insert: {
+          entry_count?: number
+          generated_at?: string
+          id?: string
+          patterns?: Json
+          strengths?: Json
+          suggested_focus?: string | null
+          summary?: string | null
+          user_id: string
+        }
+        Update: {
+          entry_count?: number
+          generated_at?: string
+          id?: string
+          patterns?: Json
+          strengths?: Json
+          suggested_focus?: string | null
+          summary?: string | null
           user_id?: string
         }
         Relationships: []
