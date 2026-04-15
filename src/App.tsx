@@ -54,12 +54,6 @@ const App = () => (
               <Route path="/prayer-library" element={<PrayerLibrary />} />
               <Route path="/prayer-library/routines" element={<PrayerRoutines />} />
               <Route path="/prayer-library/:prayerId" element={<PrayerView />} />
-              <Route path="/journal" element={<JournalHome />} />
-              <Route path="/journal/examen" element={<JournalExamen />} />
-              <Route path="/journal/write" element={<JournalWrite />} />
-              <Route path="/journal/prompts" element={<JournalPrompts />} />
-              <Route path="/journal/insights" element={<JournalInsights />} />
-              <Route path="/journal/privacy" element={<JournalPrivacy />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
