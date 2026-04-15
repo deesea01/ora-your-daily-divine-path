@@ -12,6 +12,8 @@ import MonkChat from "./pages/MonkChat.tsx";
 import PrayerDetail from "./pages/PrayerDetail.tsx";
 import Rosary from "./pages/Rosary.tsx";
 import Onboarding from "./pages/Onboarding.tsx";
+import PrivacyPolicy from "./pages/PrivacyPolicy.tsx";
+import TermsOfService from "./pages/TermsOfService.tsx";
 import GuideSelect from "./pages/GuideSelect.tsx";
 import Impact from "./pages/Impact.tsx";
 import ConfessionDashboard from "./pages/ConfessionDashboard.tsx";
@@ -43,6 +45,8 @@ const App = () => (
               <Route path="/prayer/:type" element={<PrayerDetail />} />
               <Route path="/rosary" element={<Rosary />} />
               <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/guide" element={<GuideSelect />} />
               <Route path="/impact" element={<Impact />} />
               <Route path="/confession" element={<ConfessionDashboard />} />
