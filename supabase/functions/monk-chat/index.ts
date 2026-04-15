@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -92,7 +93,6 @@ function buildSystemPrompt(preferences?: { seeking?: string[]; experience_level?
 
   let prompt = guide.systemPrompt;
 
-  // Language instruction
   if (lang !== 'en') {
     prompt += `\n\nIMPORTANT: You MUST respond entirely in ${langName}. All your responses — including scripture quotes, prayers, and spiritual guidance — must be in ${langName}. Use the traditional ${langName} forms of prayers when they exist (e.g., use the traditional ${langName} translation of the Our Father, Hail Mary, etc.). Keep your spiritual persona and tone, but communicate fully in ${langName}.`;
   }
@@ -108,13 +108,50 @@ function buildSystemPrompt(preferences?: { seeking?: string[]; experience_level?
   return prompt;
 }
 
+const MAX_MESSAGES = 50;
+const MAX_CONTENT_LENGTH = 4000;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // --- Authentication ---
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data, error: authError } = await supabase.auth.getClaims(token);
+    if (authError || !data?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { messages, preferences } = await req.json();
+
+    // --- Input sanitization: only allow user/assistant roles, limit length & count ---
+    const safeMessages = (Array.isArray(messages) ? messages : [])
+      .filter((m: any) => m.role === "user" || m.role === "assistant")
+      .slice(-MAX_MESSAGES)
+      .map((m: any) => ({
+        role: m.role as "user" | "assistant",
+        content: String(m.content || "").slice(0, MAX_CONTENT_LENGTH),
+      }));
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -130,7 +167,7 @@ serve(async (req) => {
           model: "google/gemini-3-flash-preview",
           messages: [
             { role: "system", content: buildSystemPrompt(preferences) },
-            ...messages,
+            ...safeMessages,
           ],
           stream: true,
         }),
@@ -164,7 +201,7 @@ serve(async (req) => {
   } catch (e) {
     console.error("monk-chat error:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
+      JSON.stringify({ error: "Something went wrong." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
