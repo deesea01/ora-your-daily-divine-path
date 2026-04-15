@@ -9,6 +9,8 @@ export interface UserProfile {
   spiritual_guide: string;
   preferred_language: string;
   daily_prayer_goal: number;
+  display_name: string | null;
+  terms_accepted_at: string | null;
 }
 
 export function useUserProfile() {
@@ -25,7 +27,7 @@ export function useUserProfile() {
 
     supabase
       .from('user_profiles')
-      .select('seeking, experience_level, onboarding_completed, spiritual_guide, preferred_language, daily_prayer_goal')
+      .select('seeking, experience_level, onboarding_completed, spiritual_guide, preferred_language, daily_prayer_goal, display_name, terms_accepted_at')
       .eq('user_id', user.id)
       .maybeSingle()
       .then(({ data }) => {
@@ -34,7 +36,7 @@ export function useUserProfile() {
       });
   }, [user]);
 
-  const saveProfile = async (seeking: string[], experienceLevel: string, dailyGoal?: number) => {
+  const saveProfile = async (seeking: string[], experienceLevel: string, dailyGoal?: number, displayName?: string, acceptTerms?: boolean) => {
     if (!user) return;
 
     const payload: any = {
@@ -45,6 +47,8 @@ export function useUserProfile() {
       updated_at: new Date().toISOString(),
     };
     if (dailyGoal !== undefined) payload.daily_prayer_goal = dailyGoal;
+    if (displayName !== undefined) payload.display_name = displayName;
+    if (acceptTerms) payload.terms_accepted_at = new Date().toISOString();
 
     const { error } = await supabase
       .from('user_profiles')
@@ -52,10 +56,12 @@ export function useUserProfile() {
 
     if (!error) {
       setProfile((prev) => ({
-        ...(prev || { seeking: [], experience_level: 'beginner', onboarding_completed: true, spiritual_guide: 'monk', preferred_language: 'en', daily_prayer_goal: 3 }),
+        ...(prev || { seeking: [], experience_level: 'beginner', onboarding_completed: true, spiritual_guide: 'monk', preferred_language: 'en', daily_prayer_goal: 3, display_name: null, terms_accepted_at: null }),
         seeking,
         experience_level: experienceLevel,
         onboarding_completed: true,
+        ...(displayName !== undefined ? { display_name: displayName } : {}),
+        ...(acceptTerms ? { terms_accepted_at: new Date().toISOString() } : {}),
       }));
     }
     return { error };

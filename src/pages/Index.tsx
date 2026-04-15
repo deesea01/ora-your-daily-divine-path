@@ -94,7 +94,7 @@ const Index = () => {
         <div className="flex items-center gap-3">
           <img src={logoImg} alt="Ora" className="w-10 h-10 object-contain" />
           <div>
-            <p className="text-sm text-muted-foreground">{greeting}</p>
+            <p className="text-sm text-muted-foreground">{greeting}{profile?.display_name ? `, ${profile.display_name}` : ''}</p>
             <h1 className="font-serif text-2xl font-light text-foreground">Ora</h1>
           </div>
         </div>
