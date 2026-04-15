@@ -396,36 +396,42 @@ export type Database = {
         Row: {
           created_at: string
           daily_prayer_goal: number
+          display_name: string | null
           experience_level: string
           id: string
           onboarding_completed: boolean
           preferred_language: string
           seeking: string[]
           spiritual_guide: string
+          terms_accepted_at: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
           daily_prayer_goal?: number
+          display_name?: string | null
           experience_level?: string
           id?: string
           onboarding_completed?: boolean
           preferred_language?: string
           seeking?: string[]
           spiritual_guide?: string
+          terms_accepted_at?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
           daily_prayer_goal?: number
+          display_name?: string | null
           experience_level?: string
           id?: string
           onboarding_completed?: boolean
           preferred_language?: string
           seeking?: string[]
           spiritual_guide?: string
+          terms_accepted_at?: string | null
           updated_at?: string
           user_id?: string
         }
