@@ -23,12 +23,6 @@ import ConfessionPrivacy from "./pages/ConfessionPrivacy.tsx";
 import PrayerLibrary from "./pages/PrayerLibrary.tsx";
 import PrayerView from "./pages/PrayerView.tsx";
 import PrayerRoutines from "./pages/PrayerRoutines.tsx";
-import JournalHome from "./pages/JournalHome.tsx";
-import JournalExamen from "./pages/JournalExamen.tsx";
-import JournalWrite from "./pages/JournalWrite.tsx";
-import JournalPrompts from "./pages/JournalPrompts.tsx";
-import JournalInsights from "./pages/JournalInsights.tsx";
-import JournalPrivacy from "./pages/JournalPrivacy.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
