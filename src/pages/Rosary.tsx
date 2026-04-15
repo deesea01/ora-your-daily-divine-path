@@ -121,13 +121,17 @@ const Rosary = () => {
     const fetchExplanation = async () => {
       try {
         const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+        const { data: { session } } = await supabase.auth.getSession();
+        const accessToken = session?.access_token;
+        if (!accessToken) return;
+
         const res = await fetch(
           `https://${projectId}.supabase.co/functions/v1/rosary-mystery`,
           {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+              Authorization: `Bearer ${accessToken}`,
             },
             body: JSON.stringify({
               mysterySet,
