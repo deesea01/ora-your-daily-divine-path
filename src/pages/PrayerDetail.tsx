@@ -53,13 +53,17 @@ const PrayerDetail = () => {
     const fetchPrayer = async () => {
       try {
         const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+        const { data: { session } } = await supabase.auth.getSession();
+        const accessToken = session?.access_token;
+        if (!accessToken) throw new Error('Not authenticated');
+
         const res = await fetch(
           `https://${projectId}.supabase.co/functions/v1/prayer-guide`,
           {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+              Authorization: `Bearer ${accessToken}`,
             },
             body: JSON.stringify({
               prayerType,
