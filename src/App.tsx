@@ -25,6 +25,8 @@ import ConfessionPrivacy from "./pages/ConfessionPrivacy.tsx";
 import PrayerLibrary from "./pages/PrayerLibrary.tsx";
 import PrayerView from "./pages/PrayerView.tsx";
 import PrayerRoutines from "./pages/PrayerRoutines.tsx";
+import JournalHome from "./pages/JournalHome.tsx";
+import JournalExamen from "./pages/JournalExamen.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -58,6 +60,8 @@ const App = () => (
               <Route path="/prayer-library" element={<PrayerLibrary />} />
               <Route path="/prayer-library/routines" element={<PrayerRoutines />} />
               <Route path="/prayer-library/:prayerId" element={<PrayerView />} />
+              <Route path="/journal" element={<JournalHome />} />
+              <Route path="/journal/examen" element={<JournalExamen />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
