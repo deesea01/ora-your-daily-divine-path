@@ -76,15 +76,15 @@ const PrayerView = () => {
   const nextInRoutine = currentRoutineIndex >= 0 && currentRoutineIndex < routineIds.length - 1 ? routineIds[currentRoutineIndex + 1] : null;
 
   const stopSpeech = useCallback(() => {
-    window.speechSynthesis.cancel();
+    saintVoice.stop();
     setIsPlaying(false);
     setCurrentLine(-1);
     playingRef.current = false;
-  }, []);
+  }, [saintVoice]);
 
   useEffect(() => {
-    return () => { window.speechSynthesis.cancel(); };
-  }, []);
+    return () => { saintVoice.stop(); };
+  }, [saintVoice]);
 
   if (authLoading || loading) {
     return (
