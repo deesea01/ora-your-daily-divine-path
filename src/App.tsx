@@ -27,6 +27,7 @@ import PrayerView from "./pages/PrayerView.tsx";
 import PrayerRoutines from "./pages/PrayerRoutines.tsx";
 import JournalHome from "./pages/JournalHome.tsx";
 import JournalExamen from "./pages/JournalExamen.tsx";
+import Settings from "./pages/Settings.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -62,6 +63,7 @@ const App = () => (
               <Route path="/prayer-library/:prayerId" element={<PrayerView />} />
               <Route path="/journal" element={<JournalHome />} />
               <Route path="/journal/examen" element={<JournalExamen />} />
+              <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import logoImg from '@/assets/logo.png';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { LogOut, MessageCircle, Cross, Flame, ChevronRight, Heart, Shield, BookOpen, PenLine, Settings } from 'lucide-react';
+import { MessageCircle, Cross, Flame, ChevronRight, Heart, Shield, BookOpen, PenLine, Settings } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { SPIRITUAL_GUIDES, SpiritualGuideKey } from '@/lib/guides';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { LanguageSelector } from '@/components/LanguageSelector';
+
 import PrayerCard from '@/components/PrayerCard';
 
 function computeStreak(dates: string[]): number {
@@ -29,7 +29,7 @@ function computeStreak(dates: string[]): number {
 }
 
 const Index = () => {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { profile, loading: profileLoading, setDailyPrayerGoal } = useUserProfile();
   const { t, language } = useLanguage();
@@ -99,11 +99,11 @@ const Index = () => {
           </div>
         </div>
         <button
-          onClick={signOut}
+          onClick={() => navigate('/settings')}
           className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground hover:border-gold/30"
-          aria-label={t.signOut}
+          aria-label="Settings"
         >
-          <LogOut className="h-4 w-4" />
+          <Settings className="h-4 w-4" />
         </button>
       </header>
 
@@ -269,10 +269,6 @@ const Index = () => {
         </button>
       </section>
 
-      {/* Language Selector */}
-      <section className="mb-4 animate-fade-in-delay-3">
-        <LanguageSelector />
-      </section>
 
       <section className="animate-fade-in-delay-3">
         <button onClick={() => navigate('/impact')} className="group w-full rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-gold/20 active:scale-[0.98]">
