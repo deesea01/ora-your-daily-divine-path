@@ -101,7 +101,7 @@ serve(async (req) => {
     if (!elResp.ok) {
       const errText = await elResp.text().catch(() => "");
       console.error("ElevenLabs error", elResp.status, errText);
-      return new Response(JSON.stringify({ error: "TTS failed", status: elResp.status }), {
+      return new Response(JSON.stringify({ error: "TTS failed", status: elResp.status, detail: errText.slice(0, 500) }), {
         status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
