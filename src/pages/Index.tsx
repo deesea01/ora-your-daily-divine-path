@@ -99,11 +99,11 @@ const Index = () => {
           </div>
         </div>
         <button
-          onClick={signOut}
+          onClick={() => navigate('/settings')}
           className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground hover:border-gold/30"
-          aria-label={t.signOut}
+          aria-label="Settings"
         >
-          <LogOut className="h-4 w-4" />
+          <Settings className="h-4 w-4" />
         </button>
       </header>
 
