@@ -110,7 +110,8 @@ const Rosary = () => {
   const [beadCount, setBeadCount] = useState(0);
   const [mysteryExplanation, setMysteryExplanation] = useState('');
   const [loadingMystery, setLoadingMystery] = useState(false);
-  const { isSpeaking, isEnabled, speak, stop, toggle } = useSpeechSynthesis();
+  const guideKey = (profile?.spiritual_guide as SpiritualGuideKey) || 'monk';
+  const { isSpeaking, isEnabled, play, stop, toggle } = useSaintVoice(guideKey);
 
   const step = ALL_STEPS[stepIndex];
   const progress = ((stepIndex + 1) / ALL_STEPS.length) * 100;
