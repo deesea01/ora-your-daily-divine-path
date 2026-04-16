@@ -368,9 +368,21 @@ const MonkChat = () => {
               }`}
             >
               {m.role === 'assistant' ? (
-                <div className="prose prose-sm prose-invert max-w-none [&_p]:m-0">
-                  <ReactMarkdown>{m.content}</ReactMarkdown>
-                </div>
+                <>
+                  <div className="prose prose-sm prose-invert max-w-none [&_p]:m-0">
+                    <ReactMarkdown>{m.content}</ReactMarkdown>
+                  </div>
+                  {m.content && !(isStreaming && i === messages.length - 1) && (
+                    <button
+                      onClick={() => voice.play(m.content, mood, { force: true })}
+                      className="mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary transition-colors"
+                      title="Replay voice"
+                    >
+                      {voice.isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />}
+                      <span>Replay</span>
+                    </button>
+                  )}
+                </>
               ) : (
                 m.content
               )}
@@ -399,7 +411,43 @@ const MonkChat = () => {
         )}
       </div>
 
-      <div className="border-t border-border px-4 py-3 pb-safe">
+      <div className="border-t border-border px-4 py-3 pb-safe space-y-2">
+        {voice.isEnabled && (
+          <div className="flex items-center justify-between gap-2 text-[11px]">
+            <div className="flex flex-wrap gap-1">
+              {MOODS.map(m => (
+                <button
+                  key={m.value}
+                  type="button"
+                  onClick={() => setMood(m.value)}
+                  className={`rounded-full px-2.5 py-0.5 border transition-colors ${
+                    mood === m.value
+                      ? 'bg-primary/15 border-primary/40 text-primary'
+                      : 'border-border text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-1 text-muted-foreground">
+              {SPEED_OPTIONS.map(s => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => voice.setSpeed(s)}
+                  className={`rounded-full px-2 py-0.5 border transition-colors ${
+                    voice.speed === s
+                      ? 'bg-primary/15 border-primary/40 text-primary'
+                      : 'border-border hover:text-foreground'
+                  }`}
+                >
+                  {s}x
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <form
           onSubmit={e => { e.preventDefault(); send(input); }}
           className="flex items-end gap-2"
