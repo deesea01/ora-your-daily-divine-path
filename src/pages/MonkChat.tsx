@@ -98,7 +98,18 @@ const MonkChat = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const speech = useSpeechRecognition();
   const guideKey = (profile?.spiritual_guide || 'monk') as SpiritualGuideKey;
-  const tts = useSpeechSynthesis(guideKey);
+  const voice = useSaintVoice(guideKey);
+
+  // Mood: infer from referrer/route, allow user override
+  const inferInitialMood = (): SaintMood => {
+    if (typeof document === 'undefined') return 'casual';
+    const ref = document.referrer || '';
+    if (ref.includes('/confession')) return 'confession';
+    if (ref.includes('/prayer') || ref.includes('/rosary')) return 'prayer';
+    if (ref.includes('/journal')) return 'reflection';
+    return 'casual';
+  };
+  const [mood, setMood] = useState<SaintMood>(inferInitialMood);
 
   const guide = SPIRITUAL_GUIDES[guideKey] || SPIRITUAL_GUIDES.monk;
 
