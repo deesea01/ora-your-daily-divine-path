@@ -146,7 +146,8 @@ const Rosary = () => {
           setMysteryExplanation(data.explanation || '');
         }
       } catch (err) {
-        console.error(err);
+        console.error('Rosary mystery error:', err);
+        setMysteryExplanation('Peace be with you. Take a moment to pray quietly and reflect.');
       } finally {
         setLoadingMystery(false);
       }
