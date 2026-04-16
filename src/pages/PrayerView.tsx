@@ -52,8 +52,10 @@ const PrayerView = () => {
     : null;
   const [voiceTheme, setVoiceTheme] = useState<string | null>(defaultVoiceTheme);
   const [showThemes, setShowThemes] = useState(false);
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const playingRef = useRef(false);
+
+  const guideKey = (profile?.spiritual_guide as SpiritualGuideKey) || 'monk';
+  const saintVoice = useSaintVoice(guideKey);
 
   // Update voice theme when profile loads
   useEffect(() => {
