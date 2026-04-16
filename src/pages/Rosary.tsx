@@ -163,7 +163,7 @@ const Rosary = () => {
   useEffect(() => {
     if (!isEnabled || !mysterySet) return;
     const prayerText = getPrayerTextForStep(step, PRAYERS, mysterySet ? MYSTERIES[mysterySet] : undefined, beadCount, mysteryExplanation);
-    if (prayerText) speak(prayerText);
+    if (prayerText) play(prayerText, 'prayer');
   }, [stepIndex, beadCount, isEnabled, mysteryExplanation]);
 
   const goNext = () => {
