@@ -2,3 +2,6 @@ project_id = "lrrsmihlulzuhdqndinw"
 
 [functions.process-email-queue]
 verify_jwt = true
+
+[functions.saint-tts]
+verify_jwt = true

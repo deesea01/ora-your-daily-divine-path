@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Send, Mic, MicOff, Volume2, VolumeX, Trash2 } from 'lucide-react';
+import { ArrowLeft, Send, Mic, MicOff, Volume2, VolumeX, Trash2, Play, Loader2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -10,9 +10,18 @@ import { SaintAvatar } from '@/components/SaintAvatar';
 import { GuideSwitcher } from '@/components/GuideSwitcher';
 import { SPIRITUAL_GUIDES, SpiritualGuideKey } from '@/lib/guides';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
-import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
+import { useSaintVoice, SaintMood } from '@/hooks/useSaintVoice';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { notifyAdminError } from '@/lib/notifyAdmin';
+
+const MOODS: { value: SaintMood; label: string }[] = [
+  { value: 'casual', label: 'Casual' },
+  { value: 'prayer', label: 'Prayer' },
+  { value: 'confession', label: 'Confession' },
+  { value: 'reflection', label: 'Reflection' },
+];
+
+const SPEED_OPTIONS = [0.75, 1, 1.25];
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 
@@ -25,7 +34,7 @@ async function streamChat({
   onDone,
 }: {
   messages: Msg[];
-  preferences?: { seeking?: string[]; experience_level?: string; spiritual_guide?: string; language?: string };
+  preferences?: { seeking?: string[]; experience_level?: string; spiritual_guide?: string; language?: string; mood?: SaintMood };
   onDelta: (t: string) => void;
   onDone: () => void;
 }) {
@@ -89,7 +98,18 @@ const MonkChat = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const speech = useSpeechRecognition();
   const guideKey = (profile?.spiritual_guide || 'monk') as SpiritualGuideKey;
-  const tts = useSpeechSynthesis(guideKey);
+  const voice = useSaintVoice(guideKey);
+
+  // Mood: infer from referrer/route, allow user override
+  const inferInitialMood = (): SaintMood => {
+    if (typeof document === 'undefined') return 'casual';
+    const ref = document.referrer || '';
+    if (ref.includes('/confession')) return 'confession';
+    if (ref.includes('/prayer') || ref.includes('/rosary')) return 'prayer';
+    if (ref.includes('/journal')) return 'reflection';
+    return 'casual';
+  };
+  const [mood, setMood] = useState<SaintMood>(inferInitialMood);
 
   const guide = SPIRITUAL_GUIDES[guideKey] || SPIRITUAL_GUIDES.monk;
 
@@ -189,7 +209,7 @@ const MonkChat = () => {
     }
 
     setMessages([]);
-    tts.stop();
+    voice.stop();
     toast.success(t.conversationCleared);
   };
 
@@ -226,7 +246,8 @@ const MonkChat = () => {
           experience_level: profile.experience_level,
           spiritual_guide: profile.spiritual_guide,
           language,
-        } : { language },
+          mood,
+        } : { language, mood },
         onDelta: upsert,
         onDone: () => {
           setIsStreaming(false);
@@ -236,7 +257,7 @@ const MonkChat = () => {
               role: 'assistant',
               content: `${assistantContent} [guide:${guideKey}]`,
             });
-            tts.speak(assistantContent.replace(/[#*_`>]/g, ''));
+            voice.play(assistantContent, mood);
           }
         },
       });
@@ -297,11 +318,11 @@ const MonkChat = () => {
           </button>
         )}
         <button
-          onClick={tts.toggle}
+          onClick={voice.toggle}
           className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground"
-          title={tts.isEnabled ? t.muteVoice : t.enableVoice}
+          title={voice.isEnabled ? t.muteVoice : t.enableVoice}
         >
-          {tts.isEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+          {voice.isEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
         </button>
       </header>
 
@@ -347,9 +368,21 @@ const MonkChat = () => {
               }`}
             >
               {m.role === 'assistant' ? (
-                <div className="prose prose-sm prose-invert max-w-none [&_p]:m-0">
-                  <ReactMarkdown>{m.content}</ReactMarkdown>
-                </div>
+                <>
+                  <div className="prose prose-sm prose-invert max-w-none [&_p]:m-0">
+                    <ReactMarkdown>{m.content}</ReactMarkdown>
+                  </div>
+                  {m.content && !(isStreaming && i === messages.length - 1) && (
+                    <button
+                      onClick={() => voice.play(m.content, mood, { force: true })}
+                      className="mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary transition-colors"
+                      title="Replay voice"
+                    >
+                      {voice.isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Play className="h-3 w-3" />}
+                      <span>Replay</span>
+                    </button>
+                  )}
+                </>
               ) : (
                 m.content
               )}
@@ -378,7 +411,43 @@ const MonkChat = () => {
         )}
       </div>
 
-      <div className="border-t border-border px-4 py-3 pb-safe">
+      <div className="border-t border-border px-4 py-3 pb-safe space-y-2">
+        {voice.isEnabled && (
+          <div className="flex items-center justify-between gap-2 text-[11px]">
+            <div className="flex flex-wrap gap-1">
+              {MOODS.map(m => (
+                <button
+                  key={m.value}
+                  type="button"
+                  onClick={() => setMood(m.value)}
+                  className={`rounded-full px-2.5 py-0.5 border transition-colors ${
+                    mood === m.value
+                      ? 'bg-primary/15 border-primary/40 text-primary'
+                      : 'border-border text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-1 text-muted-foreground">
+              {SPEED_OPTIONS.map(s => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => voice.setSpeed(s)}
+                  className={`rounded-full px-2 py-0.5 border transition-colors ${
+                    voice.speed === s
+                      ? 'bg-primary/15 border-primary/40 text-primary'
+                      : 'border-border hover:text-foreground'
+                  }`}
+                >
+                  {s}x
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <form
           onSubmit={e => { e.preventDefault(); send(input); }}
           className="flex items-end gap-2"

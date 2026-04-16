@@ -86,7 +86,7 @@ Incorporate scripture when relevant. Keep responses concise (3-6 sentences). Be 
   },
 };
 
-function buildSystemPrompt(preferences?: { seeking?: string[]; experience_level?: string; spiritual_guide?: string; language?: string }) {
+function buildSystemPrompt(preferences?: { seeking?: string[]; experience_level?: string; spiritual_guide?: string; language?: string; mood?: string }) {
   const guide = GUIDE_PERSONAS[preferences?.spiritual_guide || 'monk'] || GUIDE_PERSONAS.monk;
   const lang = preferences?.language || 'en';
   const langName = LANGUAGE_NAMES[lang] || 'English';
@@ -105,6 +105,16 @@ function buildSystemPrompt(preferences?: { seeking?: string[]; experience_level?
   } else if (preferences?.experience_level === 'advanced') {
     prompt += `\nThey have a mature prayer life — you may reference deeper theological concepts, Church Fathers, and contemplative traditions.`;
   }
+
+  const mood = preferences?.mood;
+  if (mood === 'prayer') {
+    prompt += `\n\nThe user is in a posture of PRAYER. Respond reverently and slowly. Offer a short prayer or scripture they can pray now. Avoid lengthy explanation.`;
+  } else if (mood === 'confession') {
+    prompt += `\n\nThe user is preparing for or reflecting on CONFESSION. Be especially gentle, compassionate, and free of judgment. Encourage honesty, contrition, and trust in God's mercy. Avoid heavy theological lectures.`;
+  } else if (mood === 'reflection') {
+    prompt += `\n\nThe user is in REFLECTION (Examen / journaling). Help them notice God's movement, ask gentle questions, and end with a small invitation for tomorrow.`;
+  }
+
   return prompt;
 }
 
