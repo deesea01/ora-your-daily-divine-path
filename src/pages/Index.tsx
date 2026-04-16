@@ -29,7 +29,7 @@ function computeStreak(dates: string[]): number {
 }
 
 const Index = () => {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { profile, loading: profileLoading, setDailyPrayerGoal } = useUserProfile();
   const { t, language } = useLanguage();
@@ -269,10 +269,6 @@ const Index = () => {
         </button>
       </section>
 
-      {/* Language Selector */}
-      <section className="mb-4 animate-fade-in-delay-3">
-        <LanguageSelector />
-      </section>
 
       <section className="animate-fade-in-delay-3">
         <button onClick={() => navigate('/impact')} className="group w-full rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-gold/20 active:scale-[0.98]">
