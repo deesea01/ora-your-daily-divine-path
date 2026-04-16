@@ -84,7 +84,9 @@ export function useSaintVoice(guideKey: SpiritualGuideKey) {
       throw new Error(err?.error || `TTS failed (${resp.status})`);
     }
     const data = await resp.json();
-    const url = `data:${data.mime || 'audio/mpeg'};base64,${data.audio}`;
+    const url = data?.url
+      ? String(data.url)
+      : `data:${data.mime || 'audio/mpeg'};base64,${data.audio}`;
     audioCache.set(key, url);
     return url;
   }, [guideKey]);
