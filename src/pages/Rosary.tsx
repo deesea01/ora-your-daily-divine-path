@@ -3,7 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { ArrowLeft, ChevronRight, ChevronLeft, Loader2, Cross, Volume2, VolumeX } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
+import { useSaintVoice } from '@/hooks/useSaintVoice';
+import { SpiritualGuideKey } from '@/lib/guides';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { notifyAdminError } from '@/lib/notifyAdmin';
 
@@ -109,7 +110,8 @@ const Rosary = () => {
   const [beadCount, setBeadCount] = useState(0);
   const [mysteryExplanation, setMysteryExplanation] = useState('');
   const [loadingMystery, setLoadingMystery] = useState(false);
-  const { isSpeaking, isEnabled, speak, stop, toggle } = useSpeechSynthesis();
+  const guideKey = (profile?.spiritual_guide as SpiritualGuideKey) || 'monk';
+  const { isSpeaking, isEnabled, play, stop, toggle } = useSaintVoice(guideKey);
 
   const step = ALL_STEPS[stepIndex];
   const progress = ((stepIndex + 1) / ALL_STEPS.length) * 100;
@@ -161,7 +163,7 @@ const Rosary = () => {
   useEffect(() => {
     if (!isEnabled || !mysterySet) return;
     const prayerText = getPrayerTextForStep(step, PRAYERS, mysterySet ? MYSTERIES[mysterySet] : undefined, beadCount, mysteryExplanation);
-    if (prayerText) speak(prayerText);
+    if (prayerText) play(prayerText, 'prayer');
   }, [stepIndex, beadCount, isEnabled, mysteryExplanation]);
 
   const goNext = () => {
