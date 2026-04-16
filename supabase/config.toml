@@ -4,4 +4,4 @@ project_id = "lrrsmihlulzuhdqndinw"
 verify_jwt = true
 
 [functions.saint-tts]
-verify_jwt = true
+verify_jwt = false
