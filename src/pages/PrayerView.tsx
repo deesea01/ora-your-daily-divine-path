@@ -114,7 +114,7 @@ const PrayerView = () => {
     })()
     : null;
 
-  const speakLine = (lineIndex: number) => {
+  const speakLine = async (lineIndex: number) => {
     if (lineIndex >= localizedPrayer.lines.length) {
       if (repeatMode) {
         speakLine(0);
@@ -127,33 +127,33 @@ const PrayerView = () => {
     }
 
     setCurrentLine(lineIndex);
-    const utterance = new SpeechSynthesisUtterance(localizedPrayer.lines[lineIndex]);
-    utterance.rate = playbackMode === 'slow' ? 0.65 : (theme?.rate ?? 0.85);
-    utterance.pitch = theme?.pitch ?? 0.9;
+    const line = localizedPrayer.lines[lineIndex];
 
-    // Set language for proper pronunciation
-    const langMap: Record<string, string> = {
-      en: 'en-US', es: 'es-ES', it: 'it-IT', pt: 'pt-BR', fr: 'fr-FR', tl: 'fil-PH'
-    };
-    utterance.lang = langMap[language] || 'en-US';
+    try {
+      // Apply playback speed override for slow mode
+      if (playbackMode === 'slow' && saintVoice.speed !== 0.75) {
+        saintVoice.setSpeed(0.75);
+      }
+      await saintVoice.play(line, 'prayer', { force: true });
 
-    utterance.onend = () => {
+      if (!playingRef.current) return;
+
+      // Wait for audio to finish via polling isSpeaking — simpler: estimate duration ~ 0.4s/word
+      const wordCount = line.split(/\s+/).length;
+      const estMs = Math.max(1500, wordCount * 380);
+      await new Promise((r) => setTimeout(r, estMs));
+
       if (!playingRef.current) return;
       if (playbackMode === 'line-by-line') {
         setIsPlaying(false);
         playingRef.current = false;
-        setCurrentLine(lineIndex);
       } else {
         speakLine(lineIndex + 1);
       }
-    };
-    utterance.onerror = () => {
+    } catch {
       setIsPlaying(false);
       playingRef.current = false;
-    };
-
-    utteranceRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
+    }
   };
 
   const handlePlay = () => {
