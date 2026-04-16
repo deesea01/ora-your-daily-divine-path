@@ -38,6 +38,17 @@ function adjustForMood(p: VoiceProfile, mood?: string): VoiceProfile {
 }
 
 const MAX_TEXT = 1200;
+const BUCKET = "saint-audio";
+
+// Stable hash for cache key (FNV-1a 32-bit, hex)
+function hashText(s: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+  }
+  return h.toString(16).padStart(8, "0");
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -49,12 +60,12 @@ serve(async (req) => {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const supabase = createClient(
+    const userClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
       { global: { headers: { Authorization: authHeader } } }
     );
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
     if (authError || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -64,10 +75,27 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const text = String(body?.text || "").trim().slice(0, MAX_TEXT);
     const guide = String(body?.guide || "monk");
-    const mood = body?.mood ? String(body.mood) : undefined;
+    const mood = body?.mood ? String(body.mood) : "casual";
     if (!text) {
       return new Response(JSON.stringify({ error: "Missing text" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const profile = adjustForMood(VOICE_MAP[guide] || VOICE_MAP.monk, mood);
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const adminClient = createClient(supabaseUrl, serviceKey);
+
+    // Cache key: guide/mood/voiceId-hash.mp3
+    const objectPath = `${guide}/${mood}/${profile.voice_id}-${hashText(text)}.mp3`;
+    const publicUrl = `${supabaseUrl}/storage/v1/object/public/${BUCKET}/${objectPath}`;
+
+    // Check if already cached in storage
+    const head = await fetch(publicUrl, { method: "HEAD" });
+    if (head.ok) {
+      return new Response(JSON.stringify({ url: publicUrl, cached: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -77,8 +105,6 @@ serve(async (req) => {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    const profile = adjustForMood(VOICE_MAP[guide] || VOICE_MAP.monk, mood);
 
     const elResp = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${profile.voice_id}?output_format=mp3_44100_128`,
@@ -107,8 +133,22 @@ serve(async (req) => {
     }
 
     const audioBuffer = await elResp.arrayBuffer();
-    const audioBase64 = base64Encode(new Uint8Array(audioBuffer));
-    return new Response(JSON.stringify({ audio: audioBase64, mime: "audio/mpeg" }), {
+    const audioBytes = new Uint8Array(audioBuffer);
+
+    // Upload to storage (best-effort, don't fail the request if upload fails)
+    const { error: upErr } = await adminClient.storage
+      .from(BUCKET)
+      .upload(objectPath, audioBytes, { contentType: "audio/mpeg", upsert: true });
+    if (upErr) console.error("Storage upload error:", upErr.message);
+
+    // Also return inline base64 so first-play is instant
+    const audioBase64 = base64Encode(audioBytes);
+    return new Response(JSON.stringify({
+      url: upErr ? null : publicUrl,
+      audio: audioBase64,
+      mime: "audio/mpeg",
+      cached: false,
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
@@ -117,4 +157,5 @@ serve(async (req) => {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
+});
 });
