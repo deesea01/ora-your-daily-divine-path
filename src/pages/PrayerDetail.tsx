@@ -95,8 +95,8 @@ const PrayerDetail = () => {
           }
         }
       } catch (err) {
-        console.error(err);
-        setContent('_Unable to load prayer. Please try again._');
+        console.error('Prayer generation error:', err);
+        setContent('Peace be with you. Take a moment to pray quietly and reflect.');
       } finally {
         setLoading(false);
       }

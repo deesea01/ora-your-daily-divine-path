@@ -241,7 +241,15 @@ const MonkChat = () => {
       });
     } catch (e: any) {
       setIsStreaming(false);
-      toast.error(e.message || 'Something went wrong.');
+      const fallback = 'Peace be with you. Take a moment to pray quietly and reflect.';
+      upsert(fallback);
+      supabase.from('chat_messages').insert({
+        user_id: user.id,
+        role: 'assistant',
+        content: `${fallback} [guide:${guideKey}]`,
+      });
+      console.error('AI chat error:', e);
+      toast.error('Spiritual guidance is temporarily unavailable. Please try again later.');
     }
   };
 
