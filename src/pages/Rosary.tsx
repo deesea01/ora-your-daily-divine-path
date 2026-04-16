@@ -5,6 +5,7 @@ import { ArrowLeft, ChevronRight, ChevronLeft, Loader2, Cross, Volume2, VolumeX 
 import { useAuth } from '@/hooks/useAuth';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { notifyAdminError } from '@/lib/notifyAdmin';
 
 const MYSTERIES: Record<string, { label: string; names: string[] }> = {
   joyful: {
@@ -145,8 +146,9 @@ const Rosary = () => {
           const data = await res.json();
           setMysteryExplanation(data.explanation || '');
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Rosary mystery error:', err);
+        notifyAdminError('rosary-mystery', err?.message || String(err), user?.id, { mysterySet, stepIndex });
         setMysteryExplanation('Peace be with you. Take a moment to pray quietly and reflect.');
       } finally {
         setLoadingMystery(false);

@@ -12,6 +12,7 @@ import { SPIRITUAL_GUIDES, SpiritualGuideKey } from '@/lib/guides';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { notifyAdminError } from '@/lib/notifyAdmin';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
 
@@ -249,6 +250,7 @@ const MonkChat = () => {
         content: `${fallback} [guide:${guideKey}]`,
       });
       console.error('AI chat error:', e);
+      notifyAdminError('monk-chat', e?.message || String(e), user.id, { guide: guideKey });
       toast.error('Spiritual guidance is temporarily unavailable. Please try again later.');
     }
   };

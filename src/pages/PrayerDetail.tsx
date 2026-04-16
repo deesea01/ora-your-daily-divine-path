@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import ReactMarkdown from 'react-markdown';
+import { notifyAdminError } from '@/lib/notifyAdmin';
 
 const prayerMeta = {
   morning: { title: 'Morning Lauds', subtitle: 'Start your day in grace', Icon: Sun },
@@ -94,8 +95,9 @@ const PrayerDetail = () => {
             } catch {}
           }
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Prayer generation error:', err);
+        notifyAdminError('prayer-guide', err?.message || String(err), user?.id, { prayerType });
         setContent('Peace be with you. Take a moment to pray quietly and reflect.');
       } finally {
         setLoading(false);
