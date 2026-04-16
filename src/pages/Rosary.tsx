@@ -3,7 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { ArrowLeft, ChevronRight, ChevronLeft, Loader2, Cross, Volume2, VolumeX } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useSpeechSynthesis } from '@/hooks/useSpeechSynthesis';
+import { useSaintVoice } from '@/hooks/useSaintVoice';
+import { SpiritualGuideKey } from '@/lib/guides';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { notifyAdminError } from '@/lib/notifyAdmin';
 
