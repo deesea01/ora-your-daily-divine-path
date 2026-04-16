@@ -209,7 +209,7 @@ const MonkChat = () => {
     }
 
     setMessages([]);
-    tts.stop();
+    voice.stop();
     toast.success(t.conversationCleared);
   };
 
@@ -246,7 +246,8 @@ const MonkChat = () => {
           experience_level: profile.experience_level,
           spiritual_guide: profile.spiritual_guide,
           language,
-        } : { language },
+          mood,
+        } : { language, mood },
         onDelta: upsert,
         onDone: () => {
           setIsStreaming(false);
@@ -256,7 +257,7 @@ const MonkChat = () => {
               role: 'assistant',
               content: `${assistantContent} [guide:${guideKey}]`,
             });
-            tts.speak(assistantContent.replace(/[#*_`>]/g, ''));
+            voice.play(assistantContent, mood);
           }
         },
       });
@@ -317,11 +318,11 @@ const MonkChat = () => {
           </button>
         )}
         <button
-          onClick={tts.toggle}
+          onClick={voice.toggle}
           className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground"
-          title={tts.isEnabled ? t.muteVoice : t.enableVoice}
+          title={voice.isEnabled ? t.muteVoice : t.enableVoice}
         >
-          {tts.isEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+          {voice.isEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
         </button>
       </header>
 
