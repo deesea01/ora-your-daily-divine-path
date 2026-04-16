@@ -7,6 +7,8 @@ import { getPrayerById, SAINT_VOICE_THEMES, PRAYERS, GUIDE_TO_VOICE_THEME } from
 import { getPrayerTranslation } from '@/lib/prayerTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { useSaintVoice } from '@/hooks/useSaintVoice';
+import { SpiritualGuideKey } from '@/lib/guides';
 
 type PlaybackMode = 'normal' | 'slow' | 'line-by-line';
 
