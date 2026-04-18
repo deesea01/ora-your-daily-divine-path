@@ -1,0 +1,63 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { getPaddleEnvironment } from "@/lib/paddle";
+
+export interface Subscription {
+  status: string;
+  product_id: string;
+  price_id: string;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+  environment: string;
+}
+
+export function useSubscription() {
+  const { user } = useAuth();
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const env = getPaddleEnvironment();
+
+  const load = async () => {
+    if (!user) {
+      setSubscription(null);
+      setLoading(false);
+      return;
+    }
+    const { data } = await supabase
+      .from("subscriptions")
+      .select("status, product_id, price_id, current_period_end, cancel_at_period_end, environment")
+      .eq("user_id", user.id)
+      .eq("environment", env)
+      .maybeSingle();
+    setSubscription(data as Subscription | null);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    load();
+    if (!user) return;
+
+    const channel = supabase
+      .channel(`subs-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "subscriptions", filter: `user_id=eq.${user.id}` },
+        () => load(),
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+  const isActive =
+    !!subscription &&
+    ["active", "trialing"].includes(subscription.status) &&
+    (!subscription.current_period_end || new Date(subscription.current_period_end) > new Date());
+
+  return { subscription, loading, isActive, refresh: load };
+}
