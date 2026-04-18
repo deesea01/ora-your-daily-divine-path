@@ -28,7 +28,10 @@ import PrayerRoutines from "./pages/PrayerRoutines.tsx";
 import JournalHome from "./pages/JournalHome.tsx";
 import JournalExamen from "./pages/JournalExamen.tsx";
 import Settings from "./pages/Settings.tsx";
+import Paywall from "./pages/Paywall.tsx";
+import CheckoutSuccess from "./pages/CheckoutSuccess.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +43,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <PaymentTestModeBanner />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
@@ -64,6 +68,8 @@ const App = () => (
               <Route path="/journal" element={<JournalHome />} />
               <Route path="/journal/examen" element={<JournalExamen />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/paywall" element={<Paywall />} />
+              <Route path="/checkout/success" element={<CheckoutSuccess />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
