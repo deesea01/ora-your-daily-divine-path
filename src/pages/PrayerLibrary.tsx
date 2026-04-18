@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { ArrowLeft, Search, Heart, BookOpen, ChevronRight, Star } from 'lucide-react';
+import { ArrowLeft, Search, Heart, BookOpen, ChevronRight, Star, Lock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { usePrayerLibrary } from '@/hooks/usePrayerLibrary';
 import { PRAYER_CATEGORIES, PRAYERS, getPrayersByCategory, PRESET_ROUTINES } from '@/lib/prayerLibrary';
 import { getCategoryTranslation, getPrayerTranslation } from '@/lib/prayerTranslations';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Input } from '@/components/ui/input';
+import { useEntitlement, isPremiumPrayer } from '@/hooks/useEntitlement';
+import { UpgradePrompt } from '@/components/UpgradePrompt';
 
 const DIFFICULTY_COLORS: Record<string, string> = {
   beginner: 'text-muted-foreground',
@@ -19,9 +21,11 @@ const PrayerLibrary = () => {
   const navigate = useNavigate();
   const { favorites, progress, loading } = usePrayerLibrary();
   const { language, t } = useLanguage();
+  const { isPremium } = useEntitlement();
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showFavorites, setShowFavorites] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   if (authLoading || loading) {
     return (
@@ -146,11 +150,12 @@ const PrayerLibrary = () => {
                 const prog = progress.get(prayer.id);
                 const diff = prog?.difficulty || 'beginner';
                 const isFav = favorites.has(prayer.id);
+                const locked = !isPremium && isPremiumPrayer(prayer.id);
                 return (
                   <button
                     key={prayer.id}
-                    onClick={() => navigate(`/prayer-library/${prayer.id}`)}
-                    className="w-full rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-gold/20 active:scale-[0.98] animate-fade-in"
+                    onClick={() => locked ? setUpgradeOpen(true) : navigate(`/prayer-library/${prayer.id}`)}
+                    className={`w-full rounded-xl border bg-card p-4 text-left transition-all hover:border-gold/20 active:scale-[0.98] animate-fade-in ${locked ? 'border-border/60 opacity-80' : 'border-border'}`}
                     style={{ animationDelay: `${i * 40}ms`, animationFillMode: 'both' }}
                   >
                     <div className="flex items-start justify-between">
@@ -158,6 +163,7 @@ const PrayerLibrary = () => {
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-medium text-foreground">{lp.title}</p>
                           {isFav && <Heart className="h-3 w-3 text-gold fill-gold" />}
+                          {locked && <Lock className="h-3 w-3 text-gold/70" />}
                         </div>
                         <p className="text-xs text-muted-foreground mt-0.5">{lp.description}</p>
                         <div className="flex items-center gap-3 mt-2">
@@ -205,6 +211,12 @@ const PrayerLibrary = () => {
           </div>
         )}
       </main>
+      <UpgradePrompt
+        open={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        title="The full library awaits."
+        description="Unlock 30+ prayers, audio narration, and guided practice — start your 3-day free trial."
+      />
     </div>
   );
 };

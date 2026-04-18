@@ -13,6 +13,8 @@ import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useSaintVoice, SaintMood } from '@/hooks/useSaintVoice';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { notifyAdminError } from '@/lib/notifyAdmin';
+import { useEntitlement, isPremiumGuide, FREE_GUIDE_KEY } from '@/hooks/useEntitlement';
+import { UpgradePrompt } from '@/components/UpgradePrompt';
 
 const MOODS: { value: SaintMood; label: string }[] = [
   { value: 'casual', label: 'Casual' },
@@ -95,9 +97,12 @@ const MonkChat = () => {
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const speech = useSpeechRecognition();
-  const guideKey = (profile?.spiritual_guide || 'monk') as SpiritualGuideKey;
+  const { isPremium, canChat, chatRemaining, chatLimit, refreshChatCount } = useEntitlement();
+  const storedGuide = (profile?.spiritual_guide || 'monk') as SpiritualGuideKey;
+  const guideKey: SpiritualGuideKey = isPremium ? storedGuide : (FREE_GUIDE_KEY as SpiritualGuideKey);
   const voice = useSaintVoice(guideKey);
 
   // Mood: infer from referrer/route, allow user override
@@ -120,6 +125,10 @@ const MonkChat = () => {
   ];
 
   const handleSwitchGuide = async (key: SpiritualGuideKey) => {
+    if (!isPremium && isPremiumGuide(key)) {
+      setUpgradeOpen(true);
+      return;
+    }
     await setGuide(key);
   };
 
@@ -215,6 +224,10 @@ const MonkChat = () => {
 
   const send = async (text: string) => {
     if (!text.trim() || isStreaming) return;
+    if (!canChat) {
+      setUpgradeOpen(true);
+      return;
+    }
     const userMsg: Msg = { role: 'user', content: text.trim() };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
@@ -259,6 +272,7 @@ const MonkChat = () => {
             });
             voice.play(assistantContent, mood);
           }
+          refreshChatCount();
         },
       });
     } catch (e: any) {
@@ -412,6 +426,17 @@ const MonkChat = () => {
       </div>
 
       <div className="border-t border-border px-4 py-3 pb-safe space-y-2">
+        {!isPremium && (
+          <button
+            type="button"
+            onClick={() => setUpgradeOpen(true)}
+            className="w-full text-center text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {chatRemaining > 0
+              ? `${chatRemaining} of ${chatLimit} free chats left today · Unlock the saints`
+              : `You've used today's free chats · Start your 3-day trial for unlimited`}
+          </button>
+        )}
         {voice.isEnabled && (
           <div className="flex items-center justify-between gap-2 text-[11px]">
             <div className="flex flex-wrap gap-1">
@@ -485,6 +510,7 @@ const MonkChat = () => {
           </button>
         </form>
       </div>
+      <UpgradePrompt open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
     </div>
   );
 };

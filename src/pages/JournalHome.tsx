@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Sparkles, BookOpen, Loader2, Trash2, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Plus, Sparkles, BookOpen, Loader2, Trash2, ChevronDown, Lock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useJournal } from '@/hooks/useJournal';
+import { useEntitlement } from '@/hooks/useEntitlement';
 
 const MOOD_OPTIONS = [
   { value: 'peaceful', label: '🕊️ Peaceful' },
@@ -18,12 +19,13 @@ const JournalHome = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { entries, insight, loading, saving, analyzing, hasMore, saveEntry, deleteEntry, loadMore, analyzePatterns } = useJournal();
+  const { isPremium, loading: entLoading } = useEntitlement();
   const [showWrite, setShowWrite] = useState(false);
   const [content, setContent] = useState('');
   const [mood, setMood] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  if (authLoading || loading) {
+  if (authLoading || loading || entLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-6 w-6 rounded-full border-2 border-gold border-t-transparent animate-spin" />
@@ -31,6 +33,30 @@ const JournalHome = () => {
     );
   }
   if (!user) return <Navigate to="/auth" replace />;
+
+  if (!isPremium) {
+    return (
+      <div className="min-h-screen bg-background px-6 pb-8 pt-safe flex flex-col">
+        <header className="flex items-center gap-3 pt-4 pb-6">
+          <button onClick={() => navigate('/')} className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /></button>
+          <h1 className="font-serif text-xl text-foreground">Spiritual Journal</h1>
+        </header>
+        <div className="flex-1 flex flex-col items-center justify-center text-center">
+          <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-gold/10">
+            <Lock className="h-7 w-7 text-gold" />
+          </div>
+          <h2 className="font-serif text-2xl text-foreground mb-2">Reflect deeper, with the saints.</h2>
+          <p className="text-sm text-muted-foreground max-w-xs mb-8">
+            The journal, daily Examen, and AI-guided spiritual insights are part of premium. Start your 3-day free trial.
+          </p>
+          <button onClick={() => navigate('/paywall')} className="w-full max-w-xs rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98]">
+            Start your 3-day free trial
+          </button>
+        </div>
+      </div>
+    );
+  }
+
 
   const handleSubmit = async () => {
     const result = await saveEntry(content, mood || undefined, selectedTags);

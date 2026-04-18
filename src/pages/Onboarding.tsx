@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Check, Loader2 } from 'lucide-react';
+import { ArrowLeft, Check, Loader2, Lock } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useOnboardingResponses } from '@/hooks/useOnboardingResponses';
 import { useAuth } from '@/hooks/useAuth';
+import { UpgradePrompt } from '@/components/UpgradePrompt';
+import { FREE_GUIDE_KEY, isPremiumGuide } from '@/hooks/useEntitlement';
 
 const TOTAL_STEPS = 10;
 
@@ -43,13 +45,13 @@ const GROWTH = [
 
 const SAINTS = [
   { value: 'monk', label: 'The Monk', tier: 'Free', desc: 'A quiet companion for daily prayer' },
-  { value: 'francis', label: 'St. Francis of Assisi', tier: 'Premium', desc: 'Joyful poverty, peace, creation' },
-  { value: 'augustine', label: 'St. Augustine', tier: 'Premium', desc: 'Restless heart turned toward God' },
-  { value: 'aquinas', label: 'St. Thomas Aquinas', tier: 'Premium', desc: 'Reason, clarity, deep theology' },
-  { value: 'teresa', label: 'St. Teresa of Ávila', tier: 'Premium', desc: 'Interior castle and contemplation' },
-  { value: 'michael', label: 'St. Michael', tier: 'Premium', desc: 'Spiritual warfare and protection' },
-  { value: 'padre_pio', label: 'St. Padre Pio', tier: 'Premium', desc: 'Suffering, mercy, the confessional' },
-  { value: 'joan', label: 'St. Joan of Arc', tier: 'Premium', desc: 'Courage, mission, holy boldness' },
+  { value: 'st_francis', label: 'St. Francis of Assisi', tier: 'Premium', desc: 'Joyful poverty, peace, creation' },
+  { value: 'st_augustine', label: 'St. Augustine', tier: 'Premium', desc: 'Restless heart turned toward God' },
+  { value: 'st_thomas_aquinas', label: 'St. Thomas Aquinas', tier: 'Premium', desc: 'Reason, clarity, deep theology' },
+  { value: 'st_teresa', label: 'St. Teresa of Ávila', tier: 'Premium', desc: 'Interior castle and contemplation' },
+  { value: 'st_michael', label: 'St. Michael', tier: 'Premium', desc: 'Spiritual warfare and protection' },
+  { value: 'st_padre_pio', label: 'St. Padre Pio', tier: 'Premium', desc: 'Suffering, mercy, the confessional' },
+  { value: 'st_joan_of_arc', label: 'St. Joan of Arc', tier: 'Premium', desc: 'Courage, mission, holy boldness' },
 ];
 
 const VOICE_STYLES = [
@@ -101,6 +103,7 @@ const Onboarding = () => {
   const [voice, setVoice] = useState<string>('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   // If user is unauthenticated, send them to /auth
   useEffect(() => {
@@ -235,26 +238,42 @@ const Onboarding = () => {
       {/* Step 5 — Saint */}
       {step === 5 && (
         <StepShell onBack={back} onNext={next} disabled={!saint}>
-          <StepHeader step={5} label="Your guide" title="Choose a guide for your journey" subtitle="You can change this anytime." />
+          <StepHeader step={5} label="Your guide" title="Choose a guide for your journey" subtitle="Premium guides preview here — start your trial to unlock them." />
           <div className="space-y-2">
-            {SAINTS.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => setSaint(opt.value)}
-                className={`w-full rounded-xl border px-4 py-3 text-left transition-all active:scale-[0.98] ${
-                  saint === opt.value ? 'border-gold/60 bg-gold/10' : 'border-border bg-card hover:border-gold/20'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <p className="font-serif text-base text-foreground">{opt.label}</p>
-                  <span className={`text-[10px] font-medium uppercase tracking-wider ${opt.tier === 'Free' ? 'text-emerald-400' : 'text-gold/70'}`}>
-                    {opt.tier}
-                  </span>
-                </div>
-                <p className="mt-0.5 text-xs text-muted-foreground">{opt.desc}</p>
-              </button>
-            ))}
+            {SAINTS.map((opt) => {
+              const locked = opt.tier === 'Premium';
+              return (
+                <button
+                  key={opt.value}
+                  onClick={() => {
+                    if (locked) {
+                      setSaint(FREE_GUIDE_KEY); // keep selection valid (Monk) so Continue works
+                      setUpgradeOpen(true);
+                      return;
+                    }
+                    setSaint(opt.value);
+                  }}
+                  className={`w-full rounded-xl border px-4 py-3 text-left transition-all active:scale-[0.98] ${
+                    saint === opt.value ? 'border-gold/60 bg-gold/10' : 'border-border bg-card hover:border-gold/20'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="font-serif text-base text-foreground">{opt.label}</p>
+                    <span className={`flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider ${opt.tier === 'Free' ? 'text-emerald-400' : 'text-gold/70'}`}>
+                      {locked && <Lock className="h-2.5 w-2.5" />}
+                      {opt.tier}
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{opt.desc}</p>
+                </button>
+              );
+            })}
           </div>
+          <UpgradePrompt
+            open={upgradeOpen}
+            onClose={() => setUpgradeOpen(false)}
+            description="The saints are part of premium. Start your free trial to walk with them — you can keep The Monk for free anytime."
+          />
         </StepShell>
       )}
 
