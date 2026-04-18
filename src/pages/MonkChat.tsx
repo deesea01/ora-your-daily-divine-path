@@ -426,6 +426,17 @@ const MonkChat = () => {
       </div>
 
       <div className="border-t border-border px-4 py-3 pb-safe space-y-2">
+        {!isPremium && (
+          <button
+            type="button"
+            onClick={() => setUpgradeOpen(true)}
+            className="w-full text-center text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {chatRemaining > 0
+              ? `${chatRemaining} of ${chatLimit} free chats left today · Unlock the saints`
+              : `You've used today's free chats · Start your 3-day trial for unlimited`}
+          </button>
+        )}
         {voice.isEnabled && (
           <div className="flex items-center justify-between gap-2 text-[11px]">
             <div className="flex flex-wrap gap-1">
