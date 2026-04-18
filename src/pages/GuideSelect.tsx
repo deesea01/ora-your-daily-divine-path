@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown, ChevronUp, Lock } from 'lucide-react';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { SPIRITUAL_GUIDES, SpiritualGuideKey } from '@/lib/guides';
 import { SaintAvatar } from '@/components/SaintAvatar';
 import { toast } from 'sonner';
+import { useEntitlement, isPremiumGuide } from '@/hooks/useEntitlement';
+import { UpgradePrompt } from '@/components/UpgradePrompt';
 
 const GUIDE_PREVIEWS: Record<string, { question: string; answer: string }> = {
   monk: {
@@ -44,11 +46,17 @@ const GUIDE_PREVIEWS: Record<string, { question: string; answer: string }> = {
 const GuideSelect = () => {
   const navigate = useNavigate();
   const { profile, setGuide } = useUserProfile();
+  const { isPremium } = useEntitlement();
   const current = (profile?.spiritual_guide || 'monk') as SpiritualGuideKey;
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const handleSelect = async (key: string) => {
     if (key === current) return;
+    if (!isPremium && isPremiumGuide(key)) {
+      setUpgradeOpen(true);
+      return;
+    }
     const result = await setGuide(key);
     if (!result?.error) {
       toast.success(`${SPIRITUAL_GUIDES[key as SpiritualGuideKey].label} is now your guide`);
@@ -104,6 +112,9 @@ const GuideSelect = () => {
                     <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gold">
                       <Check className="h-3.5 w-3.5 text-primary-foreground" />
                     </div>
+                  )}
+                  {key !== current && !isPremium && isPremiumGuide(key) && (
+                    <Lock className="h-4 w-4 text-gold/70" />
                   )}
                 </button>
 
