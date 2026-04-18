@@ -82,6 +82,17 @@ serve(async (req) => {
       });
     }
 
+    // Premium gate for non-monk voices
+    if (guide !== "monk") {
+      const isPremium = await hasActiveSubscription(user.id);
+      if (!isPremium) {
+        return new Response(
+          JSON.stringify({ error: "Premium required", code: "premium_voice" }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
     const profile = adjustForMood(VOICE_MAP[guide] || VOICE_MAP.monk, mood);
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;

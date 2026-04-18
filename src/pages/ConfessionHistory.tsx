@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { ArrowLeft, Trash2, Calendar, Flame } from 'lucide-react';
+import { ArrowLeft, Trash2, Calendar, Flame, Lock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useConfession } from '@/hooks/useConfession';
+import { useEntitlement } from '@/hooks/useEntitlement';
+import { UpgradePrompt } from '@/components/UpgradePrompt';
 
 function computeConfessionStreak(dates: string[]): number {
   if (dates.length < 2) return dates.length;
@@ -35,9 +37,11 @@ const ConfessionHistory = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { confessions, deleteConfession, settings, loading } = useConfession();
+  const { isPremium, loading: entLoading } = useEntitlement();
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
-  if (authLoading || loading) {
+  if (authLoading || loading || entLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-6 w-6 rounded-full border-2 border-gold border-t-transparent animate-spin" />
@@ -97,7 +101,31 @@ const ConfessionHistory = () => {
           </div>
         ) : (
           <div className="space-y-3">
-            {confessions.map((c, i) => (
+            {confessions.map((c, i) => {
+              const locked = !isPremium && i > 0;
+              if (locked) {
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => setShowUpgrade(true)}
+                    className="w-full rounded-xl border border-dashed border-gold/30 bg-card/50 p-4 text-left animate-fade-in"
+                    style={{ animationDelay: `${i * 60}ms`, animationFillMode: 'both' }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Lock className="h-4 w-4 text-gold" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-foreground">
+                          {new Date(c.confession_date + 'T00:00:00').toLocaleDateString('en-US', {
+                            month: 'long', day: 'numeric', year: 'numeric',
+                          })}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Unlock full confession history with Premium</p>
+                      </div>
+                    </div>
+                  </button>
+                );
+              }
+              return (
               <div
                 key={c.id}
                 className="rounded-xl border border-border bg-card p-4 animate-fade-in"
@@ -153,10 +181,18 @@ const ConfessionHistory = () => {
                   </p>
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>
+
+      <UpgradePrompt
+        open={showUpgrade}
+        onClose={() => setShowUpgrade(false)}
+        title="Unlock your full confession history"
+        description="Premium remembers every confession, mood, and reflection so you can see God's work over time."
+      />
     </div>
   );
 };
