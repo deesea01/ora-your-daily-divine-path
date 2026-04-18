@@ -97,9 +97,12 @@ const MonkChat = () => {
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const speech = useSpeechRecognition();
-  const guideKey = (profile?.spiritual_guide || 'monk') as SpiritualGuideKey;
+  const { isPremium, canChat, chatRemaining, chatLimit, refreshChatCount } = useEntitlement();
+  const storedGuide = (profile?.spiritual_guide || 'monk') as SpiritualGuideKey;
+  const guideKey: SpiritualGuideKey = isPremium ? storedGuide : (FREE_GUIDE_KEY as SpiritualGuideKey);
   const voice = useSaintVoice(guideKey);
 
   // Mood: infer from referrer/route, allow user override
@@ -122,6 +125,10 @@ const MonkChat = () => {
   ];
 
   const handleSwitchGuide = async (key: SpiritualGuideKey) => {
+    if (!isPremium && isPremiumGuide(key)) {
+      setUpgradeOpen(true);
+      return;
+    }
     await setGuide(key);
   };
 
@@ -217,6 +224,10 @@ const MonkChat = () => {
 
   const send = async (text: string) => {
     if (!text.trim() || isStreaming) return;
+    if (!canChat) {
+      setUpgradeOpen(true);
+      return;
+    }
     const userMsg: Msg = { role: 'user', content: text.trim() };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
@@ -261,6 +272,7 @@ const MonkChat = () => {
             });
             voice.play(assistantContent, mood);
           }
+          refreshChatCount();
         },
       });
     } catch (e: any) {
