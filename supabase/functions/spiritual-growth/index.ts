@@ -52,6 +52,15 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     if (authError || !user) throw new Error("Unauthorized");
 
+    // Premium gate — Journal + Examen + Growth Plan are premium-only
+    const isPremium = await hasActiveSubscription(user.id);
+    if (!isPremium) {
+      return new Response(
+        JSON.stringify({ error: "Premium required", code: "premium_required" }),
+        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const body = await req.json();
     const { action, reflection_text, entry_id, entry_date } = body;
 
