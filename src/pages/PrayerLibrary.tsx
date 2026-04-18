@@ -211,6 +211,12 @@ const PrayerLibrary = () => {
           </div>
         )}
       </main>
+      <UpgradePrompt
+        open={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        title="The full library awaits."
+        description="Unlock 30+ prayers, audio narration, and guided practice — start your 3-day free trial."
+      />
     </div>
   );
 };
