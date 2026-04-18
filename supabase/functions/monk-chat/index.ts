@@ -152,6 +152,33 @@ serve(async (req) => {
 
     const { messages, preferences } = await req.json();
 
+    // --- Entitlement enforcement ---
+    const isPremium = await hasActiveSubscription(user.id);
+    const requestedGuide = preferences?.spiritual_guide || FREE_GUIDE;
+    if (!isPremium && requestedGuide !== FREE_GUIDE) {
+      return new Response(
+        JSON.stringify({ error: "Premium required", code: "premium_guide" }),
+        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    if (!isPremium) {
+      const admin = getAdminClient();
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      const { count } = await admin
+        .from("chat_messages")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("role", "user")
+        .gte("created_at", startOfDay.toISOString());
+      if ((count ?? 0) >= FREE_DAILY_CHAT_LIMIT) {
+        return new Response(
+          JSON.stringify({ error: "Daily chat limit reached", code: "chat_limit" }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
     // --- Input sanitization: only allow user/assistant roles, limit length & count ---
     const safeMessages = (Array.isArray(messages) ? messages : [])
       .filter((m: any) => m.role === "user" || m.role === "assistant")
