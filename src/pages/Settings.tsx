@@ -6,6 +6,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { SPIRITUAL_GUIDES, SpiritualGuideKey } from '@/lib/guides';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LanguageSelector } from '@/components/LanguageSelector';
+import { SubscriptionCard } from '@/components/SubscriptionCard';
 import { toast } from '@/hooks/use-toast';
 
 const SEEKING_OPTIONS = [
@@ -280,6 +281,11 @@ const Settings = () => {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Subscription */}
+      <section className="mb-4">
+        <SubscriptionCard />
       </section>
 
       {/* Language */}
