@@ -9,6 +9,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useSaintVoice } from '@/hooks/useSaintVoice';
 import { SpiritualGuideKey } from '@/lib/guides';
+import { useEntitlement, isPremiumPrayer } from '@/hooks/useEntitlement';
 
 type PlaybackMode = 'normal' | 'slow' | 'line-by-line';
 
@@ -24,6 +25,7 @@ const PrayerView = () => {
   const { favorites, toggleFavorite, recordPractice, loading } = usePrayerLibrary();
   const { language, t } = useLanguage();
   const { profile } = useUserProfile();
+  const { isPremium } = useEntitlement();
 
   const prayer = prayerId ? getPrayerById(prayerId) : undefined;
 
@@ -94,6 +96,9 @@ const PrayerView = () => {
     );
   }
   if (!user) return <Navigate to="/auth" replace />;
+  if (prayerId && !isPremium && isPremiumPrayer(prayerId)) {
+    return <Navigate to="/paywall" replace />;
+  }
   if (!prayer || !localizedPrayer) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
