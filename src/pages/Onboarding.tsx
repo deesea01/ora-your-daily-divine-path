@@ -43,13 +43,13 @@ const GROWTH = [
 
 const SAINTS = [
   { value: 'monk', label: 'The Monk', tier: 'Free', desc: 'A quiet companion for daily prayer' },
-  { value: 'francis', label: 'St. Francis of Assisi', tier: 'Premium', desc: 'Joyful poverty, peace, creation' },
-  { value: 'augustine', label: 'St. Augustine', tier: 'Premium', desc: 'Restless heart turned toward God' },
-  { value: 'aquinas', label: 'St. Thomas Aquinas', tier: 'Premium', desc: 'Reason, clarity, deep theology' },
-  { value: 'teresa', label: 'St. Teresa of Ávila', tier: 'Premium', desc: 'Interior castle and contemplation' },
-  { value: 'michael', label: 'St. Michael', tier: 'Premium', desc: 'Spiritual warfare and protection' },
-  { value: 'padre_pio', label: 'St. Padre Pio', tier: 'Premium', desc: 'Suffering, mercy, the confessional' },
-  { value: 'joan', label: 'St. Joan of Arc', tier: 'Premium', desc: 'Courage, mission, holy boldness' },
+  { value: 'st_francis', label: 'St. Francis of Assisi', tier: 'Premium', desc: 'Joyful poverty, peace, creation' },
+  { value: 'st_augustine', label: 'St. Augustine', tier: 'Premium', desc: 'Restless heart turned toward God' },
+  { value: 'st_thomas_aquinas', label: 'St. Thomas Aquinas', tier: 'Premium', desc: 'Reason, clarity, deep theology' },
+  { value: 'st_teresa', label: 'St. Teresa of Ávila', tier: 'Premium', desc: 'Interior castle and contemplation' },
+  { value: 'st_michael', label: 'St. Michael', tier: 'Premium', desc: 'Spiritual warfare and protection' },
+  { value: 'st_padre_pio', label: 'St. Padre Pio', tier: 'Premium', desc: 'Suffering, mercy, the confessional' },
+  { value: 'st_joan_of_arc', label: 'St. Joan of Arc', tier: 'Premium', desc: 'Courage, mission, holy boldness' },
 ];
 
 const VOICE_STYLES = [

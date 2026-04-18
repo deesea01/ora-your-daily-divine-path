@@ -10,6 +10,7 @@ export const FREE_GUIDE_KEY = "monk";
 
 // Free prayers (IDs from src/lib/prayerLibrary.ts)
 export const FREE_PRAYER_IDS = new Set<string>([
+  "sign_of_cross",
   "our_father",
   "hail_mary",
   "glory_be",
