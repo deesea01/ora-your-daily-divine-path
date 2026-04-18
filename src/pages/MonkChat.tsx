@@ -13,6 +13,8 @@ import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { useSaintVoice, SaintMood } from '@/hooks/useSaintVoice';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { notifyAdminError } from '@/lib/notifyAdmin';
+import { useEntitlement, isPremiumGuide, FREE_GUIDE_KEY } from '@/hooks/useEntitlement';
+import { UpgradePrompt } from '@/components/UpgradePrompt';
 
 const MOODS: { value: SaintMood; label: string }[] = [
   { value: 'casual', label: 'Casual' },
