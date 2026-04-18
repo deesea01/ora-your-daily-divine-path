@@ -335,6 +335,48 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_responses: {
+        Row: {
+          chosen_guide: string | null
+          completed_at: string | null
+          created_at: string
+          growth_focus: string[]
+          id: string
+          intent: string | null
+          prayer_life_state: string | null
+          struggles: string[]
+          updated_at: string
+          user_id: string
+          voice_style: string | null
+        }
+        Insert: {
+          chosen_guide?: string | null
+          completed_at?: string | null
+          created_at?: string
+          growth_focus?: string[]
+          id?: string
+          intent?: string | null
+          prayer_life_state?: string | null
+          struggles?: string[]
+          updated_at?: string
+          user_id: string
+          voice_style?: string | null
+        }
+        Update: {
+          chosen_guide?: string | null
+          completed_at?: string | null
+          created_at?: string
+          growth_focus?: string[]
+          id?: string
+          intent?: string | null
+          prayer_life_state?: string | null
+          struggles?: string[]
+          updated_at?: string
+          user_id?: string
+          voice_style?: string | null
+        }
+        Relationships: []
+      }
       prayer_completions: {
         Row: {
           completed_at: string
@@ -575,6 +617,54 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          environment: string
+          id: string
+          paddle_customer_id: string
+          paddle_subscription_id: string
+          price_id: string
+          product_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          paddle_customer_id: string
+          paddle_subscription_id: string
+          price_id: string
+          product_id: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          paddle_customer_id?: string
+          paddle_subscription_id?: string
+          price_id?: string
+          product_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -698,6 +788,10 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      has_active_subscription: {
+        Args: { check_env?: string; user_uuid: string }
+        Returns: boolean
       }
       move_to_dlq: {
         Args: {
