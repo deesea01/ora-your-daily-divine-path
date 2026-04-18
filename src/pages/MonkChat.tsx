@@ -510,6 +510,7 @@ const MonkChat = () => {
           </button>
         </form>
       </div>
+      <UpgradePrompt open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
     </div>
   );
 };
