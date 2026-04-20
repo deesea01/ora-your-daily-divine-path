@@ -134,6 +134,10 @@ export function SubscriptionCard() {
           </button>
         )
       )}
+
+      <div className="pt-1">
+        <MissionNote variant="compact" />
+      </div>
     </div>
   );
 }
