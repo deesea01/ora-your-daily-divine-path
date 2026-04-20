@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Sparkles, X } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { MissionNote } from "@/components/MissionNote";
 
 interface UpgradePromptProps {
   open: boolean;
@@ -55,6 +56,9 @@ export function UpgradePrompt({
           >
             Not now
           </button>
+          <div className="pt-2">
+            <MissionNote variant="compact" />
+          </div>
         </div>
       </DialogContent>
     </Dialog>

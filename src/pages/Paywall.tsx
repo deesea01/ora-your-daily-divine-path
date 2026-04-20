@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Check, Loader2, Shield, Sparkles, BookOpen, BarChart3 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { usePaddleCheckout } from '@/hooks/usePaddleCheckout';
+import { MissionNote } from '@/components/MissionNote';
 
 const FEATURES = [
   { icon: Sparkles, text: 'Unlimited Saint conversations' },
@@ -109,6 +110,11 @@ const Paywall = () => {
               className="h-4 w-4 accent-gold"
             />
           </label>
+        </div>
+
+        {/* Mission + sponsor */}
+        <div className="mt-6">
+          <MissionNote />
         </div>
       </div>
 

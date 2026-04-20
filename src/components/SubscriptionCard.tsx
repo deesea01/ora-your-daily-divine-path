@@ -4,6 +4,7 @@ import { Sparkles, ExternalLink, X } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { MissionNote } from "@/components/MissionNote";
 
 export function SubscriptionCard() {
   const navigate = useNavigate();
@@ -32,6 +33,9 @@ export function SubscriptionCard() {
         >
           Start 3-day free trial
         </button>
+        <div className="mt-3">
+          <MissionNote variant="compact" />
+        </div>
       </div>
     );
   }

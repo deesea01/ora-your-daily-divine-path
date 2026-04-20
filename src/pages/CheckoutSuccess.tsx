@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle2 } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
+import { MissionNote } from '@/components/MissionNote';
 
 const CheckoutSuccess = () => {
   const navigate = useNavigate();
@@ -26,7 +27,12 @@ const CheckoutSuccess = () => {
       <p className="text-sm text-muted-foreground max-w-xs mb-2">
         Your 3-day trial has started. We'll remind you before it ends.
       </p>
-      {isActive && <p className="text-xs text-gold mb-8">✓ Subscription active</p>}
+      {isActive && <p className="text-xs text-gold mb-6">✓ Subscription active</p>}
+
+      <div className="w-full max-w-xs mt-2">
+        <MissionNote />
+      </div>
+
       <button
         onClick={() => navigate('/', { replace: true })}
         className="mt-6 w-full max-w-xs rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98]"
