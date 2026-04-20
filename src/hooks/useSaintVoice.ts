@@ -39,7 +39,24 @@ export function useSaintVoice(guideKey: SpiritualGuideKey) {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isUnavailable, setIsUnavailable] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const unavailableTimer = useRef<number | null>(null);
+
+  const clearUnavailable = useCallback(() => {
+    if (unavailableTimer.current) {
+      window.clearTimeout(unavailableTimer.current);
+      unavailableTimer.current = null;
+    }
+    setIsUnavailable(false);
+  }, []);
+
+  const flagUnavailable = useCallback(() => {
+    setIsUnavailable(true);
+    if (unavailableTimer.current) window.clearTimeout(unavailableTimer.current);
+    // Auto-clear so the next attempt can show fresh state.
+    unavailableTimer.current = window.setTimeout(() => setIsUnavailable(false), 12000);
+  }, []);
 
   const stop = useCallback(() => {
     if (audioRef.current) {
@@ -98,24 +115,42 @@ export function useSaintVoice(guideKey: SpiritualGuideKey) {
       setIsLoading(true);
       const url = await fetchAudioUrl(text, mood);
       setIsLoading(false);
-      if (!url) return;
+      if (!url) {
+        flagUnavailable();
+        return;
+      }
       const audio = new Audio(url);
       audio.playbackRate = speed;
       audioRef.current = audio;
-      audio.onplay = () => setIsSpeaking(true);
+      audio.onplay = () => { setIsSpeaking(true); clearUnavailable(); };
       audio.onended = () => setIsSpeaking(false);
-      audio.onerror = () => setIsSpeaking(false);
+      audio.onerror = () => { setIsSpeaking(false); flagUnavailable(); };
       await audio.play();
     } catch (e: any) {
       setIsLoading(false);
       setIsSpeaking(false);
-      console.error('Saint voice error:', e);
-      notifyAdminError('saint-tts', e?.message || String(e), undefined, { guide: guideKey, mood });
-      // Silent fallback — caller still has text.
+      flagUnavailable();
+      const msg = e?.message || String(e);
+      // Premium-gated voices surface their own upgrade UI; don't spam admin alerts.
+      const isPremiumGate = /premium/i.test(msg) || /402/.test(msg);
+      console.warn('Saint voice unavailable:', msg);
+      if (!isPremiumGate) {
+        notifyAdminError('saint-tts', msg, undefined, { guide: guideKey, mood });
+      }
+      // Silent fallback — caller still has text; UI shows VoiceUnavailableNote.
     }
-  }, [isEnabled, fetchAudioUrl, speed, stop, guideKey]);
+  }, [isEnabled, fetchAudioUrl, speed, stop, guideKey, flagUnavailable, clearUnavailable]);
 
-  useEffect(() => () => stop(), [stop]);
+  useEffect(() => () => {
+    stop();
+    if (unavailableTimer.current) window.clearTimeout(unavailableTimer.current);
+  }, [stop]);
 
-  return { isEnabled, setEnabled, toggle, speed, setSpeed, isLoading, isSpeaking, play, stop };
+  return {
+    isEnabled, setEnabled, toggle,
+    speed, setSpeed,
+    isLoading, isSpeaking,
+    isUnavailable, clearUnavailable,
+    play, stop,
+  };
 }
