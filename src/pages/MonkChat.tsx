@@ -15,6 +15,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { notifyAdminError } from '@/lib/notifyAdmin';
 import { useEntitlement, isPremiumGuide, FREE_GUIDE_KEY } from '@/hooks/useEntitlement';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
+import { VoiceUnavailableNote } from '@/components/VoiceUnavailableNote';
 
 const MOODS: { value: SaintMood; label: string }[] = [
   { value: 'casual', label: 'Casual' },
@@ -472,6 +473,9 @@ const MonkChat = () => {
               ))}
             </div>
           </div>
+        )}
+        {voice.isEnabled && voice.isUnavailable && (
+          <VoiceUnavailableNote onDismiss={voice.clearUnavailable} className="mb-1" />
         )}
         <form
           onSubmit={e => { e.preventDefault(); send(input); }}
