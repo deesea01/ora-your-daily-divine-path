@@ -10,6 +10,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { useSaintVoice } from '@/hooks/useSaintVoice';
 import { SpiritualGuideKey } from '@/lib/guides';
 import { useEntitlement, isPremiumPrayer } from '@/hooks/useEntitlement';
+import { VoiceUnavailableNote } from '@/components/VoiceUnavailableNote';
 
 type PlaybackMode = 'normal' | 'slow' | 'line-by-line';
 
@@ -280,6 +281,11 @@ const PrayerView = () => {
                 </button>
               ))}
             </div>
+
+            {/* Calm fallback when audio is unavailable — text remains below */}
+            {saintVoice.isUnavailable && (
+              <VoiceUnavailableNote onDismiss={saintVoice.clearUnavailable} />
+            )}
 
             {/* Prayer text with highlighting */}
             <div className="rounded-xl border border-gold/20 bg-card p-5">

@@ -7,6 +7,7 @@ import { useSaintVoice } from '@/hooks/useSaintVoice';
 import { SpiritualGuideKey } from '@/lib/guides';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { notifyAdminError } from '@/lib/notifyAdmin';
+import { VoiceUnavailableNote } from '@/components/VoiceUnavailableNote';
 
 const MYSTERIES: Record<string, { label: string; names: string[] }> = {
   joyful: {
@@ -111,7 +112,7 @@ const Rosary = () => {
   const [mysteryExplanation, setMysteryExplanation] = useState('');
   const [loadingMystery, setLoadingMystery] = useState(false);
   const guideKey = (profile?.spiritual_guide as SpiritualGuideKey) || 'monk';
-  const { isSpeaking, isEnabled, play, stop, toggle } = useSaintVoice(guideKey);
+  const { isSpeaking, isEnabled, isUnavailable, clearUnavailable, play, stop, toggle } = useSaintVoice(guideKey);
 
   const step = ALL_STEPS[stepIndex];
   const progress = ((stepIndex + 1) / ALL_STEPS.length) * 100;
@@ -386,6 +387,11 @@ const Rosary = () => {
 
       {/* Content */}
       <main className="flex flex-1 flex-col justify-center px-6 py-8 animate-fade-in" key={`${stepIndex}-${beadCount}`}>
+        {isEnabled && isUnavailable && (
+          <div className="mb-4">
+            <VoiceUnavailableNote onDismiss={clearUnavailable} />
+          </div>
+        )}
         {renderStepContent()}
       </main>
 
