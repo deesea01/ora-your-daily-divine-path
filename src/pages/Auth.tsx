@@ -212,6 +212,13 @@ const Auth = () => {
                 </>
               )}
             </p>
+
+            <p className="text-center text-[11px] text-muted-foreground leading-relaxed pt-2">
+              By continuing, you agree to our{' '}
+              <Link to="/terms-of-service" className="text-gold hover:underline">Terms</Link>{' '}
+              and{' '}
+              <Link to="/privacy-policy" className="text-gold hover:underline">Privacy Policy</Link>.
+            </p>
           </form>
         )}
       </div>
