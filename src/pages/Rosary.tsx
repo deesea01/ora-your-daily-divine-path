@@ -386,6 +386,11 @@ const Rosary = () => {
 
       {/* Content */}
       <main className="flex flex-1 flex-col justify-center px-6 py-8 animate-fade-in" key={`${stepIndex}-${beadCount}`}>
+        {isEnabled && isUnavailable && (
+          <div className="mb-4">
+            <VoiceUnavailableNote onDismiss={clearUnavailable} />
+          </div>
+        )}
         {renderStepContent()}
       </main>
 
