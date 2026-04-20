@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import Index from "./pages/Index.tsx";
+import Welcome from "./pages/Welcome.tsx";
 import Auth from "./pages/Auth.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import MonkChat from "./pages/MonkChat.tsx";
@@ -46,6 +47,7 @@ const App = () => (
             <PaymentTestModeBanner />
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/welcome" element={<Welcome />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/monk-chat" element={<MonkChat />} />

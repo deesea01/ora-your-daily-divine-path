@@ -69,7 +69,7 @@ const Index = () => {
     );
   }
 
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!user) return <Navigate to="/welcome" replace />;
   if (!profile?.onboarding_completed) return <Navigate to="/onboarding" replace />;
 
   const hour = new Date().getHours();
