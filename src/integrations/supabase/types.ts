@@ -617,6 +617,33 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_notifications: {
+        Row: {
+          id: string
+          kind: string
+          metadata: Json | null
+          sent_at: string
+          subscription_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          kind: string
+          metadata?: Json | null
+          sent_at?: string
+          subscription_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          kind?: string
+          metadata?: Json | null
+          sent_at?: string
+          subscription_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean | null
