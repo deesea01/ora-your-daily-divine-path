@@ -35,10 +35,17 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
-    const { data: sub } = await admin
+    const url = new URL(req.url);
+    const envParam = url.searchParams.get("env");
+    const envFilter = envParam === "sandbox" || envParam === "live" ? envParam : null;
+
+    let q = admin
       .from("subscriptions")
       .select("paddle_customer_id, paddle_subscription_id, environment")
-      .eq("user_id", userId)
+      .eq("user_id", userId);
+    if (envFilter) q = q.eq("environment", envFilter);
+
+    const { data: sub } = await q
       .order("updated_at", { ascending: false })
       .limit(1)
       .maybeSingle();
