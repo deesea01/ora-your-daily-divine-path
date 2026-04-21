@@ -128,12 +128,12 @@ export function SubscriptionCard() {
       </div>
 
       {isPastDue && (
-        <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 flex items-start gap-2">
-          <AlertTriangle className="h-4 w-4 text-amber-400 mt-0.5 shrink-0" />
+        <div className="rounded-lg border border-gold/40 bg-gold/10 p-3 flex items-start gap-2">
+          <AlertTriangle className="h-4 w-4 text-gold mt-0.5 shrink-0" />
           <div className="flex-1">
             <p className="text-xs text-foreground font-medium">Your payment needs attention</p>
             <p className="text-[11px] text-muted-foreground mt-0.5">Your access continues while we retry. Update your card to keep your subscription.</p>
-            <button onClick={openPortal} disabled={busy !== null} className="mt-2 text-xs font-medium text-amber-400 hover:underline">
+            <button onClick={openPortal} disabled={busy !== null} className="mt-2 text-xs font-medium text-gold hover:underline">
               Update payment method →
             </button>
           </div>

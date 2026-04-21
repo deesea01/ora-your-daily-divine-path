@@ -56,8 +56,10 @@ export function useSubscription() {
 
   const isActive =
     !!subscription &&
-    ["active", "trialing"].includes(subscription.status) &&
+    ["active", "trialing", "past_due"].includes(subscription.status) &&
     (!subscription.current_period_end || new Date(subscription.current_period_end) > new Date());
 
-  return { subscription, loading, isActive, refresh: load };
+  const isPastDue = subscription?.status === "past_due";
+
+  return { subscription, loading, isActive, isPastDue, env, refresh: load };
 }
