@@ -35,6 +35,16 @@ serve(async (req) => {
       });
     }
 
+    // --- Premium gate ---
+    const { hasActiveSubscription } = await import("../_shared/entitlement.ts");
+    const isPremium = await hasActiveSubscription(user.id);
+    if (!isPremium) {
+      return new Response(
+        JSON.stringify({ error: "Premium required", code: "premium_required" }),
+        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     // Fetch last 10 entries only
     const { data: entries } = await supabase
       .from("journal_entries")
