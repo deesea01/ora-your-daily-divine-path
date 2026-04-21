@@ -28,11 +28,14 @@ Deno.serve(async (req) => {
       case EventName.SubscriptionCanceled:
         await handleSubscriptionCanceled(event.data, env);
         break;
+      case EventName.SubscriptionPastDue:
+        await handlePastDue(event.data, env);
+        break;
       case EventName.TransactionCompleted:
-        console.log('Transaction completed:', (event.data as any).id, 'env:', env);
+        await handleTransactionCompleted(event.data, env);
         break;
       case EventName.TransactionPaymentFailed:
-        console.log('Payment failed:', (event.data as any).id, 'env:', env);
+        await handlePaymentFailed(event.data, env);
         break;
       default:
         console.log('Unhandled event:', event.eventType);
@@ -78,16 +81,27 @@ async function handleSubscriptionCreated(data: any, env: PaddleEnv) {
 }
 
 async function handleSubscriptionUpdated(data: any, env: PaddleEnv) {
-  const { id, status, currentBillingPeriod, scheduledChange } = data;
+  const { id, status, items, currentBillingPeriod, scheduledChange } = data;
+
+  const update: Record<string, any> = {
+    status,
+    current_period_start: currentBillingPeriod?.startsAt,
+    current_period_end: currentBillingPeriod?.endsAt,
+    cancel_at_period_end: scheduledChange?.action === 'cancel',
+    updated_at: new Date().toISOString(),
+  };
+
+  // Sync price_id if items present (plan change)
+  if (Array.isArray(items) && items[0]) {
+    const item = items[0];
+    const priceId = item.price?.importMeta?.externalId || item.price?.id;
+    const productId = item.product?.importMeta?.externalId || item.product?.id;
+    if (priceId) update.price_id = priceId;
+    if (productId) update.product_id = productId;
+  }
 
   await supabase.from('subscriptions')
-    .update({
-      status,
-      current_period_start: currentBillingPeriod?.startsAt,
-      current_period_end: currentBillingPeriod?.endsAt,
-      cancel_at_period_end: scheduledChange?.action === 'cancel',
-      updated_at: new Date().toISOString(),
-    })
+    .update(update)
     .eq('paddle_subscription_id', id)
     .eq('environment', env);
 }
@@ -100,4 +114,94 @@ async function handleSubscriptionCanceled(data: any, env: PaddleEnv) {
     })
     .eq('paddle_subscription_id', data.id)
     .eq('environment', env);
+}
+
+async function handlePastDue(data: any, env: PaddleEnv) {
+  await supabase.from('subscriptions')
+    .update({ status: 'past_due', updated_at: new Date().toISOString() })
+    .eq('paddle_subscription_id', data.id)
+    .eq('environment', env);
+}
+
+async function handleTransactionCompleted(data: any, env: PaddleEnv) {
+  console.log('Transaction completed:', data.id, 'env:', env);
+  try {
+    const userId = data.customData?.userId
+      ?? (await findUserByCustomer(data.customerId, env));
+    if (!userId) return;
+
+    const { data: userRes } = await supabase.auth.admin.getUserById(userId);
+    const email = userRes?.user?.email;
+    if (!email) return;
+
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('display_name')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    const item = data.items?.[0];
+    const priceExternal = item?.price?.importMeta?.externalId || '';
+    const planLabel = priceExternal === 'ora_premium_yearly' ? 'Ora Premium · Yearly'
+      : priceExternal === 'ora_premium_monthly' ? 'Ora Premium · Monthly'
+      : 'Ora Premium';
+    const total = data.details?.totals?.total ?? data.payments?.[0]?.amount ?? '0';
+    const currency = data.currencyCode ?? 'USD';
+    const amountStr = `$${(Number(total) / 100).toFixed(2)}`;
+
+    await supabase.rpc('enqueue_email', {
+      queue_name: 'transactional_emails',
+      payload: {
+        to: email,
+        template_name: 'receipt',
+        template_data: {
+          displayName: profile?.display_name ?? '',
+          amount: amountStr,
+          currency,
+          planLabel,
+          invoiceUrl: data.invoice_pdf_url ?? data.invoiceNumber ?? null,
+        },
+      },
+    });
+  } catch (e) {
+    console.error('receipt email enqueue failed', e);
+  }
+}
+
+async function handlePaymentFailed(data: any, env: PaddleEnv) {
+  console.log('Payment failed:', data.id, 'env:', env);
+  try {
+    const userId = data.customData?.userId
+      ?? (await findUserByCustomer(data.customerId, env));
+    if (!userId) return;
+    const { data: userRes } = await supabase.auth.admin.getUserById(userId);
+    const email = userRes?.user?.email;
+    if (!email) return;
+    const { data: profile } = await supabase.from('user_profiles').select('display_name').eq('user_id', userId).maybeSingle();
+
+    await supabase.rpc('enqueue_email', {
+      queue_name: 'transactional_emails',
+      payload: {
+        to: email,
+        template_name: 'payment_issue',
+        template_data: {
+          displayName: profile?.display_name ?? '',
+          manageUrl: 'https://oradevotion.com/settings',
+        },
+      },
+    });
+  } catch (e) {
+    console.error('payment_issue email enqueue failed', e);
+  }
+}
+
+async function findUserByCustomer(customerId: string | undefined, env: PaddleEnv): Promise<string | null> {
+  if (!customerId) return null;
+  const { data } = await supabase
+    .from('subscriptions')
+    .select('user_id')
+    .eq('paddle_customer_id', customerId)
+    .eq('environment', env)
+    .maybeSingle();
+  return data?.user_id ?? null;
 }

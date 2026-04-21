@@ -9,9 +9,7 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const authHeader = req.headers.get("Authorization");
@@ -25,49 +23,40 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } },
     );
     const token = authHeader.replace("Bearer ", "");
-    const { data: claims, error: claimsErr } = await supabase.auth.getClaims(token);
-    if (claimsErr || !claims?.claims?.sub) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
-    }
-    const userId = claims.claims.sub as string;
+    const { data: claims } = await supabase.auth.getClaims(token);
+    const userId = claims?.claims?.sub as string | undefined;
+    if (!userId) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+
+    const url = new URL(req.url);
+    const envParam = url.searchParams.get("env");
+    const envFilter = envParam === "sandbox" || envParam === "live" ? envParam : null;
 
     const admin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
-    const url = new URL(req.url);
-    const envParam = url.searchParams.get("env");
-    const envFilter = envParam === "sandbox" || envParam === "live" ? envParam : null;
 
-    let q = admin
-      .from("subscriptions")
-      .select("paddle_subscription_id, environment, status")
-      .eq("user_id", userId);
+    let q = admin.from("subscriptions").select("paddle_subscription_id, environment").eq("user_id", userId);
     if (envFilter) q = q.eq("environment", envFilter);
-
-    const { data: sub } = await q
-      .order("updated_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
+    const { data: sub } = await q.order("updated_at", { ascending: false }).limit(1).maybeSingle();
     if (!sub?.paddle_subscription_id) {
       return new Response(JSON.stringify({ error: "No subscription found" }), { status: 404, headers: corsHeaders });
     }
 
     const paddle = getPaddleClient(sub.environment as PaddleEnv);
-    await paddle.subscriptions.cancel(sub.paddle_subscription_id, {
-      effectiveFrom: "next_billing_period",
+    // Resume by clearing scheduled change
+    await paddle.subscriptions.update(sub.paddle_subscription_id, {
+      scheduledChange: null as any,
     });
 
-    // Optimistically reflect in DB; webhook will reconcile
     await admin
       .from("subscriptions")
-      .update({ cancel_at_period_end: true, updated_at: new Date().toISOString() })
+      .update({ cancel_at_period_end: false, updated_at: new Date().toISOString() })
       .eq("paddle_subscription_id", sub.paddle_subscription_id);
 
     return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
   } catch (e) {
-    console.error("paddle-cancel error:", e);
+    console.error("paddle-resume error:", e);
     return new Response(JSON.stringify({ error: String(e) }), { status: 500, headers: corsHeaders });
   }
 });
