@@ -447,4 +447,28 @@ function ChipCard({ active, onClick, label, emoji }: { active: boolean; onClick:
   );
 }
 
+function OnboardingTopBar() {
+  const { language, setLanguage } = useLanguage();
+  return (
+    <div className="flex items-center justify-between pt-2">
+      <Link to="/welcome" className="flex items-center gap-2" aria-label="Ora home">
+        <img src={logoImg} alt="Ora" className="h-7 w-7 object-contain" />
+        <span className="font-serif text-base text-foreground">Ora</span>
+      </Link>
+      <select
+        value={language}
+        onChange={(e) => setLanguage(e.target.value as any)}
+        className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-foreground focus:outline-none focus:border-gold/50"
+        aria-label="Language"
+      >
+        {SUPPORTED_LANGUAGES.map((lang) => (
+          <option key={lang.code} value={lang.code}>
+            {lang.flag} {lang.nativeLabel}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 export default Onboarding;
