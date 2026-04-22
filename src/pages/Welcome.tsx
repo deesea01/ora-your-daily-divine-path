@@ -105,11 +105,18 @@ const Welcome = () => {
           {error && <p className="text-sm text-destructive text-center">{error}</p>}
         </div>
 
-        <p className="mt-8 px-4 text-[11px] leading-relaxed text-muted-foreground max-w-xs">
+        <Link
+          to="/paywall"
+          className="mt-6 text-xs text-muted-foreground hover:text-gold underline underline-offset-4"
+        >
+          View pricing
+        </Link>
+
+        <p className="mt-6 px-4 text-[11px] leading-relaxed text-muted-foreground max-w-xs">
           By continuing, you agree to our{' '}
-          <Link to="/terms-of-service" className="text-gold hover:underline">Terms of Service</Link>{' '}
-          and{' '}
-          <Link to="/privacy-policy" className="text-gold hover:underline">Privacy Policy</Link>.
+          <Link to="/terms-of-service" className="text-gold hover:underline">Terms of Service</Link>,{' '}
+          <Link to="/privacy-policy" className="text-gold hover:underline">Privacy Policy</Link>, and{' '}
+          <Link to="/refund-policy" className="text-gold hover:underline">Refund Policy</Link>.
         </p>
       </div>
     </div>

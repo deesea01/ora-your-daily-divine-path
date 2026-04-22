@@ -25,11 +25,15 @@ const TermsOfService = () => {
 
         <h2 className="font-serif text-lg text-foreground">4. Subscriptions & Payments</h2>
         <ul className="list-disc pl-5 space-y-1">
-          <li>Ora may offer paid subscriptions (e.g., $10/month)</li>
-          <li>Payments are billed automatically unless canceled</li>
-          <li>No refunds unless required by law</li>
-          <li>You may cancel anytime via your account or payment provider</li>
+          <li>Ora may offer paid subscriptions (e.g., $10/month or $60/year)</li>
+          <li>Payments are billed automatically on a recurring basis unless canceled before renewal</li>
+          <li>You may cancel anytime via your account settings or through Paddle</li>
+          <li>Refunds are handled by Paddle in accordance with our <a href="/refund-policy" className="text-gold hover:underline">Refund Policy</a> and Paddle's <a href="https://www.paddle.com/legal/refund-policy" target="_blank" rel="noopener noreferrer" className="text-gold hover:underline">Refund Policy</a></li>
+          <li>Applicable taxes are calculated and collected by Paddle as Merchant of Record</li>
         </ul>
+
+        <h2 className="font-serif text-lg text-foreground">4a. Merchant of Record</h2>
+        <p>Our order process is conducted by our online reseller <strong className="text-foreground">Paddle.com</strong>. Paddle.com is the Merchant of Record for all our orders. Paddle provides all customer service inquiries and handles returns. By completing a purchase, you also agree to Paddle's <a href="https://www.paddle.com/legal/checkout-buyer-terms" target="_blank" rel="noopener noreferrer" className="text-gold hover:underline">Buyer Terms</a>.</p>
 
         <h2 className="font-serif text-lg text-foreground">5. Acceptable Use</h2>
         <p>You agree NOT to use the app for unlawful purposes, attempt to hack, disrupt, or reverse engineer, or upload harmful or abusive content.</p>
