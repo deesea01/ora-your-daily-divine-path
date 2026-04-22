@@ -7,6 +7,9 @@ import { useOnboardingResponses } from '@/hooks/useOnboardingResponses';
 import { useAuth } from '@/hooks/useAuth';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
 import { FREE_GUIDE_KEY, isPremiumGuide } from '@/hooks/useEntitlement';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
+import logoImg from '@/assets/logo.png';
 
 const TOTAL_STEPS = 10;
 
@@ -158,6 +161,7 @@ const Onboarding = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe">
+      <OnboardingTopBar />
       <ProgressDots step={step} />
 
       {/* Step 0 — Welcome */}
