@@ -22,7 +22,7 @@ const PrivacyPolicy = () => {
         <h3 className="font-serif text-base text-foreground">A. Personal Information</h3>
         <ul className="list-disc pl-5 space-y-1">
           <li>Name, email address, and account credentials</li>
-          <li>Billing and payment information (processed via third-party providers like Stripe)</li>
+          <li>Billing and payment information (processed by our Merchant of Record, Paddle.com — see Section 10)</li>
           <li>Account preferences and subscription status</li>
         </ul>
 
@@ -44,7 +44,15 @@ const PrivacyPolicy = () => {
         <h3 className="font-serif text-base text-foreground">D. Cookies & Tracking</h3>
         <p>We may use cookies and similar technologies to improve performance, analyze usage trends, and personalize user experience.</p>
 
-        <h2 className="font-serif text-lg text-foreground">2. How We Use Your Information</h2>
+        <h2 className="font-serif text-lg text-foreground">2. How We Use Your Information & Legal Basis</h2>
+        <p>We process your personal information on the following legal bases (under GDPR and similar regimes):</p>
+        <ul className="list-disc pl-5 space-y-1">
+          <li><strong className="text-foreground">Performance of a contract</strong> — to create your account, deliver the Service, and process subscriptions.</li>
+          <li><strong className="text-foreground">Legitimate interests</strong> — to improve features, ensure security, prevent fraud, and analyze usage.</li>
+          <li><strong className="text-foreground">Consent</strong> — for optional communications and processing of sensitive spiritual content (journal entries, confession data, AI conversations). You may withdraw consent at any time.</li>
+          <li><strong className="text-foreground">Legal obligation</strong> — to comply with tax, accounting, and other applicable laws.</li>
+        </ul>
+        <p>We use your information to:</p>
         <ul className="list-disc pl-5 space-y-1">
           <li>Provide and operate the Service</li>
           <li>Personalize spiritual guidance and user experience</li>
@@ -58,7 +66,14 @@ const PrivacyPolicy = () => {
         <p>Ora provides AI-generated spiritual reflections, guidance, and saint-based interactions. These are not a substitute for clergy, confession, or professional counseling and are intended for informational and devotional purposes only. We do not guarantee theological accuracy, and outputs may vary.</p>
 
         <h2 className="font-serif text-lg text-foreground">4. How We Share Information</h2>
-        <p>We do not sell your personal data. We may share information with service providers (e.g., payment processors, hosting providers), legal authorities if required by law, and in connection with business transfers (e.g., acquisition, merger, sale of assets).</p>
+        <p>We do not sell your personal data. We may share information with:</p>
+        <ul className="list-disc pl-5 space-y-1">
+          <li><strong className="text-foreground">Merchant of Record (Paddle.com Market Limited)</strong> — for sale of subscriptions, payment processing, subscription management, tax compliance, invoicing, and refund handling.</li>
+          <li><strong className="text-foreground">Service providers / subprocessors</strong> — hosting (Supabase), AI providers, email delivery, and analytics tooling.</li>
+          <li><strong className="text-foreground">Professional advisers</strong> — legal and accounting professionals, where necessary.</li>
+          <li><strong className="text-foreground">Authorities</strong> — where required by law or to protect rights and safety.</li>
+          <li><strong className="text-foreground">Successors</strong> — in connection with a merger, acquisition, or sale of assets.</li>
+        </ul>
 
         <h2 className="font-serif text-lg text-foreground">5. Data Storage & Security</h2>
         <p>We implement reasonable safeguards, including encryption (where applicable), secure hosting environments, and access controls. However, no system is 100% secure. Use the Service at your own risk.</p>
@@ -75,8 +90,9 @@ const PrivacyPolicy = () => {
         <h2 className="font-serif text-lg text-foreground">9. Data Deletion Requests</h2>
         <p>You may request deletion by contacting <a href="mailto:derek@oradevotion.com" className="text-gold hover:underline">derek@oradevotion.com</a>. We will process requests within a reasonable timeframe, subject to legal obligations.</p>
 
-        <h2 className="font-serif text-lg text-foreground">10. Third-Party Services</h2>
-        <p>Ora may integrate with payment processors (e.g., Stripe), hosting providers, and AI providers. These services have their own privacy policies.</p>
+        <h2 className="font-serif text-lg text-foreground">10. Third-Party Services & Merchant of Record</h2>
+        <p>Our order process is conducted by our online reseller <strong className="text-foreground">Paddle.com</strong>. Paddle.com is the Merchant of Record for all our orders. Paddle provides all customer service inquiries and handles returns. When you make a purchase, Paddle collects and processes your billing information under its own <a href="https://www.paddle.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-gold hover:underline">Privacy Policy</a> and <a href="https://www.paddle.com/legal/checkout-buyer-terms" target="_blank" rel="noopener noreferrer" className="text-gold hover:underline">Buyer Terms</a>.</p>
+        <p>Ora also integrates with hosting providers (Supabase), AI providers, and email delivery services. Each has its own privacy policy.</p>
 
         <h2 className="font-serif text-lg text-foreground">11. Changes to This Policy</h2>
         <p>We may update this policy at any time. Continued use of the Service constitutes acceptance.</p>
