@@ -12,6 +12,8 @@ export const tl: Translations = {
 
   authTitle: 'Ora',
   authSubtitle: 'Manalangin nang walang tigil',
+  welcomeHeadline: 'Lumapit kay Bathala araw-araw.',
+  welcomeSubheading: 'Panalangin. Pagninilay. Patnubay. Pagbabago.',
   email: 'Email',
   password: 'Password',
   signIn: 'Mag-sign in',

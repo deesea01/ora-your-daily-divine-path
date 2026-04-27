@@ -12,6 +12,8 @@ export const pt: Translations = {
 
   authTitle: 'Ora',
   authSubtitle: 'Orai sem cessar',
+  welcomeHeadline: 'Aproxime-se de Deus todos os dias.',
+  welcomeSubheading: 'Oração. Reflexão. Orientação. Transformação.',
   email: 'E-mail',
   password: 'Senha',
   signIn: 'Entrar',

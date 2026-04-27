@@ -12,6 +12,8 @@ export const en: Translations = {
 
   authTitle: 'Ora',
   authSubtitle: 'Pray Without Ceasing',
+  welcomeHeadline: 'Grow Closer to God every day.',
+  welcomeSubheading: 'Prayer. Reflection. Guidance. Transformation.',
   email: 'Email',
   password: 'Password',
   signIn: 'Sign In',

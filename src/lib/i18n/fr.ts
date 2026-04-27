@@ -12,6 +12,8 @@ export const fr: Translations = {
 
   authTitle: 'Ora',
   authSubtitle: 'Priez sans cesse',
+  welcomeHeadline: 'Rapprochez-vous de Dieu chaque jour.',
+  welcomeSubheading: 'Prière. Réflexion. Accompagnement. Transformation.',
   email: 'E-mail',
   password: 'Mot de passe',
   signIn: 'Se connecter',
