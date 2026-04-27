@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import logoImg from '@/assets/logo.png';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { MessageCircle, Cross, Flame, ChevronRight, Heart, Shield, BookOpen, PenLine, Settings } from 'lucide-react';
+import { MessageCircle, Cross, Flame, ChevronRight, Heart, Shield, BookOpen, PenLine, Settings, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { SPIRITUAL_GUIDES, SpiritualGuideKey } from '@/lib/guides';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useWeeklyRecaps } from '@/hooks/useWeeklyRecaps';
 
 import PrayerCard from '@/components/PrayerCard';
 
@@ -33,6 +34,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { profile, loading: profileLoading, setDailyPrayerGoal } = useUserProfile();
   const { t, language } = useLanguage();
+  const { latest: latestRecap } = useWeeklyRecaps();
   const [completions, setCompletions] = useState<Set<string>>(new Set());
   const [streak, setStreak] = useState(0);
   const [showGoalPicker, setShowGoalPicker] = useState(false);

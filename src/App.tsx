@@ -33,6 +33,7 @@ import Settings from "./pages/Settings.tsx";
 import Paywall from "./pages/Paywall.tsx";
 import CheckoutSuccess from "./pages/CheckoutSuccess.tsx";
 import Unsubscribe from "./pages/Unsubscribe.tsx";
+import WeeklyRecap from "./pages/WeeklyRecap.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { AuthNav } from "@/components/AuthNav";
@@ -79,6 +80,7 @@ const App = () => (
               <Route path="/paywall" element={<Paywall />} />
               <Route path="/checkout/success" element={<CheckoutSuccess />} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
+              <Route path="/recap" element={<WeeklyRecap />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
