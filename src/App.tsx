@@ -35,6 +35,8 @@ import CheckoutSuccess from "./pages/CheckoutSuccess.tsx";
 import Unsubscribe from "./pages/Unsubscribe.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
+import { AuthNav } from "@/components/AuthNav";
+import { AuthFooterFallback } from "@/components/AuthFooterFallback";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +49,8 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <PaymentTestModeBanner />
+            <AuthNav />
+            <AuthFooterFallback />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/welcome" element={<Welcome />} />
