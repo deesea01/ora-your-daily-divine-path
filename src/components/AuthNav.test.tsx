@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render } from '@testing-library/react';
-import { screen } from '@testing-library/dom';
 import { MemoryRouter } from 'react-router-dom';
 import { AuthNav } from '@/components/AuthNav';
 
