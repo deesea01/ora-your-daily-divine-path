@@ -30,6 +30,7 @@ export const AuthNav = () => {
 
   if (HIDDEN_ROUTES.includes(location.pathname)) return null;
   if (loading) return null;
+  if (!user) return null;
 
   const handleLogout = async () => {
     await signOut();
