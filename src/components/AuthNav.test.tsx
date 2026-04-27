@@ -12,13 +12,13 @@ import { useAuth } from '@/hooks/useAuth';
 describe('AuthNav', () => {
   it('shows Sign In and Create Account when logged out', () => {
     (useAuth as any).mockReturnValue({ user: null, loading: false, signOut: vi.fn() });
-    render(
+    const { container } = render(
       <MemoryRouter initialEntries={['/']}>
         <AuthNav />
       </MemoryRouter>
     );
-    expect(screen.getByTestId('auth-nav-signin')).toBeInTheDocument();
-    expect(screen.getByTestId('auth-nav-signup')).toBeInTheDocument();
+    expect(container.querySelector('[data-testid="auth-nav-signin"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="auth-nav-signup"]')).not.toBeNull();
   });
 
   it('shows profile button when logged in', () => {
@@ -27,12 +27,12 @@ describe('AuthNav', () => {
       loading: false,
       signOut: vi.fn(),
     });
-    render(
+    const { container } = render(
       <MemoryRouter initialEntries={['/']}>
         <AuthNav />
       </MemoryRouter>
     );
-    expect(screen.getByTestId('auth-nav-profile')).toBeInTheDocument();
+    expect(container.querySelector('[data-testid="auth-nav-profile"]')).not.toBeNull();
   });
 
   it('hides on /auth route', () => {
