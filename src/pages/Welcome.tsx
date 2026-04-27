@@ -60,10 +60,12 @@ const Welcome = () => {
 
       {/* Hero */}
       <div className="flex flex-1 flex-col items-center justify-center text-center animate-fade-in">
-        <img src={logoImg} alt="Ora" className="w-36 h-36 object-contain mb-2" />
-        <h1 className="font-serif text-3xl text-foreground mb-2">Ora</h1>
+        <img src={logoImg} alt="Ora" className="w-56 h-56 object-contain mb-4" />
+        <h1 className="font-serif text-3xl text-foreground mb-3 max-w-xs">
+          Grow Closer to God every day.
+        </h1>
         <p className="text-sm text-muted-foreground mb-10 max-w-xs">
-          {t.authSubtitle}
+          Prayer. Reflection. Guidance. Transformation.
         </p>
 
         <div className="w-full max-w-sm space-y-3">
