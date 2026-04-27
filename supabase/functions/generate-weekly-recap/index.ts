@@ -256,10 +256,14 @@ serve(async (req) => {
     const admin = createClient(supabaseUrl, serviceKey);
 
     const body = await req.json().catch(() => ({}));
-    const { mode, week_start: weekStartParam } = body as {
+    const { mode, week_start: weekStartParam, send_email: sendEmailParam } = body as {
       mode?: "current_user" | "all_users";
       week_start?: string;
+      send_email?: boolean;
     };
+    // Default: send emails on cron batch, skip on manual single-user generate
+    const sendEmail = sendEmailParam ?? mode === "all_users";
+    const APP_URL = Deno.env.get("APP_PUBLIC_URL") || "https://oradevotion.com";
 
     // Determine week window — last completed Sun-Sat by default
     const today = new Date();
@@ -372,8 +376,47 @@ serve(async (req) => {
 
       if (upsertError) {
         results.push({ user_id: uid, error: upsertError.message });
-      } else {
-        results.push({ user_id: uid, recap: stored });
+        continue;
+      }
+      results.push({ user_id: uid, recap: stored });
+
+      // Send Sunday-morning email notification
+      if (sendEmail) {
+        try {
+          const { data: authUser } = await admin.auth.admin.getUserById(uid);
+          const recipient = authUser?.user?.email;
+          if (recipient) {
+            const { data: profile } = await admin
+              .from("user_profiles")
+              .select("display_name")
+              .eq("user_id", uid)
+              .maybeSingle();
+
+            await admin.functions.invoke("send-transactional-email", {
+              body: {
+                templateName: "weekly_recap",
+                recipientEmail: recipient,
+                idempotencyKey: `weekly_recap_${uid}_${weekStart}`,
+                templateData: {
+                  displayName: (profile as any)?.display_name || null,
+                  headline: narrative.headline,
+                  topSaint: agg.saint_top?.label || null,
+                  saintMessageCount: agg.saint_message_count,
+                  saintMinutes: agg.saint_minutes_estimate,
+                  prayerCount: agg.prayer_completions_count,
+                  rosaryCount: agg.rosaries_completed,
+                  streak: currentStreak,
+                  topVirtue: agg.top_virtues[0]?.name || null,
+                  reflection: narrative.reflection,
+                  scripture: narrative.scripture,
+                  recapUrl: `${APP_URL}/recap`,
+                },
+              },
+            });
+          }
+        } catch (mailErr) {
+          console.error("weekly recap email failed", { uid, error: mailErr });
+        }
       }
     }
 
