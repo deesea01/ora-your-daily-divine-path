@@ -12,6 +12,8 @@ export const it: Translations = {
 
   authTitle: 'Ora',
   authSubtitle: 'Pregate senza cessare',
+  welcomeHeadline: 'Avvicinati a Dio ogni giorno.',
+  welcomeSubheading: 'Preghiera. Riflessione. Guida. Trasformazione.',
   email: 'Email',
   password: 'Password',
   signIn: 'Accedi',

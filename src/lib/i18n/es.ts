@@ -12,6 +12,8 @@ export const es: Translations = {
 
   authTitle: 'Ora',
   authSubtitle: 'Orad sin cesar',
+  welcomeHeadline: 'Acércate más a Dios cada día.',
+  welcomeSubheading: 'Oración. Reflexión. Guía. Transformación.',
   email: 'Correo electrónico',
   password: 'Contraseña',
   signIn: 'Iniciar sesión',

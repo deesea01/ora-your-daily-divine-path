@@ -30,6 +30,8 @@ export interface Translations {
   // Auth
   authTitle: string;
   authSubtitle: string;
+  welcomeHeadline: string;
+  welcomeSubheading: string;
   email: string;
   password: string;
   signIn: string;
