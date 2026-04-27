@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import logoImg from '@/assets/logo.png';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { MessageCircle, Cross, Flame, ChevronRight, Heart, Shield, BookOpen, PenLine, Settings } from 'lucide-react';
+import { MessageCircle, Cross, Flame, ChevronRight, Heart, Shield, BookOpen, PenLine, Settings, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { SPIRITUAL_GUIDES, SpiritualGuideKey } from '@/lib/guides';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useWeeklyRecaps } from '@/hooks/useWeeklyRecaps';
 
 import PrayerCard from '@/components/PrayerCard';
 
@@ -33,6 +34,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { profile, loading: profileLoading, setDailyPrayerGoal } = useUserProfile();
   const { t, language } = useLanguage();
+  const { latest: latestRecap } = useWeeklyRecaps();
   const [completions, setCompletions] = useState<Set<string>>(new Set());
   const [streak, setStreak] = useState(0);
   const [showGoalPicker, setShowGoalPicker] = useState(false);
@@ -163,6 +165,23 @@ const Index = () => {
           )}
         </div>
       </section>
+
+      {latestRecap && (
+        <section className="mb-8 animate-fade-in">
+          <button
+            onClick={() => navigate('/recap')}
+            className="group w-full overflow-hidden rounded-xl border border-gold/30 bg-gradient-to-br from-gold/10 via-card to-card p-5 text-left transition-all hover:border-gold/60 active:scale-[0.98]"
+          >
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-gold">
+              <Sparkles className="h-3 w-3" /> Your week with God
+            </div>
+            <h3 className="mt-2 font-serif text-xl text-foreground">{latestRecap.headline || 'Your weekly recap is ready'}</h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Tap to play your story →
+            </p>
+          </button>
+        </section>
+      )}
 
       <section className="mb-8">
         <h2 className="mb-1 font-serif text-xl text-gold animate-fade-in">{t.todaysPrayerPath}</h2>

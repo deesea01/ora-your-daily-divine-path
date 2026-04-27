@@ -761,6 +761,87 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_recaps: {
+        Row: {
+          confessions_count: number
+          created_at: string
+          current_streak: number
+          emotional_tone: string | null
+          generated_at: string
+          headline: string | null
+          id: string
+          journal_entries_count: number
+          longest_streak_this_week: number
+          overcome_struggles: Json
+          prayer_completions_count: number
+          prayers_by_type: Json
+          recurring_struggles: Json
+          reflection: string | null
+          rosaries_completed: number
+          saint_breakdown: Json
+          saint_message_count: number
+          saint_minutes_estimate: number
+          scripture: string | null
+          top_saint: string | null
+          top_virtues: Json
+          user_id: string
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          confessions_count?: number
+          created_at?: string
+          current_streak?: number
+          emotional_tone?: string | null
+          generated_at?: string
+          headline?: string | null
+          id?: string
+          journal_entries_count?: number
+          longest_streak_this_week?: number
+          overcome_struggles?: Json
+          prayer_completions_count?: number
+          prayers_by_type?: Json
+          recurring_struggles?: Json
+          reflection?: string | null
+          rosaries_completed?: number
+          saint_breakdown?: Json
+          saint_message_count?: number
+          saint_minutes_estimate?: number
+          scripture?: string | null
+          top_saint?: string | null
+          top_virtues?: Json
+          user_id: string
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          confessions_count?: number
+          created_at?: string
+          current_streak?: number
+          emotional_tone?: string | null
+          generated_at?: string
+          headline?: string | null
+          id?: string
+          journal_entries_count?: number
+          longest_streak_this_week?: number
+          overcome_struggles?: Json
+          prayer_completions_count?: number
+          prayers_by_type?: Json
+          recurring_struggles?: Json
+          reflection?: string | null
+          rosaries_completed?: number
+          saint_breakdown?: Json
+          saint_message_count?: number
+          saint_minutes_estimate?: number
+          scripture?: string | null
+          top_saint?: string | null
+          top_virtues?: Json
+          user_id?: string
+          week_end?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
       weekly_reports: {
         Row: {
           created_at: string
