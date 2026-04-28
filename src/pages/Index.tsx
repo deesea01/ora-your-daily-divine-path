@@ -294,6 +294,7 @@ const Index = () => {
         </button>
       </section>
 
+      <SaintCompanionsCarousel />
 
       <section className="animate-fade-in-delay-3">
         <button onClick={() => navigate('/impact')} className="group w-full rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-gold/20 active:scale-[0.98]">
