@@ -10,6 +10,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useWeeklyRecaps } from '@/hooks/useWeeklyRecaps';
 
 import PrayerCard from '@/components/PrayerCard';
+import SEO from '@/components/SEO';
 
 function computeStreak(dates: string[]): number {
   if (dates.length === 0) return 0;

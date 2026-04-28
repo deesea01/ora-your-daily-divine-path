@@ -9,6 +9,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Input } from '@/components/ui/input';
 import { useEntitlement, isPremiumPrayer } from '@/hooks/useEntitlement';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
+import SEO from '@/components/SEO';
 
 const DIFFICULTY_COLORS: Record<string, string> = {
   beginner: 'text-muted-foreground',

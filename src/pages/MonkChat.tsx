@@ -16,6 +16,7 @@ import { notifyAdminError } from '@/lib/notifyAdmin';
 import { useEntitlement, isPremiumGuide, FREE_GUIDE_KEY } from '@/hooks/useEntitlement';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
 import { VoiceUnavailableNote } from '@/components/VoiceUnavailableNote';
+import SEO from '@/components/SEO';
 
 const MOODS: { value: SaintMood; label: string }[] = [
   { value: 'casual', label: 'Casual' },

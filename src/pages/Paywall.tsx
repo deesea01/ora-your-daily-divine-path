@@ -4,6 +4,7 @@ import { Check, Loader2, Shield, Sparkles, BookOpen, BarChart3 } from 'lucide-re
 import { useAuth } from '@/hooks/useAuth';
 import { usePaddleCheckout } from '@/hooks/usePaddleCheckout';
 import { MissionNote } from '@/components/MissionNote';
+import SEO from '@/components/SEO';
 
 const FEATURES = [
   { icon: Sparkles, text: 'Unlimited Saint conversations' },

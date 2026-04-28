@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
 import { lovable } from '@/integrations/lovable/index';
+import SEO from '@/components/SEO';
 
 const Welcome = () => {
   const { user, loading } = useAuth();

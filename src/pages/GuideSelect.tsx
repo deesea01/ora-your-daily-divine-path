@@ -7,6 +7,7 @@ import { SaintAvatar } from '@/components/SaintAvatar';
 import { toast } from 'sonner';
 import { useEntitlement, isPremiumGuide } from '@/hooks/useEntitlement';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
+import SEO from '@/components/SEO';
 
 const GUIDE_PREVIEWS: Record<string, { question: string; answer: string }> = {
   monk: {

@@ -8,6 +8,7 @@ import { SpiritualGuideKey } from '@/lib/guides';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { notifyAdminError } from '@/lib/notifyAdmin';
 import { VoiceUnavailableNote } from '@/components/VoiceUnavailableNote';
+import SEO from '@/components/SEO';
 
 const MYSTERIES: Record<string, { label: string; names: string[] }> = {
   joyful: {

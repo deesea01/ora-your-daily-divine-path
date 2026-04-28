@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import SEO from '@/components/SEO';
 
 const TermsOfService = () => {
   const navigate = useNavigate();
