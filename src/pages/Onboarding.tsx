@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { ArrowLeft, Check, Loader2, Lock } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useUserProfile } from '@/hooks/useUserProfile';
