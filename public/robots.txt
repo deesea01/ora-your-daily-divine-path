@@ -1,14 +1,14 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
+Disallow: /auth
+Disallow: /reset-password
+Disallow: /checkout/success
+Disallow: /unsubscribe
+Disallow: /settings
+Disallow: /confession
+Disallow: /confession/*
+Disallow: /journal
+Disallow: /journal/*
+Disallow: /recap
+
+Sitemap: https://oradevotion.com/sitemap.xml
