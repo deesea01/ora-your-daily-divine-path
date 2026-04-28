@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, Loader2, Shield, Sparkles, BookOpen, BarChart3 } from 'lucide-react';
+import { Check, Loader2, Shield, Sparkles, BookOpen, BarChart3, Users, Heart, Compass, Bell } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { usePaddleCheckout } from '@/hooks/usePaddleCheckout';
 import { MissionNote } from '@/components/MissionNote';
 import SEO from '@/components/SEO';
 
 const FEATURES = [
-  { icon: Sparkles, text: 'Unlimited Saint conversations' },
-  { icon: BookOpen, text: 'Full prayer library, audio & guided practice' },
-  { icon: BookOpen, text: 'Personalized journal & daily Examen' },
-  { icon: BarChart3, text: 'Progress tracking & spiritual insights' },
+  { icon: Users, text: 'Unlimited Saint companions' },
+  { icon: Compass, text: 'Personalized spiritual plans' },
+  { icon: BarChart3, text: 'Faith Journey analytics' },
+  { icon: Heart, text: 'Prayer Vault — remember God\u2019s faithfulness' },
+  { icon: BookOpen, text: 'Premium guided audio prayers' },
+  { icon: Sparkles, text: 'Exclusive novenas & devotionals' },
+  { icon: Bell, text: 'Early access to new features' },
 ];
 
 const Paywall = () => {
