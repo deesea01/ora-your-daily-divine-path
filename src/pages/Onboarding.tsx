@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { ArrowLeft, Check, Loader2, Lock } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -92,8 +92,8 @@ function ProgressDots({ step }: { step: number }) {
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { saveProfile, setGuide } = useUserProfile();
+  const { user, loading: authLoading } = useAuth();
+  const { saveProfile, setGuide, profile, loading: profileLoading } = useUserProfile();
   const { save: saveResponses } = useOnboardingResponses();
 
   const [step, setStep] = useState(0);
@@ -112,6 +112,18 @@ const Onboarding = () => {
   useEffect(() => {
     if (user === null) navigate('/auth', { replace: true });
   }, [user, navigate]);
+
+  // Route guard: if already onboarded, send to home
+  if (authLoading || profileLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-6 w-6 rounded-full border-2 border-gold border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+  if (user && profile?.onboarding_completed) {
+    return <Navigate to="/" replace />;
+  }
 
   const toggleArr = (val: string, list: string[], setList: (v: string[]) => void) => {
     setList(list.includes(val) ? list.filter((v) => v !== val) : [...list, val]);
