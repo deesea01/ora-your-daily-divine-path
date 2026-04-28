@@ -16,6 +16,7 @@ import { notifyAdminError } from '@/lib/notifyAdmin';
 import { useEntitlement, isPremiumGuide, FREE_GUIDE_KEY } from '@/hooks/useEntitlement';
 import { UpgradePrompt } from '@/components/UpgradePrompt';
 import { VoiceUnavailableNote } from '@/components/VoiceUnavailableNote';
+import SEO from '@/components/SEO';
 
 const MOODS: { value: SaintMood; label: string }[] = [
   { value: 'casual', label: 'Casual' },
@@ -302,6 +303,7 @@ const MonkChat = () => {
 
   return (
     <div className="flex h-screen flex-col bg-background">
+      <SEO title="Talk with a Saint | Ora" description="Chat with Catholic saints for prayer, reflection, and spiritual guidance in Ora." canonicalPath="/monk-chat" />
       <header className="flex items-center gap-3 border-b border-border px-4 py-3">
         <button
           onClick={() => navigate('/')}
