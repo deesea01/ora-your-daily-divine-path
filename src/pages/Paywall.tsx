@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, Loader2, Shield, Sparkles, BookOpen, BarChart3 } from 'lucide-react';
+import { Check, Loader2, Shield, Sparkles, BookOpen, BarChart3, Users, Heart, Compass, Bell } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { usePaddleCheckout } from '@/hooks/usePaddleCheckout';
 import { MissionNote } from '@/components/MissionNote';
 import SEO from '@/components/SEO';
 
 const FEATURES = [
-  { icon: Sparkles, text: 'Unlimited Saint conversations' },
-  { icon: BookOpen, text: 'Full prayer library, audio & guided practice' },
-  { icon: BookOpen, text: 'Personalized journal & daily Examen' },
-  { icon: BarChart3, text: 'Progress tracking & spiritual insights' },
+  { icon: Users, text: 'Unlimited Saint companions' },
+  { icon: Compass, text: 'Personalized spiritual plans' },
+  { icon: BarChart3, text: 'Faith Journey analytics' },
+  { icon: Heart, text: 'Prayer Vault — remember God\u2019s faithfulness' },
+  { icon: BookOpen, text: 'Premium guided audio prayers' },
+  { icon: Sparkles, text: 'Exclusive novenas & devotionals' },
+  { icon: Bell, text: 'Early access to new features' },
 ];
 
 const Paywall = () => {
@@ -44,9 +47,9 @@ const Paywall = () => {
       <div className="flex-1 flex flex-col">
         <div className="pt-10 text-center">
           <div className="mb-4 text-4xl">✨</div>
-          <h1 className="font-serif text-3xl text-foreground mb-2">Continue Your Spiritual Growth</h1>
+          <h1 className="font-serif text-3xl text-foreground mb-2">Deepen Your Walk With God</h1>
           <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-            Unlock everything Ora offers — try it free for 3 days.
+            Grow closer to God with deeper prayer, reflection, and spiritual guidance.
           </p>
         </div>
 
@@ -127,7 +130,7 @@ const Paywall = () => {
           onClick={handleStartTrial}
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
         >
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Start Free Trial'}
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Begin Premium Journey'}
         </button>
         <button
           onClick={() => navigate('/', { replace: true })}

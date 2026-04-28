@@ -11,6 +11,8 @@ import { useWeeklyRecaps } from '@/hooks/useWeeklyRecaps';
 
 import PrayerCard from '@/components/PrayerCard';
 import SEO from '@/components/SEO';
+import FaithJourneyCard from '@/components/FaithJourneyCard';
+import SaintCompanionsCarousel from '@/components/SaintCompanionsCarousel';
 
 function computeStreak(dates: string[]): number {
   if (dates.length === 0) return 0;
@@ -168,6 +170,8 @@ const Index = () => {
         </div>
       </section>
 
+      <FaithJourneyCard streak={streak} />
+
       {latestRecap && (
         <section className="mb-8 animate-fade-in">
           <button
@@ -290,6 +294,7 @@ const Index = () => {
         </button>
       </section>
 
+      <SaintCompanionsCarousel />
 
       <section className="animate-fade-in-delay-3">
         <button onClick={() => navigate('/impact')} className="group w-full rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-gold/20 active:scale-[0.98]">
