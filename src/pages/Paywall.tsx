@@ -47,9 +47,9 @@ const Paywall = () => {
       <div className="flex-1 flex flex-col">
         <div className="pt-10 text-center">
           <div className="mb-4 text-4xl">✨</div>
-          <h1 className="font-serif text-3xl text-foreground mb-2">Continue Your Spiritual Growth</h1>
+          <h1 className="font-serif text-3xl text-foreground mb-2">Deepen Your Walk With God</h1>
           <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-            Unlock everything Ora offers — try it free for 3 days.
+            Grow closer to God with deeper prayer, reflection, and spiritual guidance.
           </p>
         </div>
 
