@@ -73,7 +73,7 @@ export default function WeeklyRecap() {
               {latest.top_saint && SPIRITUAL_GUIDES[latest.top_saint as keyof typeof SPIRITUAL_GUIDES] ? (
                 <img
                   src={SPIRITUAL_GUIDES[latest.top_saint as keyof typeof SPIRITUAL_GUIDES].avatar}
-                  alt=""
+                  alt={`${SPIRITUAL_GUIDES[latest.top_saint as keyof typeof SPIRITUAL_GUIDES].label} portrait`}
                   className="h-14 w-14 rounded-full object-cover ring-2 ring-gold/40"
                 />
               ) : (
