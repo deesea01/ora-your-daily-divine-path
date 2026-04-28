@@ -113,6 +113,18 @@ const Onboarding = () => {
     if (user === null) navigate('/auth', { replace: true });
   }, [user, navigate]);
 
+  // Route guard: if already onboarded, send to home
+  if (authLoading || profileLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-6 w-6 rounded-full border-2 border-gold border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+  if (user && profile?.onboarding_completed) {
+    return <Navigate to="/" replace />;
+  }
+
   const toggleArr = (val: string, list: string[], setList: (v: string[]) => void) => {
     setList(list.includes(val) ? list.filter((v) => v !== val) : [...list, val]);
   };
