@@ -130,7 +130,7 @@ const Paywall = () => {
           onClick={handleStartTrial}
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
         >
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Start Free Trial'}
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Begin Premium Journey'}
         </button>
         <button
           onClick={() => navigate('/', { replace: true })}
