@@ -92,8 +92,8 @@ function ProgressDots({ step }: { step: number }) {
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { saveProfile, setGuide } = useUserProfile();
+  const { user, loading: authLoading } = useAuth();
+  const { saveProfile, setGuide, profile, loading: profileLoading } = useUserProfile();
   const { save: saveResponses } = useOnboardingResponses();
 
   const [step, setStep] = useState(0);
