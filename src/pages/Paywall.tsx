@@ -40,6 +40,7 @@ const Paywall = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe">
+      <SEO title="Pricing & Premium | Ora" description="Unlock unlimited saints, advanced reflections, and full prayer history with Ora Premium." canonicalPath="/paywall" />
       <div className="flex-1 flex flex-col">
         <div className="pt-10 text-center">
           <div className="mb-4 text-4xl">✨</div>

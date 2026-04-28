@@ -7,6 +7,7 @@ const RefundPolicy = () => {
 
   return (
     <div className="min-h-screen bg-background px-6 pb-12 pt-safe">
+      <SEO title="Refund Policy | Ora" description="Ora's refund policy for premium subscriptions." canonicalPath="/refund-policy" />
       <header className="flex items-center gap-3 pt-6 pb-6">
         <button onClick={() => navigate(-1)} className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" />

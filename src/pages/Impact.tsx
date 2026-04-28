@@ -9,6 +9,7 @@ const Impact = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <SEO title="Our Impact | Ora" description="Learn how Ora supports Catholic charities and ministries through your subscription." canonicalPath="/impact" />
       <header className="flex items-center gap-3 border-b border-border px-4 py-4">
         <button
           onClick={() => navigate('/')}

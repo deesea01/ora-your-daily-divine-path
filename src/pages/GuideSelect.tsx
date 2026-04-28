@@ -71,6 +71,7 @@ const GuideSelect = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <SEO title="Choose Your Spiritual Guide | Ora" description="Select your Catholic saint companion — from Francis of Assisi to Thérèse of Lisieux — to walk alongside your prayer life." canonicalPath="/guide" />
       <header className="flex items-center gap-3 border-b border-border px-4 py-4">
         <button
           onClick={() => navigate('/')}

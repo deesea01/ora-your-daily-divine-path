@@ -43,6 +43,7 @@ const Welcome = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe">
+      <SEO title="Ora | Daily Catholic Prayer & Devotion App" description="Grow closer to God daily through guided Catholic prayer, rosary, spiritual reflection, and personalized devotion with Ora." canonicalPath="/welcome" />
       {/* Top bar: language picker */}
       <div className="flex justify-end pt-4">
         <select
