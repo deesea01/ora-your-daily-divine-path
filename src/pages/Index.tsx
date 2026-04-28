@@ -170,7 +170,9 @@ const Index = () => {
         </div>
       </section>
 
-      {latestRecap && (
+      <FaithJourneyCard streak={streak} />
+
+
         <section className="mb-8 animate-fade-in">
           <button
             onClick={() => navigate('/recap')}
