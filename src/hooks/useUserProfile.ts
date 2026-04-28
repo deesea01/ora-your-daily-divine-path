@@ -19,22 +19,32 @@ export function useUserProfile() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     if (!user) {
       setProfile(null);
       setLoading(false);
       return;
     }
 
+    // Reset loading whenever the user changes so consumers don't act on stale state
+    setLoading(true);
     supabase
       .from('user_profiles')
       .select('seeking, experience_level, onboarding_completed, spiritual_guide, preferred_language, daily_prayer_goal, display_name, terms_accepted_at')
       .eq('user_id', user.id)
       .maybeSingle()
-      .then(({ data }) => {
-        setProfile(data as UserProfile | null);
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) {
+          // On error, keep previous profile (don't wipe to null) to avoid false onboarding redirect
+          console.error('[useUserProfile] fetch error', error);
+        } else {
+          setProfile(data as UserProfile | null);
+        }
         setLoading(false);
       });
-  }, [user]);
+    return () => { cancelled = true; };
+  }, [user?.id]);
 
   const saveProfile = async (seeking: string[], experienceLevel: string, dailyGoal?: number, displayName?: string, acceptTerms?: boolean) => {
     if (!user) return;
