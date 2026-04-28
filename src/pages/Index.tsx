@@ -11,6 +11,8 @@ import { useWeeklyRecaps } from '@/hooks/useWeeklyRecaps';
 
 import PrayerCard from '@/components/PrayerCard';
 import SEO from '@/components/SEO';
+import FaithJourneyCard from '@/components/FaithJourneyCard';
+import SaintCompanionsCarousel from '@/components/SaintCompanionsCarousel';
 
 function computeStreak(dates: string[]): number {
   if (dates.length === 0) return 0;
