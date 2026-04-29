@@ -96,6 +96,17 @@ function StepHeader({ step, label, title, subtitle }: { step: number; label: str
   );
 }
 
+function SummaryStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0">
+      <p className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/70">{label}</p>
+      <p className="mt-1 truncate text-xs font-medium text-foreground" title={value}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
 const Onboarding = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
