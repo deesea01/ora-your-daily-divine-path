@@ -432,13 +432,35 @@ const Onboarding = () => {
             <div className="space-y-3">
               <PlanCard label="Your guide" title={recommendedSaint.name} desc={recommendedSaint.reason} />
               <PlanCard label="Daily focus" title={topGoal} desc={`We'll center your daily prayer around ${topGoal.toLowerCase()}.`} />
-              <PlanCard label="Scripture anchor" title={scripture.ref} desc={`"${scripture.text}"`} />
-              <PlanCard label="Confession cadence" title={cadence} desc="A gentle rhythm for the sacrament — never a burden." />
+              <PlanCard label="Scripture anchor" title={scripture.ref} desc={`"${scripture.text}" — ${previewPlan.scripture.reason}`} />
+              <PlanCard label="Confession cadence" title={cadence} desc={previewPlan.confession_cadence.reason} />
               <PlanCard
                 label="Daily rhythm"
                 title={COMMITMENTS.find((c) => c.value === commitment)?.label ?? '10 minutes'}
-                desc="Morning prayer · midday pause · evening Examen."
+                desc={`Morning: ${previewPlan.routine.morning} · Evening: ${previewPlan.routine.evening}`}
               />
+              <div className="rounded-2xl border border-border bg-card p-4">
+                <p className="text-[10px] uppercase tracking-widest text-gold/60 mb-2">Your prayers ({previewPlan.prayers.length})</p>
+                <ul className="space-y-1.5">
+                  {previewPlan.prayers.map((p) => (
+                    <li key={p.prayer_id} className="flex items-start gap-2 text-sm">
+                      <span className="mt-1 h-1 w-1 rounded-full bg-gold/60 shrink-0" />
+                      <span className="text-foreground">{p.title}</span>
+                      <span className="text-muted-foreground/70 text-xs ml-auto capitalize shrink-0">{p.slot}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              {previewPlan.journal_prompts.length > 0 && (
+                <div className="rounded-2xl border border-border bg-card p-4">
+                  <p className="text-[10px] uppercase tracking-widest text-gold/60 mb-2">Journal prompts</p>
+                  <ul className="space-y-1.5">
+                    {previewPlan.journal_prompts.slice(0, 3).map((q) => (
+                      <li key={q} className="text-sm text-muted-foreground italic leading-snug">"{q}"</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
 
