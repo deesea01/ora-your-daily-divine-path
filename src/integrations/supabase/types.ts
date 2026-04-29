@@ -299,6 +299,39 @@ export type Database = {
         }
         Relationships: []
       }
+      intentions: {
+        Row: {
+          answered: boolean
+          answered_at: string | null
+          category: string | null
+          created_at: string
+          id: string
+          text: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answered?: boolean
+          answered_at?: string | null
+          category?: string | null
+          created_at?: string
+          id?: string
+          text: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answered?: boolean
+          answered_at?: string | null
+          category?: string | null
+          created_at?: string
+          id?: string
+          text?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       journal_entries: {
         Row: {
           content: string
@@ -545,6 +578,63 @@ export type Database = {
         }
         Relationships: []
       }
+      saint_interactions: {
+        Row: {
+          created_at: string
+          id: string
+          interaction_type: string
+          metadata: Json | null
+          saint_key: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          interaction_type?: string
+          metadata?: Json | null
+          saint_key: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interaction_type?: string
+          metadata?: Json | null
+          saint_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      scripture_saves: {
+        Row: {
+          created_at: string
+          id: string
+          note: string | null
+          passage_text: string | null
+          reference: string
+          theme: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          passage_text?: string | null
+          reference: string
+          theme?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          passage_text?: string | null
+          reference?: string
+          theme?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       spiritual_insights: {
         Row: {
           entry_count: number
@@ -613,6 +703,57 @@ export type Database = {
           growing_virtues?: Json
           id?: string
           recurring_struggles?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
+      spiritual_profiles: {
+        Row: {
+          ai_invitation: string | null
+          ai_summary: string | null
+          created_at: string
+          devotional_consistency: number | null
+          growth_areas: Json
+          id: string
+          last_refreshed_at: string | null
+          preferred_devotional_time: string | null
+          recommendations: Json
+          saints_affinity: Json
+          struggles: Json
+          top_saint: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_invitation?: string | null
+          ai_summary?: string | null
+          created_at?: string
+          devotional_consistency?: number | null
+          growth_areas?: Json
+          id?: string
+          last_refreshed_at?: string | null
+          preferred_devotional_time?: string | null
+          recommendations?: Json
+          saints_affinity?: Json
+          struggles?: Json
+          top_saint?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_invitation?: string | null
+          ai_summary?: string | null
+          created_at?: string
+          devotional_consistency?: number | null
+          growth_areas?: Json
+          id?: string
+          last_refreshed_at?: string | null
+          preferred_devotional_time?: string | null
+          recommendations?: Json
+          saints_affinity?: Json
+          struggles?: Json
+          top_saint?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []

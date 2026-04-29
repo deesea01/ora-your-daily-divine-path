@@ -10,10 +10,6 @@ import { UpgradePrompt } from '@/components/UpgradePrompt';
 import SEO from '@/components/SEO';
 
 const GUIDE_PREVIEWS: Record<string, { question: string; answer: string }> = {
-  monk: {
-    question: "I feel anxious about the future.",
-    answer: "Take a breath. Return to the present moment — that is where God dwells. Say slowly: \"Lord, I trust in You.\" Repeat it until stillness settles. Anxiety pulls you forward; prayer draws you back to now.",
-  },
   st_francis: {
     question: "I feel anxious about the future.",
     answer: "Dear friend, look at the birds — they do not worry about tomorrow, yet your Father feeds them. Let go of what you cannot carry. Be content with this moment, for it is a gift. Peace begins with trust.",

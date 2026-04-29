@@ -1,4 +1,3 @@
-import monkAvatar from '@/assets/avatars/monk.jpg';
 import stFrancisAvatar from '@/assets/avatars/st-francis.jpg';
 import stAugustineAvatar from '@/assets/avatars/st-augustine.jpg';
 import stThomasAquinasAvatar from '@/assets/avatars/st-thomas-aquinas.jpg';
@@ -22,19 +21,6 @@ export interface SpiritualGuide {
 }
 
 export const SPIRITUAL_GUIDES: Record<string, SpiritualGuide> = {
-  monk: {
-    label: 'The Monk',
-    emoji: '🙏',
-    description: 'Calm, minimal, grounded in daily discipline',
-    tone: 'calm, minimal, and grounded',
-    focus: 'silence, daily structure, consistency, and small repeatable habits of prayer',
-    avatar: monkAvatar,
-    era: 'Timeless',
-    biography: 'A devoted contemplative shaped by monastic tradition. He guides with patience and gentle wisdom, meeting each soul where they are.',
-    prayerSpecialty: 'Lectio Divina, daily rhythm of prayer, and silent meditation',
-    quote: '"Be still, and know that He is God."',
-    disclaimer: 'This is a devotional character inspired by the monastic spiritual tradition.',
-  },
   st_francis: {
     label: 'St. Francis of Assisi',
     emoji: '🕊️',
@@ -131,6 +117,6 @@ export const SPIRITUAL_GUIDES: Record<string, SpiritualGuide> = {
 export type SpiritualGuideKey = keyof typeof SPIRITUAL_GUIDES;
 
 export function getGuideSystemPrompt(guideKey: string): string {
-  const guide = SPIRITUAL_GUIDES[guideKey as SpiritualGuideKey] || SPIRITUAL_GUIDES.monk;
+  const guide = SPIRITUAL_GUIDES[guideKey as SpiritualGuideKey] || SPIRITUAL_GUIDES.st_francis;
   return `You embody the spiritual character of ${guide.label}. Your tone is ${guide.tone}. You focus on ${guide.focus}. Incorporate scripture when relevant. Keep responses concise (3-6 sentences). Be pastoral, not preachy.`;
 }

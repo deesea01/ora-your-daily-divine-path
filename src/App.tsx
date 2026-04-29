@@ -38,6 +38,8 @@ import NotFound from "./pages/NotFound.tsx";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { AuthNav } from "@/components/AuthNav";
 import { AuthFooterFallback } from "@/components/AuthFooterFallback";
+import { RequirePremium } from "@/components/RequirePremium";
+import SpiritualJourney from "./pages/SpiritualJourney.tsx";
 
 const queryClient = new QueryClient();
 
@@ -56,31 +58,35 @@ const App = () => (
               <Route path="/welcome" element={<Welcome />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/monk-chat" element={<MonkChat />} />
-              <Route path="/prayer/:type" element={<PrayerDetail />} />
-              <Route path="/rosary" element={<Rosary />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/refund-policy" element={<RefundPolicy />} />
-              <Route path="/guide" element={<GuideSelect />} />
-              <Route path="/impact" element={<Impact />} />
-              <Route path="/confession" element={<ConfessionDashboard />} />
-              <Route path="/confession/examine" element={<ExaminationOfConscience />} />
-              <Route path="/confession/prep" element={<ConfessionPrepSummary />} />
-              <Route path="/confession/log" element={<LogConfession />} />
-              <Route path="/confession/history" element={<ConfessionHistory />} />
-              <Route path="/confession/privacy" element={<ConfessionPrivacy />} />
-              <Route path="/prayer-library" element={<PrayerLibrary />} />
-              <Route path="/prayer-library/routines" element={<PrayerRoutines />} />
-              <Route path="/prayer-library/:prayerId" element={<PrayerView />} />
-              <Route path="/journal" element={<JournalHome />} />
-              <Route path="/journal/examen" element={<JournalExamen />} />
-              <Route path="/settings" element={<Settings />} />
               <Route path="/paywall" element={<Paywall />} />
               <Route path="/checkout/success" element={<CheckoutSuccess />} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
-              <Route path="/recap" element={<WeeklyRecap />} />
+              <Route path="/settings" element={<Settings />} />
+
+              {/* Premium-gated routes */}
+              <Route path="/monk-chat" element={<RequirePremium><MonkChat /></RequirePremium>} />
+              <Route path="/prayer/:type" element={<RequirePremium><PrayerDetail /></RequirePremium>} />
+              <Route path="/rosary" element={<RequirePremium><Rosary /></RequirePremium>} />
+              <Route path="/guide" element={<RequirePremium><GuideSelect /></RequirePremium>} />
+              <Route path="/impact" element={<RequirePremium><Impact /></RequirePremium>} />
+              <Route path="/journey" element={<RequirePremium><SpiritualJourney /></RequirePremium>} />
+              <Route path="/confession" element={<RequirePremium><ConfessionDashboard /></RequirePremium>} />
+              <Route path="/confession/examine" element={<RequirePremium><ExaminationOfConscience /></RequirePremium>} />
+              <Route path="/confession/prep" element={<RequirePremium><ConfessionPrepSummary /></RequirePremium>} />
+              <Route path="/confession/log" element={<RequirePremium><LogConfession /></RequirePremium>} />
+              <Route path="/confession/history" element={<RequirePremium><ConfessionHistory /></RequirePremium>} />
+              <Route path="/confession/privacy" element={<RequirePremium><ConfessionPrivacy /></RequirePremium>} />
+              <Route path="/prayer-library" element={<RequirePremium><PrayerLibrary /></RequirePremium>} />
+              <Route path="/prayer-library/routines" element={<RequirePremium><PrayerRoutines /></RequirePremium>} />
+              <Route path="/prayer-library/:prayerId" element={<RequirePremium><PrayerView /></RequirePremium>} />
+              <Route path="/journal" element={<RequirePremium><JournalHome /></RequirePremium>} />
+              <Route path="/journal/examen" element={<RequirePremium><JournalExamen /></RequirePremium>} />
+              <Route path="/recap" element={<RequirePremium><WeeklyRecap /></RequirePremium>} />
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

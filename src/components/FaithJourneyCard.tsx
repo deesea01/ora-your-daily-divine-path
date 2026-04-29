@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Lock, Flame, PenLine, Heart, BookOpen, Compass, UserRound } from "lucide-react";
+import { Sparkles, Flame, PenLine, Compass, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useEntitlement } from "@/hooks/useEntitlement";
+import { useSpiritualProfile } from "@/hooks/useSpiritualProfile";
 
 interface Props {
   streak: number;
@@ -11,7 +11,7 @@ interface Props {
 
 export function FaithJourneyCard({ streak }: Props) {
   const { user } = useAuth();
-  const { isPremium } = useEntitlement();
+  const { profile } = useSpiritualProfile();
   const navigate = useNavigate();
   const [journalCount, setJournalCount] = useState<number | null>(null);
 
@@ -24,81 +24,62 @@ export function FaithJourneyCard({ streak }: Props) {
       .then(({ count }) => setJournalCount(count ?? 0));
   }, [user]);
 
-  const freeMetrics = [
-    { icon: Flame, label: "Prayer streak", value: `${streak} ${streak === 1 ? "day" : "days"}` },
-    { icon: PenLine, label: "Journal reflections", value: journalCount === null ? "—" : `${journalCount}` },
-    { icon: Heart, label: "Gratitude growth", value: "+18%" },
-    { icon: BookOpen, label: "Scripture engagement", value: "+22%" },
-  ];
-
-  const lockedMetrics = [
-    { icon: Sparkles, label: "Monthly spiritual review" },
-    { icon: Compass, label: "Personalized virtue" },
-    { icon: UserRound, label: "Saint mentor pick" },
-  ];
+  const topRec = profile?.recommendations?.[0];
+  const consistency = profile?.devotional_consistency ?? 0;
 
   return (
     <section className="mb-8 animate-fade-in">
-      <div className="relative overflow-hidden rounded-2xl border border-gold/25 bg-gradient-to-br from-card via-card to-gold/5 p-5 glow-gold">
+      <button
+        onClick={() => navigate("/journey")}
+        className="group relative w-full overflow-hidden rounded-2xl border border-gold/25 bg-gradient-to-br from-card via-card to-gold/5 p-5 text-left transition-all hover:border-gold/50 active:scale-[0.99] glow-gold"
+      >
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.3em] text-gold/80">Your Faith Journey</p>
+            <p className="text-[10px] uppercase tracking-[0.3em] text-gold/80">Your Spiritual Journey</p>
             <h2 className="mt-1 font-serif text-xl text-foreground">How God is shaping your heart</h2>
           </div>
           <Sparkles className="h-5 w-5 text-gold" />
         </div>
 
-        <div className="mt-5 grid grid-cols-2 gap-2.5">
-          {freeMetrics.map((m) => (
-            <div
-              key={m.label}
-              className="rounded-xl border border-border/60 bg-background/40 p-3"
-            >
-              <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
-                <m.icon className="h-3 w-3 text-gold/80" />
-                {m.label}
-              </div>
-              <p className="mt-1 font-serif text-lg text-foreground">{m.value}</p>
+        <div className="mt-5 grid grid-cols-3 gap-2.5">
+          <div className="rounded-xl border border-border/60 bg-background/40 p-3">
+            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <Flame className="h-3 w-3 text-gold/80" /> Streak
             </div>
-          ))}
+            <p className="mt-1 font-serif text-lg text-foreground">{streak}d</p>
+          </div>
+          <div className="rounded-xl border border-border/60 bg-background/40 p-3">
+            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <Compass className="h-3 w-3 text-gold/80" /> Rhythm
+            </div>
+            <p className="mt-1 font-serif text-lg text-foreground">{consistency}%</p>
+          </div>
+          <div className="rounded-xl border border-border/60 bg-background/40 p-3">
+            <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <PenLine className="h-3 w-3 text-gold/80" /> Journal
+            </div>
+            <p className="mt-1 font-serif text-lg text-foreground">{journalCount ?? "—"}</p>
+          </div>
         </div>
 
-        {!isPremium && (
-          <>
-            <div className="mt-3 space-y-2">
-              {lockedMetrics.map((m) => (
-                <div
-                  key={m.label}
-                  className="relative flex items-center justify-between rounded-xl border border-gold/15 bg-background/40 p-3"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gold/10">
-                      <m.icon className="h-3.5 w-3.5 text-gold/70" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">{m.label}</p>
-                      <p className="select-none font-serif text-sm text-foreground/80 blur-[3px]">
-                        Reflecting trust & surrender
-                      </p>
-                    </div>
-                  </div>
-                  <Lock className="h-3.5 w-3.5 text-gold/70" />
-                </div>
-              ))}
-            </div>
-
-            <button
-              onClick={() => navigate("/paywall")}
-              className="mt-5 w-full rounded-xl bg-gold py-3 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98]"
-            >
-              Unlock Your Full Spiritual Journey
-            </button>
-            <p className="mt-2 text-center text-[11px] text-muted-foreground">
-              See how God is shaping your heart through prayer, reflection, and devotion.
+        {topRec ? (
+          <div className="mt-4 rounded-xl border border-gold/20 bg-background/40 p-3">
+            <p className="text-[10px] uppercase tracking-wider text-gold/80">Today Ora suggests</p>
+            <p className="mt-1 font-serif text-sm text-foreground leading-snug">{topRec.title}</p>
+            <p className="mt-1 text-[11px] text-muted-foreground line-clamp-2">{topRec.reason}</p>
+          </div>
+        ) : (
+          <div className="mt-4 rounded-xl border border-gold/15 bg-background/40 p-3">
+            <p className="text-[11px] text-muted-foreground italic">
+              As you pray and reflect, Ora will gather gentle insights here.
             </p>
-          </>
+          </div>
         )}
-      </div>
+
+        <div className="mt-4 flex items-center justify-end gap-1 text-xs font-medium text-gold">
+          Open spiritual journey <ChevronRight className="h-3 w-3" />
+        </div>
+      </button>
     </section>
   );
 }

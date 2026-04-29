@@ -8,6 +8,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { SPIRITUAL_GUIDES, SpiritualGuideKey } from '@/lib/guides';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useWeeklyRecaps } from '@/hooks/useWeeklyRecaps';
+import { useEntitlement } from '@/hooks/useEntitlement';
 
 import PrayerCard from '@/components/PrayerCard';
 import SEO from '@/components/SEO';
@@ -38,6 +39,7 @@ const Index = () => {
   const { profile, loading: profileLoading, setDailyPrayerGoal } = useUserProfile();
   const { t, language } = useLanguage();
   const { latest: latestRecap } = useWeeklyRecaps();
+  const { isPremium, loading: entLoading } = useEntitlement();
   const [completions, setCompletions] = useState<Set<string>>(new Set());
   const [streak, setStreak] = useState(0);
   const [showGoalPicker, setShowGoalPicker] = useState(false);
@@ -66,7 +68,7 @@ const Index = () => {
       });
   }, [user]);
 
-  if (loading || profileLoading) {
+  if (loading || profileLoading || entLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-6 w-6 rounded-full border-2 border-gold border-t-transparent animate-spin" />
@@ -76,6 +78,7 @@ const Index = () => {
 
   if (!user) return <Navigate to="/welcome" replace />;
   if (!profile?.onboarding_completed) return <Navigate to="/onboarding" replace />;
+  if (!isPremium) return <Navigate to="/paywall" replace />;
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? t.goodMorning : hour < 17 ? t.goodAfternoon : t.goodEvening;
