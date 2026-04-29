@@ -129,6 +129,11 @@
   50% { transform: scale(1.03); box-shadow: 0 0 24px hsl(var(--gold) / 0.5); }
 }
 
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
 .bg-gradient-radial {
   background: radial-gradient(circle, var(--tw-gradient-from), var(--tw-gradient-to));
 }

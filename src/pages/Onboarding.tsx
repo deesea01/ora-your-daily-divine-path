@@ -107,6 +107,53 @@ function SummaryStat({ label, value }: { label: string; value: string }) {
   );
 }
 
+function OnboardingSkeleton() {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6 py-10 animate-fade-in">
+      {/* Animated logo with sacred glow */}
+      <div className="relative mb-8 flex items-center justify-center">
+        <div
+          className="pointer-events-none absolute inset-0 -m-6 rounded-full bg-gold/15 blur-2xl"
+          style={{ animation: 'avatar-breathe 3.2s ease-in-out infinite' }}
+        />
+        <div
+          className="pointer-events-none absolute inset-0 -m-2 rounded-full bg-gold/25 blur-xl"
+          style={{ animation: 'avatar-breathe 3.2s ease-in-out infinite', animationDelay: '400ms' }}
+        />
+        <img
+          src={logoImg}
+          alt=""
+          aria-hidden="true"
+          className="relative h-14 w-14 opacity-90"
+          style={{ animation: 'avatar-breathe 3.2s ease-in-out infinite' }}
+        />
+      </div>
+
+      {/* Reassuring copy */}
+      <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.2em] text-gold/70">
+        Preparing your path
+      </p>
+      <h1 className="mb-1 font-serif text-xl text-foreground">A quiet moment…</h1>
+      <p className="mb-8 max-w-xs text-center text-sm text-muted-foreground">
+        Setting things up gently for you.
+      </p>
+
+      {/* Skeleton rows that mirror the upcoming layout */}
+      <div className="w-full max-w-sm space-y-3">
+        <div className="h-20 rounded-2xl border border-border bg-card overflow-hidden relative">
+          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-gold/10 to-transparent animate-[shimmer_2.2s_ease-in-out_infinite]" />
+        </div>
+        <div className="h-14 rounded-2xl border border-border bg-card overflow-hidden relative">
+          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-gold/10 to-transparent animate-[shimmer_2.2s_ease-in-out_infinite]" style={{ animationDelay: '180ms' }} />
+        </div>
+        <div className="h-14 rounded-2xl border border-border bg-card overflow-hidden relative">
+          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-gold/10 to-transparent animate-[shimmer_2.2s_ease-in-out_infinite]" style={{ animationDelay: '360ms' }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const Onboarding = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -310,11 +357,7 @@ const Onboarding = () => {
   }
 
   if (authLoading || profileLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-6 w-6 rounded-full border-2 border-gold border-t-transparent animate-spin" />
-      </div>
-    );
+    return <OnboardingSkeleton />;
   }
   if (user && profile?.onboarding_completed) {
     return <Navigate to="/" replace />;
