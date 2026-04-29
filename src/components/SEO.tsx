@@ -10,9 +10,9 @@ interface SEOProps {
 }
 
 const SITE_URL = 'https://oradevotion.com';
-const DEFAULT_TITLE = 'Ora | Daily Catholic Prayer & Devotion App';
+const DEFAULT_TITLE = 'Ora — Daily Catholic Prayer App for Devotion, Rosary & Saints';
 const DEFAULT_DESC =
-  'Grow closer to God daily through guided Catholic prayer, rosary, spiritual reflection, and personalized devotion with Ora.';
+  'Ora is a daily devotion app with guided Catholic prayers, the rosary, saints, and a personalized prayer plan to help you grow closer to God.';
 const DEFAULT_IMAGE =
   'https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/03a28cdf-367e-44c6-9dac-855d28cd2b06/id-preview-6c2a924e--402451b9-e2f4-4035-9c31-5d5149811cd4.lovable.app-1775525736791.png';
 
