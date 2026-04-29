@@ -517,6 +517,7 @@ function RecapRow({ label, value, onEdit, hint }: { label: string; value: string
           Edit
         </button>
       )}
+    </div>
   );
 }
 
