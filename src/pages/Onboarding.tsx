@@ -96,6 +96,17 @@ function StepHeader({ step, label, title, subtitle }: { step: number; label: str
   );
 }
 
+function SummaryStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0">
+      <p className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/70">{label}</p>
+      <p className="mt-1 truncate text-xs font-medium text-foreground" title={value}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
 const Onboarding = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -512,6 +523,44 @@ const Onboarding = () => {
             <p className="text-sm text-muted-foreground text-center mb-6">
               Drawn from your hopes, your stage, and what you carry today.
             </p>
+
+            {/* Prayer Path Summary — sacred at-a-glance card */}
+            <div className="relative mb-5 overflow-hidden rounded-2xl border border-gold/30 bg-gradient-to-b from-card to-background p-5 shadow-[0_0_40px_-12px_hsl(var(--gold)/0.25)]">
+              <div className="pointer-events-none absolute -top-16 right-[-30%] h-48 w-48 rounded-full bg-gold/10 blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-20 left-[-20%] h-40 w-40 rounded-full bg-gold/5 blur-3xl" />
+
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="h-3 w-3 text-gold/80" />
+                  <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-gold/70">
+                    Your prayer path
+                  </p>
+                </div>
+
+                <h2 className="font-serif text-2xl leading-tight text-foreground">
+                  Walking with{' '}
+                  <span className="text-gold">{previewPlan.saint.name.replace(/^St\.\s*/, '')}</span>
+                  <span className="text-muted-foreground/70"> · </span>
+                  <span className="italic text-foreground/90">{topGoal}</span>
+                </h2>
+
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  {COMMITMENTS.find((c) => c.value === commitment)?.label ?? '10 minutes'} a day
+                  {' · '}{previewPlan.confession_cadence.label} confession
+                  {' · '}{previewPlan.prayers.length} prayers
+                </p>
+
+                <div className="mt-4 grid grid-cols-3 gap-2 border-t border-border/60 pt-4">
+                  <SummaryStat label="Morning" value={previewPlan.routine.morning} />
+                  <SummaryStat label="Evening" value={previewPlan.routine.evening} />
+                  <SummaryStat label="Scripture" value={previewPlan.scripture.ref} />
+                </div>
+
+                <p className="mt-4 border-l-2 border-gold/40 pl-3 text-xs italic leading-relaxed text-foreground/80">
+                  "{previewPlan.scripture.text}"
+                </p>
+              </div>
+            </div>
 
             <div className="space-y-3">
               <PlanCard label="Your guide" title={recommendedSaint.name} desc={recommendedSaint.reason} />
