@@ -277,21 +277,62 @@ const Onboarding = () => {
         </StepShell>
       )}
 
-      {/* Step 6 — Terms & build */}
+      {/* Step 6 — Sacred consent */}
       {step === 6 && (
         <div className="flex flex-1 flex-col animate-fade-in">
           <div className="flex-1 flex flex-col justify-center">
-            <StepHeader step={6} label="Almost there" title="Ready to build your devotional path?" subtitle="Ora will craft prayers, saints, and scripture chosen for you." />
-            <div className="mt-2 flex items-start gap-3 rounded-xl border border-border bg-card p-4">
-              <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(c) => setTermsAccepted(c === true)} className="mt-0.5" />
-              <label htmlFor="terms" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
-                I agree to the{' '}
-                <Link to="/privacy-policy" className="text-gold hover:underline" target="_blank">Privacy Policy</Link>{' '}
-                and{' '}
-                <Link to="/terms-of-service" className="text-gold hover:underline" target="_blank">Terms of Service</Link>.
-              </label>
+            <div className="text-center mb-8">
+              <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full border border-gold/30 bg-gold/5">
+                <span className="text-2xl">🕯️</span>
+              </div>
+              <p className="text-xs font-medium uppercase tracking-widest text-gold/60 mb-2">
+                Step 6 of {TOTAL_STEPS - 1} · A quiet covenant
+              </p>
+              <h1 className="font-serif text-2xl text-foreground mb-3 leading-snug">
+                Before we begin
+              </h1>
+              <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed">
+                What you share with Ora is held in confidence — for your spiritual growth, not for sale.
+              </p>
             </div>
+
+            <div className="space-y-2.5 mb-6">
+              <ConsentRow text="Your reflections, struggles, and prayers stay private to you." />
+              <ConsentRow text="Ora will never sell or share your spiritual data." />
+              <ConsentRow text="You may delete your account and data at any time." />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setTermsAccepted(!termsAccepted)}
+              className={`w-full rounded-2xl border p-4 text-left transition-all active:scale-[0.99] ${
+                termsAccepted ? 'border-gold/60 bg-gold/10' : 'border-border bg-card hover:border-gold/30'
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-all ${
+                    termsAccepted ? 'border-gold bg-gold' : 'border-border bg-background'
+                  }`}
+                  aria-hidden="true"
+                >
+                  {termsAccepted && <Check className="h-3 w-3 text-primary-foreground" strokeWidth={3} />}
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  I agree to Ora's{' '}
+                  <Link to="/privacy-policy" onClick={(e) => e.stopPropagation()} className="text-gold underline-offset-2 hover:underline" target="_blank">
+                    Privacy Policy
+                  </Link>{' '}
+                  and{' '}
+                  <Link to="/terms-of-service" onClick={(e) => e.stopPropagation()} className="text-gold underline-offset-2 hover:underline" target="_blank">
+                    Terms of Service
+                  </Link>
+                  , and I'm ready to begin a devotional path tended with care.
+                </p>
+              </div>
+            </button>
           </div>
+
           <div className="mt-8 flex gap-3">
             <button onClick={back} className="rounded-xl border border-border px-4 py-4 text-muted-foreground transition-colors hover:text-foreground" aria-label="Back">
               <ArrowLeft className="h-4 w-4" />
@@ -299,7 +340,7 @@ const Onboarding = () => {
             <button
               onClick={buildPlanAndSave}
               disabled={!termsAccepted || saving}
-              className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-40"
+              className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Build my devotional path'}
             </button>
