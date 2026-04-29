@@ -209,6 +209,13 @@ const Onboarding = () => {
 
   const goToPaywall = () => navigate('/paywall', { replace: true });
 
+  // Plan summary — prefers the persisted plan, falls back to a live preview.
+  // Must be declared before any early return to keep hook order stable.
+  const previewPlan = useMemo(
+    () => plan ?? buildDevotionalPlan({ goals, stage, burdens, styles, commitment }),
+    [plan, goals, stage, burdens, styles, commitment],
+  );
+
   if (authLoading || profileLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -220,11 +227,6 @@ const Onboarding = () => {
     return <Navigate to="/" replace />;
   }
 
-  // Plan summary — prefers the persisted plan, falls back to a live preview
-  const previewPlan = useMemo(
-    () => plan ?? buildDevotionalPlan({ goals, stage, burdens, styles, commitment }),
-    [plan, goals, stage, burdens, styles, commitment],
-  );
   const topGoal = previewPlan.daily_focus.label;
   const recommendedSaint = { name: previewPlan.saint.name, reason: previewPlan.saint.reason };
   const cadence = `Confession — ${previewPlan.confession_cadence.label.toLowerCase()}`;
