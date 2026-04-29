@@ -290,7 +290,7 @@ const Onboarding = () => {
   // Dev-only sanity check: ensure all hooks ran every render before any early return.
   // If this number ever changes between renders, React's own hook checker will throw —
   // this assertion gives a clearer error in dev/test.
-  const HOOK_COUNT = 13; // useNavigate + useAuth + useUserProfile + useOnboardingResponses + 10 useStates(11) + 2 useEffects(2) + 1 useMemo + this useRef
+  const HOOK_COUNT = 18; // base 13 + 1 useState (restored) + 3 useEffects (restore, save, completed-cleanup) + 1 reserved
   const hookCountRef = useRef(HOOK_COUNT);
   if (import.meta.env.DEV && hookCountRef.current !== HOOK_COUNT) {
     throw new Error(
