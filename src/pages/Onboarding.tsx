@@ -9,7 +9,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
 import logoImg from '@/assets/logo.png';
 
-const TOTAL_STEPS = 9; // 0..8 visible progress
+const TOTAL_STEPS = 10; // 0..9 visible progress (added recap)
 
 const GOALS = [
   { value: 'peace', label: 'Peace', emoji: '🕊️' },
@@ -352,11 +352,75 @@ const Onboarding = () => {
           </div>
 
           <button
-            onClick={goToPaywall}
+            onClick={() => setStep(9)}
             className="mt-8 w-full rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98]"
           >
-            Continue
+            Review my plan
           </button>
+        </div>
+      )}
+
+      {/* Step 9 — Recap & edit */}
+      {step === 9 && (
+        <div className="flex flex-1 flex-col animate-fade-in pt-4">
+          <div className="flex-1">
+            <p className="text-xs font-medium uppercase tracking-widest text-gold/60 mb-2 text-center">Review your path</p>
+            <h1 className="font-serif text-3xl text-foreground mb-2 text-center leading-tight">
+              Does this feel like you?
+            </h1>
+            <p className="text-sm text-muted-foreground text-center mb-6">
+              Edit anything before you continue. Nothing is locked in.
+            </p>
+
+            <div className="space-y-3">
+              <RecapRow
+                label="Your hopes"
+                value={goals.map((g) => GOALS.find((x) => x.value === g)?.label).filter(Boolean).join(' · ') || 'Not set'}
+                onEdit={() => setStep(1)}
+              />
+              <RecapRow
+                label="Where you are"
+                value={STAGES.find((s) => s.value === stage)?.label || 'Not set'}
+                onEdit={() => setStep(2)}
+              />
+              <RecapRow
+                label="What you carry"
+                value={burdens.length ? burdens.map((b) => BURDENS.find((x) => x.value === b)?.label).filter(Boolean).join(' · ') : 'None shared'}
+                onEdit={() => setStep(3)}
+              />
+              <RecapRow
+                label="Devotional style"
+                value={styles.map((s) => STYLES.find((x) => x.value === s)?.label).filter(Boolean).join(' · ') || 'Not set'}
+                onEdit={() => setStep(4)}
+              />
+              <RecapRow
+                label="Daily commitment"
+                value={COMMITMENTS.find((c) => c.value === commitment)?.label || 'Not set'}
+                onEdit={() => setStep(5)}
+              />
+              <RecapRow
+                label="Your guide"
+                value={recommendedSaint.name}
+                hint="Chosen for you based on your selections"
+              />
+            </div>
+          </div>
+
+          <div className="mt-8 flex gap-3">
+            <button
+              onClick={() => setStep(8)}
+              className="rounded-xl border border-border px-4 py-4 text-muted-foreground transition-colors hover:text-foreground"
+              aria-label="Back"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+            <button
+              onClick={goToPaywall}
+              className="flex-1 rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98]"
+            >
+              Looks good — continue
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -433,6 +497,26 @@ function PlanCard({ label, title, desc }: { label: string; title: string; desc: 
       <p className="text-[10px] uppercase tracking-widest text-gold/60 mb-1">{label}</p>
       <p className="font-serif text-lg text-foreground leading-tight">{title}</p>
       <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{desc}</p>
+    </div>
+  );
+}
+
+function RecapRow({ label, value, onEdit, hint }: { label: string; value: string; onEdit?: () => void; hint?: string }) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4 flex items-start gap-3">
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] uppercase tracking-widest text-gold/60 mb-1">{label}</p>
+        <p className="text-sm text-foreground leading-snug break-words">{value}</p>
+        {hint && <p className="mt-1 text-[11px] text-muted-foreground italic">{hint}</p>}
+      </div>
+      {onEdit && (
+        <button
+          onClick={onEdit}
+          className="shrink-0 text-xs font-medium text-gold hover:text-gold/80 transition-colors px-2 py-1"
+        >
+          Edit
+        </button>
+      )}
     </div>
   );
 }
