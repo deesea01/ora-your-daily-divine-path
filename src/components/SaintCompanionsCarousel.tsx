@@ -4,7 +4,6 @@ import { SPIRITUAL_GUIDES, SpiritualGuideKey } from "@/lib/guides";
 import { useEntitlement, FREE_GUIDE_KEY } from "@/hooks/useEntitlement";
 
 const ORDER: SpiritualGuideKey[] = [
-  "monk",
   "st_padre_pio",
   "st_augustine",
   "st_teresa",
