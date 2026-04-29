@@ -47,9 +47,9 @@ const Paywall = () => {
       <div className="flex-1 flex flex-col">
         <div className="pt-10 text-center">
           <div className="mb-4 text-4xl">✨</div>
-          <h1 className="font-serif text-3xl text-foreground mb-2">Deepen Your Walk With God</h1>
+          <h1 className="font-serif text-3xl text-foreground mb-2">Begin Your New Journey</h1>
           <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-            Grow closer to God with deeper prayer, reflection, and spiritual guidance.
+            A guided life of prayer, devotion, and spiritual growth.
           </p>
         </div>
 

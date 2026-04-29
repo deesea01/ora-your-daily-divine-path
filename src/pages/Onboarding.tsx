@@ -1,78 +1,71 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link, Navigate } from 'react-router-dom';
-import { ArrowLeft, Check, Loader2, Lock } from 'lucide-react';
+import { ArrowLeft, Check, Loader2, Sparkles } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useOnboardingResponses } from '@/hooks/useOnboardingResponses';
 import { useAuth } from '@/hooks/useAuth';
-import { UpgradePrompt } from '@/components/UpgradePrompt';
-import { FREE_GUIDE_KEY, isPremiumGuide } from '@/hooks/useEntitlement';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
 import logoImg from '@/assets/logo.png';
 
-const TOTAL_STEPS = 10;
+const TOTAL_STEPS = 9; // 0..8 visible progress
 
-const INTENTS = [
-  { value: 'closer_to_god', label: 'Grow closer to God', emoji: '✝️' },
-  { value: 'daily_habit', label: 'Build a daily prayer habit', emoji: '🕯️' },
-  { value: 'peace_clarity', label: 'Find peace and clarity', emoji: '🕊️' },
-  { value: 'overcome_struggles', label: 'Overcome struggles or sin', emoji: '⚔️' },
-  { value: 'learn_faith', label: 'Learn more about the faith', emoji: '📖' },
-];
-
-const PRAYER_STATES = [
-  { value: 'consistent', label: 'Consistent', desc: 'Prayer is part of my daily rhythm' },
-  { value: 'on_off', label: 'On and off', desc: 'Some weeks strong, others quiet' },
-  { value: 'starting', label: 'Just getting started', desc: 'New to a real prayer life' },
-  { value: 'struggling', label: 'Struggling to stay committed', desc: 'I want to, but it slips' },
-];
-
-const STRUGGLES = [
-  { value: 'anxiety', label: 'Anxiety', emoji: '🌊' },
-  { value: 'discipline', label: 'Discipline', emoji: '⛓️' },
-  { value: 'lust', label: 'Lust / temptation', emoji: '🔥' },
-  { value: 'purpose', label: 'Lack of purpose', emoji: '🧭' },
-  { value: 'stress', label: 'Stress', emoji: '⚡' },
-  { value: 'doubts', label: 'Faith doubts', emoji: '❓' },
-];
-
-const GROWTH = [
-  { value: 'discipline', label: 'Discipline', emoji: '⚔️' },
+const GOALS = [
   { value: 'peace', label: 'Peace', emoji: '🕊️' },
-  { value: 'faith', label: 'Deeper Faith', emoji: '✝️' },
-  { value: 'strength', label: 'Strength', emoji: '🛡️' },
+  { value: 'prayer_habit', label: 'Stronger prayer habit', emoji: '🕯️' },
   { value: 'healing', label: 'Healing', emoji: '💛' },
-  { value: 'purpose', label: 'Purpose', emoji: '🌟' },
+  { value: 'guidance', label: 'Guidance', emoji: '🧭' },
+  { value: 'overcoming_temptation', label: 'Overcoming temptation', emoji: '⚔️' },
+  { value: 'gratitude', label: 'Gratitude', emoji: '🌿' },
+  { value: 'devotion', label: 'Deeper Catholic devotion', emoji: '✝️' },
+  { value: 'return_to_faith', label: 'Return to faith', emoji: '🏠' },
+  { value: 'grief', label: 'Help through grief', emoji: '🤍' },
+  { value: 'discernment', label: 'Discernment', emoji: '🌟' },
+  { value: 'family', label: 'Marriage / family growth', emoji: '👨‍👩‍👧' },
+  { value: 'purpose', label: 'Purpose', emoji: '🌅' },
 ];
 
-const SAINTS = [
-  { value: 'st_francis', label: 'St. Francis of Assisi', tier: 'Premium', desc: 'Joyful poverty, peace, creation' },
-  { value: 'st_augustine', label: 'St. Augustine', tier: 'Premium', desc: 'Restless heart turned toward God' },
-  { value: 'st_thomas_aquinas', label: 'St. Thomas Aquinas', tier: 'Premium', desc: 'Reason, clarity, deep theology' },
-  { value: 'st_teresa', label: 'St. Teresa of Ávila', tier: 'Premium', desc: 'Interior castle and contemplation' },
-  { value: 'st_michael', label: 'St. Michael', tier: 'Premium', desc: 'Spiritual warfare and protection' },
-  { value: 'st_padre_pio', label: 'St. Padre Pio', tier: 'Premium', desc: 'Suffering, mercy, the confessional' },
-  { value: 'st_joan_of_arc', label: 'St. Joan of Arc', tier: 'Premium', desc: 'Courage, mission, holy boldness' },
+const STAGES = [
+  { value: 'exploring', label: 'Exploring faith', desc: 'Curious and beginning to seek' },
+  { value: 'returning', label: 'Returning to prayer', desc: 'Coming back to a rhythm' },
+  { value: 'occasionally', label: 'Pray occasionally', desc: 'In moments of need or quiet' },
+  { value: 'regularly', label: 'Pray regularly', desc: 'A steady part of my week' },
+  { value: 'deep', label: 'Deep devotional life', desc: 'Daily prayer and sacraments' },
 ];
 
-const VOICE_STYLES = [
-  { value: 'gentle', label: 'Gentle & Compassionate', desc: 'Warm, slow, encouraging' },
-  { value: 'direct', label: 'Direct & Disciplined', desc: 'Honest, firm, accountable' },
-  { value: 'wise', label: 'Wise Teacher', desc: 'Thoughtful, patient, instructive' },
+const BURDENS = [
+  { value: 'anxiety', label: 'Anxiety' },
+  { value: 'loneliness', label: 'Loneliness' },
+  { value: 'grief', label: 'Grief' },
+  { value: 'lust', label: 'Lust / temptation' },
+  { value: 'anger', label: 'Anger' },
+  { value: 'forgiveness', label: 'Forgiveness' },
+  { value: 'financial', label: 'Financial stress' },
+  { value: 'marriage', label: 'Marriage struggles' },
+  { value: 'parenting', label: 'Parenting worries' },
+  { value: 'doubt', label: 'Doubt' },
+  { value: 'vocation', label: 'Vocational uncertainty' },
+  { value: 'burnout', label: 'Burnout' },
+  { value: 'other', label: 'Other' },
 ];
 
-function StepHeader({ step, label, title, subtitle }: { step: number; label: string; title: string; subtitle?: string }) {
-  return (
-    <>
-      <p className="text-xs font-medium uppercase tracking-widest text-gold/60 mb-2">
-        Step {step} of {TOTAL_STEPS} · {label}
-      </p>
-      <h1 className="font-serif text-2xl text-foreground mb-2">{title}</h1>
-      {subtitle && <p className="text-sm text-muted-foreground mb-8">{subtitle}</p>}
-    </>
-  );
-}
+const STYLES = [
+  { value: 'structured', label: 'Structured prayer', emoji: '📿' },
+  { value: 'saint', label: 'Saint devotion', emoji: '✨' },
+  { value: 'scripture', label: 'Scripture meditation', emoji: '📖' },
+  { value: 'rosary', label: 'Rosary', emoji: '🌹' },
+  { value: 'examen', label: 'Journaling / Examen', emoji: '✍️' },
+  { value: 'contemplative', label: 'Contemplative prayer', emoji: '🕯️' },
+  { value: 'audio', label: 'Guided audio prayer', emoji: '🎧' },
+];
+
+const COMMITMENTS = [
+  { value: '5', label: '5 minutes', desc: 'A gentle daily breath', goal: 1 },
+  { value: '10', label: '10 minutes', desc: 'A steady morning rhythm', goal: 2 },
+  { value: '20', label: '20 minutes', desc: 'A deeper anchor in your day', goal: 3 },
+  { value: 'deep', label: 'Deep devotional life', desc: 'Multiple devotions throughout the day', goal: 4 },
+];
 
 function ProgressDots({ step }: { step: number }) {
   return (
@@ -89,74 +82,86 @@ function ProgressDots({ step }: { step: number }) {
   );
 }
 
+function StepHeader({ step, label, title, subtitle }: { step: number; label: string; title: string; subtitle?: string }) {
+  return (
+    <>
+      <p className="text-xs font-medium uppercase tracking-widest text-gold/60 mb-2">
+        Step {step} of {TOTAL_STEPS - 1} · {label}
+      </p>
+      <h1 className="font-serif text-2xl text-foreground mb-2 leading-snug">{title}</h1>
+      {subtitle && <p className="text-sm text-muted-foreground mb-6">{subtitle}</p>}
+    </>
+  );
+}
+
 const Onboarding = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { saveProfile, setGuide, profile, loading: profileLoading } = useUserProfile();
+  const { saveProfile, profile, loading: profileLoading } = useUserProfile();
   const { save: saveResponses } = useOnboardingResponses();
 
   const [step, setStep] = useState(0);
   const [displayName, setDisplayName] = useState('');
-  const [intent, setIntent] = useState<string>('');
-  const [prayerState, setPrayerState] = useState<string>('');
-  const [struggles, setStruggles] = useState<string[]>([]);
-  const [growth, setGrowth] = useState<string[]>([]);
-  const [saint, setSaint] = useState<string>('');
-  const [voice, setVoice] = useState<string>('');
+  const [goals, setGoals] = useState<string[]>([]);
+  const [stage, setStage] = useState<string>('');
+  const [burdens, setBurdens] = useState<string[]>([]);
+  const [styles, setStyles] = useState<string[]>([]);
+  const [commitment, setCommitment] = useState<string>('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
-  // If user is unauthenticated, send them to /auth
   useEffect(() => {
     if (user === null) navigate('/auth', { replace: true });
   }, [user, navigate]);
+
+  // Auto-advance loading screen → reveal
+  useEffect(() => {
+    if (step !== 7) return;
+    const t = setTimeout(() => setStep(8), 2600);
+    return () => clearTimeout(t);
+  }, [step]);
 
   const toggleArr = (val: string, list: string[], setList: (v: string[]) => void) => {
     setList(list.includes(val) ? list.filter((v) => v !== val) : [...list, val]);
   };
 
   const back = () => setStep((s) => Math.max(0, s - 1));
-  const next = () => setStep((s) => Math.min(TOTAL_STEPS - 1, s + 1));
+  const next = () => setStep((s) => Math.min(TOTAL_STEPS, s + 1));
 
-  // Persist after each meaningful step (best-effort, non-blocking)
+  // Persist progress along the way (best-effort)
   useEffect(() => {
-    if (!user) return;
-    if (step <= 1) return;
+    if (!user || step <= 1) return;
     saveResponses({
-      intent: intent || undefined,
-      prayer_life_state: prayerState || undefined,
-      struggles,
-      growth_focus: growth,
-      voice_style: voice || undefined,
-      chosen_guide: saint || undefined,
+      intent: goals[0],
+      prayer_life_state: stage || undefined,
+      struggles: burdens,
+      growth_focus: goals,
+      voice_style: styles[0],
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
-  const finishOnboardingAndGoToFirstPrayer = async () => {
+  const buildPlanAndSave = async () => {
     setSaving(true);
-    const goalMap: Record<string, number> = { consistent: 3, on_off: 2, starting: 1, struggling: 1 };
-    const goal = goalMap[prayerState] || 2;
-    await saveProfile(growth, prayerState === 'consistent' ? 'advanced' : prayerState === 'on_off' ? 'intermediate' : 'beginner', goal, displayName.trim(), termsAccepted);
-    if (saint) await setGuide(saint);
+    const goalCount = COMMITMENTS.find((c) => c.value === commitment)?.goal ?? 2;
+    const level =
+      stage === 'deep' || stage === 'regularly' ? 'advanced' : stage === 'occasionally' || stage === 'returning' ? 'intermediate' : 'beginner';
+    await saveProfile(goals, level, goalCount, displayName.trim(), termsAccepted);
     await saveResponses(
       {
-        intent,
-        prayer_life_state: prayerState,
-        struggles,
-        growth_focus: growth,
-        voice_style: voice,
-        chosen_guide: saint,
+        intent: goals[0],
+        prayer_life_state: stage,
+        struggles: burdens,
+        growth_focus: goals,
+        voice_style: styles[0],
       },
       true,
     );
     setSaving(false);
-    next(); // go to first prayer step (8)
+    setStep(7); // loading screen
   };
 
-  const saintObj = SAINTS.find((s) => s.value === saint) || SAINTS[0];
-  const growthLabels = growth.map((g) => GROWTH.find((x) => x.value === g)?.label).filter(Boolean);
+  const goToPaywall = () => navigate('/paywall', { replace: true });
 
   if (authLoading || profileLoading) {
     return (
@@ -169,26 +174,32 @@ const Onboarding = () => {
     return <Navigate to="/" replace />;
   }
 
+  // Build plan summary text
+  const topGoal = GOALS.find((g) => g.value === goals[0])?.label ?? 'a deeper prayer life';
+  const recommendedSaint = pickSaint(goals, burdens);
+  const cadence = burdens.includes('lust') || burdens.includes('anger') ? 'Confession every 2 weeks' : 'Confession monthly';
+  const scripture = pickScripture(goals, burdens);
+
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe">
       <OnboardingTopBar />
-      <ProgressDots step={step} />
+      {step < 7 && <ProgressDots step={step} />}
 
       {/* Step 0 — Welcome */}
       {step === 0 && (
         <div className="flex flex-1 flex-col items-center justify-center text-center animate-fade-in">
           <div className="mb-8 text-5xl">🕊️</div>
           <h1 className="font-serif text-3xl text-foreground mb-3 leading-tight">
-            Grow closer to God in just a few minutes a day.
+            Grow closer to God, one prayer at a time.
           </h1>
           <p className="text-sm text-muted-foreground max-w-xs mb-12">
-            A guided spiritual path personalized to you — saints, prayer, and reflection that meets you where you are.
+            A guided spiritual path — sacred, personal, and made for the life you're living.
           </p>
           <button
             onClick={next}
             className="w-full rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98]"
           >
-            Begin Your Journey
+            Begin your path
           </button>
           <input
             type="text"
@@ -201,201 +212,148 @@ const Onboarding = () => {
         </div>
       )}
 
-      {/* Step 1 — Intent */}
+      {/* Step 1 — Spiritual goals */}
       {step === 1 && (
-        <StepShell onBack={back} onNext={next} disabled={!intent}>
-          <StepHeader step={1} label="Intent" title="What brings you here today?" subtitle="Choose what resonates most." />
-          <div className="space-y-3">
-            {INTENTS.map((opt) => (
-              <SelectCard key={opt.value} active={intent === opt.value} onClick={() => setIntent(opt.value)} emoji={opt.emoji} label={opt.label} />
+        <StepShell onBack={back} onNext={next} disabled={goals.length === 0}>
+          <StepHeader step={1} label="Your hopes" title="What are you seeking?" subtitle="Choose any that move you. There are no wrong answers." />
+          <div className="grid grid-cols-2 gap-3">
+            {GOALS.map((opt) => (
+              <ChipCard key={opt.value} active={goals.includes(opt.value)} onClick={() => toggleArr(opt.value, goals, setGoals)} emoji={opt.emoji} label={opt.label} />
             ))}
           </div>
         </StepShell>
       )}
 
-      {/* Step 2 — Current prayer life */}
+      {/* Step 2 — Spiritual stage */}
       {step === 2 && (
-        <StepShell onBack={back} onNext={next} disabled={!prayerState}>
-          <StepHeader step={2} label="Where you are" title="How would you describe your current prayer life?" />
+        <StepShell onBack={back} onNext={next} disabled={!stage}>
+          <StepHeader step={2} label="Where you are" title="Where are you in your prayer life?" subtitle="A starting point — not a label." />
           <div className="space-y-3">
-            {PRAYER_STATES.map((opt) => (
-              <SelectCard key={opt.value} active={prayerState === opt.value} onClick={() => setPrayerState(opt.value)} label={opt.label} desc={opt.desc} />
+            {STAGES.map((opt) => (
+              <SelectCard key={opt.value} active={stage === opt.value} onClick={() => setStage(opt.value)} label={opt.label} desc={opt.desc} />
             ))}
           </div>
         </StepShell>
       )}
 
-      {/* Step 3 — Struggles */}
+      {/* Step 3 — Burdens (optional, private) */}
       {step === 3 && (
-        <StepShell onBack={back} onNext={next} disabled={struggles.length === 0}>
-          <StepHeader step={3} label="Struggles" title="What are you currently struggling with?" subtitle="Select all that apply." />
-          <div className="grid grid-cols-2 gap-3">
-            {STRUGGLES.map((opt) => (
-              <ChipCard key={opt.value} active={struggles.includes(opt.value)} onClick={() => toggleArr(opt.value, struggles, setStruggles)} emoji={opt.emoji} label={opt.label} />
-            ))}
-          </div>
-        </StepShell>
-      )}
-
-      {/* Step 4 — Growth */}
-      {step === 4 && (
-        <StepShell onBack={back} onNext={next} disabled={growth.length === 0}>
-          <StepHeader step={4} label="Growth" title="Where do you most want to grow?" subtitle="Select all that resonate." />
-          <div className="grid grid-cols-2 gap-3">
-            {GROWTH.map((opt) => (
-              <ChipCard key={opt.value} active={growth.includes(opt.value)} onClick={() => toggleArr(opt.value, growth, setGrowth)} emoji={opt.emoji} label={opt.label} />
-            ))}
-          </div>
-        </StepShell>
-      )}
-
-      {/* Step 5 — Saint */}
-      {step === 5 && (
-        <StepShell onBack={back} onNext={next} disabled={!saint}>
-          <StepHeader step={5} label="Your guide" title="Choose a guide for your journey" subtitle="Premium guides preview here — start your trial to unlock them." />
-          <div className="space-y-2">
-            {SAINTS.map((opt) => {
-              const locked = opt.tier === 'Premium';
-              return (
-                <button
-                  key={opt.value}
-                  onClick={() => {
-                    if (locked) {
-                      setSaint(FREE_GUIDE_KEY); // keep selection valid (Monk) so Continue works
-                      setUpgradeOpen(true);
-                      return;
-                    }
-                    setSaint(opt.value);
-                  }}
-                  className={`w-full rounded-xl border px-4 py-3 text-left transition-all active:scale-[0.98] ${
-                    saint === opt.value ? 'border-gold/60 bg-gold/10' : 'border-border bg-card hover:border-gold/20'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="font-serif text-base text-foreground">{opt.label}</p>
-                    <span className={`flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider ${opt.tier === 'Free' ? 'text-emerald-400' : 'text-gold/70'}`}>
-                      {locked && <Lock className="h-2.5 w-2.5" />}
-                      {opt.tier}
-                    </span>
-                  </div>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{opt.desc}</p>
-                </button>
-              );
-            })}
-          </div>
-          <UpgradePrompt
-            open={upgradeOpen}
-            onClose={() => setUpgradeOpen(false)}
-            description="The saints are part of premium. Start your free trial to walk with them — you can keep The Monk for free anytime."
+        <StepShell onBack={back} onNext={next} disabled={false} ctaLabel={burdens.length === 0 ? 'Skip' : 'Continue'}>
+          <StepHeader
+            step={3}
+            label="Held in confidence"
+            title="What burdens are you carrying right now?"
+            subtitle="This is private and stays between you and Ora. Optional."
           />
-        </StepShell>
-      )}
-
-      {/* Step 6 — Voice */}
-      {step === 6 && (
-        <StepShell onBack={back} onNext={next} disabled={!voice}>
-          <StepHeader step={6} label="Tone" title="How would you like to be guided?" />
-          <div className="space-y-3">
-            {VOICE_STYLES.map((opt) => (
-              <SelectCard key={opt.value} active={voice === opt.value} onClick={() => setVoice(opt.value)} label={opt.label} desc={opt.desc} />
+          <div className="grid grid-cols-2 gap-2.5">
+            {BURDENS.map((opt) => (
+              <ChipCard key={opt.value} active={burdens.includes(opt.value)} onClick={() => toggleArr(opt.value, burdens, setBurdens)} label={opt.label} />
             ))}
           </div>
+        </StepShell>
+      )}
 
-          <div className="mt-6 flex items-start gap-3 rounded-xl border border-border bg-card p-4">
-            <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(c) => setTermsAccepted(c === true)} className="mt-0.5" />
-            <label htmlFor="terms" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
-              I agree to the{' '}
-              <Link to="/privacy-policy" className="text-gold hover:underline" target="_blank">Privacy Policy</Link>{' '}
-              and{' '}
-              <Link to="/terms-of-service" className="text-gold hover:underline" target="_blank">Terms of Service</Link>.
-            </label>
+      {/* Step 4 — Devotional style */}
+      {step === 4 && (
+        <StepShell onBack={back} onNext={next} disabled={styles.length === 0}>
+          <StepHeader step={4} label="Your devotional style" title="How do you like to pray?" subtitle="Choose any that feel like home — or that you'd like to learn." />
+          <div className="space-y-2.5">
+            {STYLES.map((opt) => (
+              <SelectCard key={opt.value} active={styles.includes(opt.value)} onClick={() => toggleArr(opt.value, styles, setStyles)} emoji={opt.emoji} label={opt.label} />
+            ))}
           </div>
         </StepShell>
       )}
 
-      {/* Step 7 — Personalization Reveal */}
-      {step === 7 && (
+      {/* Step 5 — Commitment */}
+      {step === 5 && (
+        <StepShell onBack={back} onNext={next} disabled={!commitment}>
+          <StepHeader step={5} label="Daily commitment" title="How much time can you give each day?" subtitle="Small and faithful is greater than large and rare." />
+          <div className="space-y-3">
+            {COMMITMENTS.map((opt) => (
+              <SelectCard key={opt.value} active={commitment === opt.value} onClick={() => setCommitment(opt.value)} label={opt.label} desc={opt.desc} />
+            ))}
+          </div>
+        </StepShell>
+      )}
+
+      {/* Step 6 — Terms & build */}
+      {step === 6 && (
         <div className="flex flex-1 flex-col animate-fade-in">
           <div className="flex-1 flex flex-col justify-center">
-            <p className="text-xs font-medium uppercase tracking-widest text-gold/60 mb-2 text-center">Step 8 of {TOTAL_STEPS}</p>
-            <h1 className="font-serif text-3xl text-foreground mb-2 text-center">Your Spiritual Path is Ready</h1>
-            <p className="text-sm text-muted-foreground mb-8 text-center">
-              {displayName ? `${displayName}, your` : 'Your'} journey has been prepared.
+            <StepHeader step={6} label="Almost there" title="Ready to build your devotional path?" subtitle="Ora will craft prayers, saints, and scripture chosen for you." />
+            <div className="mt-2 flex items-start gap-3 rounded-xl border border-border bg-card p-4">
+              <Checkbox id="terms" checked={termsAccepted} onCheckedChange={(c) => setTermsAccepted(c === true)} className="mt-0.5" />
+              <label htmlFor="terms" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
+                I agree to the{' '}
+                <Link to="/privacy-policy" className="text-gold hover:underline" target="_blank">Privacy Policy</Link>{' '}
+                and{' '}
+                <Link to="/terms-of-service" className="text-gold hover:underline" target="_blank">Terms of Service</Link>.
+              </label>
+            </div>
+          </div>
+          <div className="mt-8 flex gap-3">
+            <button onClick={back} className="rounded-xl border border-border px-4 py-4 text-muted-foreground transition-colors hover:text-foreground" aria-label="Back">
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+            <button
+              onClick={buildPlanAndSave}
+              disabled={!termsAccepted || saving}
+              className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-40"
+            >
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Build my devotional path'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 7 — Loading reveal */}
+      {step === 7 && (
+        <div className="flex flex-1 flex-col items-center justify-center text-center animate-fade-in">
+          <div className="relative mb-8">
+            <div className="h-16 w-16 rounded-full border-2 border-gold/30 border-t-gold animate-spin" />
+            <Sparkles className="absolute inset-0 m-auto h-6 w-6 text-gold/80" />
+          </div>
+          <h1 className="font-serif text-2xl text-foreground mb-3">Building your devotional path…</h1>
+          <p className="text-sm text-muted-foreground max-w-xs">
+            Choosing prayers, scripture, and a saint to walk with you.
+          </p>
+          <div className="mt-8 space-y-2 text-xs text-muted-foreground/70">
+            <p className="animate-pulse">✦ Listening to your hopes</p>
+            <p className="animate-pulse" style={{ animationDelay: '300ms' }}>✦ Pairing you with a saint</p>
+            <p className="animate-pulse" style={{ animationDelay: '600ms' }}>✦ Setting your daily rhythm</p>
+          </div>
+        </div>
+      )}
+
+      {/* Step 8 — Plan reveal */}
+      {step === 8 && (
+        <div className="flex flex-1 flex-col animate-fade-in pt-4">
+          <div className="flex-1">
+            <p className="text-xs font-medium uppercase tracking-widest text-gold/60 mb-2 text-center">Your devotional path</p>
+            <h1 className="font-serif text-3xl text-foreground mb-2 text-center leading-tight">
+              {displayName ? `${displayName}, your` : 'Your'} path is ready.
+            </h1>
+            <p className="text-sm text-muted-foreground text-center mb-6">
+              Drawn from your hopes, your stage, and what you carry today.
             </p>
 
-            <div className="rounded-2xl border border-gold/30 bg-gold/5 p-5 mb-4">
-              <p className="text-xs uppercase tracking-widest text-gold/60 mb-1">Your guide</p>
-              <p className="font-serif text-xl text-foreground">{saintObj.label}</p>
-              <p className="text-xs text-muted-foreground mt-1">{saintObj.desc}</p>
-            </div>
-
-            <div className="rounded-2xl border border-border bg-card p-5 mb-4">
-              <p className="text-xs uppercase tracking-widest text-gold/60 mb-2">Daily prayer rhythm</p>
-              <ul className="space-y-1.5 text-sm text-foreground">
-                <li>🌅 <span className="font-medium">Morning Lauds</span> · ~6:30 AM</li>
-                <li>☀️ <span className="font-medium">Angelus</span> · 12:00 PM</li>
-                <li>🌙 <span className="font-medium">Night Compline</span> · ~9:00 PM</li>
-              </ul>
-            </div>
-
-            <div className="rounded-2xl border border-border bg-card p-5 mb-6">
-              <p className="text-xs uppercase tracking-widest text-gold/60 mb-2">Growth focus</p>
-              <p className="text-sm text-foreground">
-                With guidance from <span className="text-gold">{saintObj.label}</span>, you'll build{' '}
-                <span className="text-gold">{growthLabels.slice(0, 2).join(' and ').toLowerCase() || 'a deeper prayer life'}</span> through daily prayer.
-              </p>
+            <div className="space-y-3">
+              <PlanCard label="Your guide" title={recommendedSaint.name} desc={recommendedSaint.reason} />
+              <PlanCard label="Daily focus" title={topGoal} desc={`We'll center your daily prayer around ${topGoal.toLowerCase()}.`} />
+              <PlanCard label="Scripture anchor" title={scripture.ref} desc={`"${scripture.text}"`} />
+              <PlanCard label="Confession cadence" title={cadence} desc="A gentle rhythm for the sacrament — never a burden." />
+              <PlanCard
+                label="Daily rhythm"
+                title={COMMITMENTS.find((c) => c.value === commitment)?.label ?? '10 minutes'}
+                desc="Morning prayer · midday pause · evening Examen."
+              />
             </div>
           </div>
 
           <button
-            disabled={saving}
-            onClick={finishOnboardingAndGoToFirstPrayer}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
-          >
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Begin First Prayer'}
-          </button>
-        </div>
-      )}
-
-      {/* Step 8 — First Prayer (emotional hook) */}
-      {step === 8 && (
-        <div className="flex flex-1 flex-col animate-fade-in">
-          <div className="flex-1 flex flex-col justify-center text-center">
-            <div className="mb-6 text-4xl">🕯️</div>
-            <p className="text-xs font-medium uppercase tracking-widest text-gold/60 mb-2">A first breath</p>
-            <h1 className="font-serif text-2xl text-foreground mb-6 leading-snug">
-              "Be still, and know that I am God."
-            </h1>
-            <p className="text-sm text-muted-foreground italic mb-2">— Psalm 46:10</p>
-            <div className="my-8 rounded-2xl border border-border bg-card p-6 text-left">
-              <p className="font-serif text-base text-foreground leading-relaxed">
-                {saintObj.label} greets you:
-              </p>
-              <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-                "Welcome{displayName ? `, ${displayName}` : ''}. The path you walk is not walked alone. Take one slow breath. Begin where you are. God is already here."
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={next}
-            className="w-full rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98]"
-          >
-            Continue
-          </button>
-        </div>
-      )}
-
-      {/* Step 9 — Soft handoff to paywall */}
-      {step === 9 && (
-        <div className="flex flex-1 flex-col items-center justify-center text-center animate-fade-in">
-          <div className="mb-6 text-4xl">✨</div>
-          <h1 className="font-serif text-2xl text-foreground mb-3">Your path begins now.</h1>
-          <p className="text-sm text-muted-foreground max-w-xs mb-10">
-            Continue with all of Ora — full Saint conversations, the prayer library, journal & examen, and progress insights.
-          </p>
-          <button
-            onClick={() => navigate('/paywall', { replace: true })}
-            className="w-full rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98]"
+            onClick={goToPaywall}
+            className="mt-8 w-full rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98]"
           >
             Continue
           </button>
@@ -405,7 +363,19 @@ const Onboarding = () => {
   );
 };
 
-function StepShell({ children, onBack, onNext, disabled }: { children: React.ReactNode; onBack: () => void; onNext: () => void; disabled: boolean }) {
+function StepShell({
+  children,
+  onBack,
+  onNext,
+  disabled,
+  ctaLabel = 'Continue',
+}: {
+  children: React.ReactNode;
+  onBack: () => void;
+  onNext: () => void;
+  disabled: boolean;
+  ctaLabel?: string;
+}) {
   return (
     <div className="flex flex-1 flex-col animate-fade-in">
       <div className="flex-1 flex flex-col justify-center">{children}</div>
@@ -418,7 +388,7 @@ function StepShell({ children, onBack, onNext, disabled }: { children: React.Rea
           disabled={disabled}
           className="flex-1 rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-40"
         >
-          Continue
+          {ctaLabel}
         </button>
       </div>
     </div>
@@ -443,17 +413,27 @@ function SelectCard({ active, onClick, label, desc, emoji }: { active: boolean; 
   );
 }
 
-function ChipCard({ active, onClick, label, emoji }: { active: boolean; onClick: () => void; label: string; emoji: string }) {
+function ChipCard({ active, onClick, label, emoji }: { active: boolean; onClick: () => void; label: string; emoji?: string }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-3 rounded-xl border px-4 py-4 text-left transition-all active:scale-[0.97] ${
+      className={`flex items-center gap-2 rounded-xl border px-3 py-3.5 text-left transition-all active:scale-[0.97] ${
         active ? 'border-gold/60 bg-gold/10' : 'border-border bg-card hover:border-gold/20'
       }`}
     >
-      <span className="text-xl">{emoji}</span>
-      <span className="font-medium text-sm text-foreground">{label}</span>
+      {emoji && <span className="text-lg">{emoji}</span>}
+      <span className="font-medium text-sm text-foreground leading-tight">{label}</span>
     </button>
+  );
+}
+
+function PlanCard({ label, title, desc }: { label: string; title: string; desc: string }) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4">
+      <p className="text-[10px] uppercase tracking-widest text-gold/60 mb-1">{label}</p>
+      <p className="font-serif text-lg text-foreground leading-tight">{title}</p>
+      <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{desc}</p>
+    </div>
   );
 }
 
@@ -479,6 +459,32 @@ function OnboardingTopBar() {
       </select>
     </div>
   );
+}
+
+// Lightweight deterministic recommendations for the reveal
+function pickSaint(goals: string[], burdens: string[]): { name: string; reason: string } {
+  if (burdens.includes('anxiety') || goals.includes('peace'))
+    return { name: 'St. Francis of Assisi', reason: 'A companion of peace, simplicity, and trust.' };
+  if (burdens.includes('lust') || burdens.includes('forgiveness'))
+    return { name: 'St. Augustine', reason: 'A restless heart turned toward God — he understands your road.' };
+  if (goals.includes('discernment') || burdens.includes('vocation'))
+    return { name: 'St. Thomas Aquinas', reason: 'Clarity, reason, and quiet wisdom for the path ahead.' };
+  if (burdens.includes('grief') || goals.includes('grief'))
+    return { name: 'St. Padre Pio', reason: 'A friend in suffering who points always to mercy.' };
+  if (goals.includes('overcoming_temptation') || burdens.includes('anger'))
+    return { name: 'St. Michael', reason: 'Courage and protection in spiritual battle.' };
+  if (goals.includes('devotion') || goals.includes('prayer_habit'))
+    return { name: 'St. Teresa of Ávila', reason: 'A teacher of interior prayer and steady devotion.' };
+  return { name: 'St. Joan of Arc', reason: 'Holy boldness for the mission God places before you.' };
+}
+
+function pickScripture(goals: string[], burdens: string[]): { ref: string; text: string } {
+  if (burdens.includes('anxiety')) return { ref: 'Psalm 23', text: 'The Lord is my shepherd; I shall not want.' };
+  if (burdens.includes('grief')) return { ref: 'Matthew 5:4', text: 'Blessed are those who mourn, for they shall be comforted.' };
+  if (burdens.includes('loneliness')) return { ref: 'Deuteronomy 31:6', text: 'He will not leave you nor forsake you.' };
+  if (goals.includes('gratitude')) return { ref: '1 Thessalonians 5:18', text: 'Give thanks in all circumstances.' };
+  if (goals.includes('discernment')) return { ref: 'Proverbs 3:5–6', text: 'Trust in the Lord with all your heart.' };
+  return { ref: 'Psalm 46:10', text: 'Be still, and know that I am God.' };
 }
 
 export default Onboarding;
