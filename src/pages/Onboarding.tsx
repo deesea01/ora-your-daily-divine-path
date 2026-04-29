@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { ArrowLeft, Check, Loader2, Sparkles } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -7,6 +7,8 @@ import { useOnboardingResponses } from '@/hooks/useOnboardingResponses';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
+import { supabase } from '@/integrations/supabase/client';
+import { buildDevotionalPlan, DevotionalPlan } from '@/lib/devotionalPlan';
 import logoImg from '@/assets/logo.png';
 
 const TOTAL_STEPS = 10; // 0..9 visible progress (added recap)
