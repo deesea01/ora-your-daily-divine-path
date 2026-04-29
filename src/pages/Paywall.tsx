@@ -77,8 +77,8 @@ const Paywall = () => {
               Best value
             </span>
             <p className="text-xs uppercase tracking-widest text-muted-foreground">Yearly</p>
-            <p className="mt-1 font-serif text-2xl text-foreground">$60<span className="text-sm text-muted-foreground">/yr</span></p>
-            <p className="mt-1 text-[11px] text-muted-foreground">Just $5/mo · save 50%</p>
+            <p className="mt-1 font-serif text-2xl text-foreground">$70<span className="text-sm text-muted-foreground">/yr</span></p>
+            <p className="mt-1 text-[11px] text-muted-foreground">Just $5.83/mo · save 42%</p>
           </button>
           <button
             onClick={() => setPlan('monthly')}
@@ -96,7 +96,7 @@ const Paywall = () => {
         <div className="mt-6 space-y-2 rounded-xl border border-border bg-card p-4">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Check className="h-3.5 w-3.5 text-gold" />
-            <span>3 days free — then ${plan === 'yearly' ? '60/year' : '10/month'}</span>
+            <span>3 days free — then ${plan === 'yearly' ? '70/year' : '10/month'}</span>
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Check className="h-3.5 w-3.5 text-gold" />
@@ -131,12 +131,6 @@ const Paywall = () => {
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
         >
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Begin Premium Journey'}
-        </button>
-        <button
-          onClick={() => navigate('/', { replace: true })}
-          className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-2"
-        >
-          Continue with free version (Monk only · 3 chats/day)
         </button>
       </div>
     </div>

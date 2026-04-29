@@ -4,27 +4,19 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { isFounderEmail } from "@/lib/founders";
 
-const FREE_DAILY_CHAT_LIMIT = 3;
+// Ora is now fully premium after onboarding. These exports are retained for
+// backwards compatibility with existing imports but everything is treated as
+// premium-gated.
+export const FREE_GUIDE_KEY = "st_francis"; // default guide if any
+export const FREE_PRAYER_IDS = new Set<string>();
 
-// Free saint key — only this guide is allowed for non-subscribers
-export const FREE_GUIDE_KEY = "monk";
-
-// Free prayers (IDs from src/lib/prayerLibrary.ts)
-export const FREE_PRAYER_IDS = new Set<string>([
-  "sign_of_cross",
-  "our_father",
-  "hail_mary",
-  "glory_be",
-  "apostles_creed",
-  "guardian_angel",
-]);
-
-export function isPremiumGuide(key: string | null | undefined) {
-  return !!key && key !== FREE_GUIDE_KEY;
+export function isPremiumGuide(_key: string | null | undefined) {
+  // Every Saint is premium now.
+  return true;
 }
 
-export function isPremiumPrayer(prayerId: string) {
-  return !FREE_PRAYER_IDS.has(prayerId);
+export function isPremiumPrayer(_prayerId: string) {
+  return true;
 }
 
 export function useEntitlement() {
@@ -57,10 +49,9 @@ export function useEntitlement() {
 
   const isFounder = isFounderEmail(user?.email);
   const isPremium = isActive || isFounder;
-  const chatRemaining = isPremium
-    ? Infinity
-    : Math.max(0, FREE_DAILY_CHAT_LIMIT - chatCountToday);
-  const canChat = isPremium || chatRemaining > 0;
+  // No more free chat allowance — premium-only.
+  const chatRemaining = isPremium ? Infinity : 0;
+  const canChat = isPremium;
 
   return {
     isPremium,
@@ -69,7 +60,7 @@ export function useEntitlement() {
     chatCountToday,
     chatRemaining,
     canChat,
-    chatLimit: FREE_DAILY_CHAT_LIMIT,
+    chatLimit: 0,
     refreshChatCount,
   };
 }
