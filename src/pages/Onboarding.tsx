@@ -159,6 +159,17 @@ const Onboarding = () => {
   const saintObj = SAINTS.find((s) => s.value === saint) || SAINTS[0];
   const growthLabels = growth.map((g) => GROWTH.find((x) => x.value === g)?.label).filter(Boolean);
 
+  if (authLoading || profileLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-6 w-6 rounded-full border-2 border-gold border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+  if (user && profile?.onboarding_completed) {
+    return <Navigate to="/" replace />;
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe">
       <OnboardingTopBar />
