@@ -220,11 +220,15 @@ const Onboarding = () => {
     return <Navigate to="/" replace />;
   }
 
-  // Build plan summary text
-  const topGoal = GOALS.find((g) => g.value === goals[0])?.label ?? 'a deeper prayer life';
-  const recommendedSaint = pickSaint(goals, burdens);
-  const cadence = burdens.includes('lust') || burdens.includes('anger') ? 'Confession every 2 weeks' : 'Confession monthly';
-  const scripture = pickScripture(goals, burdens);
+  // Plan summary — prefers the persisted plan, falls back to a live preview
+  const previewPlan = useMemo(
+    () => plan ?? buildDevotionalPlan({ goals, stage, burdens, styles, commitment }),
+    [plan, goals, stage, burdens, styles, commitment],
+  );
+  const topGoal = previewPlan.daily_focus.label;
+  const recommendedSaint = { name: previewPlan.saint.name, reason: previewPlan.saint.reason };
+  const cadence = `Confession — ${previewPlan.confession_cadence.label.toLowerCase()}`;
+  const scripture = { ref: previewPlan.scripture.ref, text: previewPlan.scripture.text };
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe">
