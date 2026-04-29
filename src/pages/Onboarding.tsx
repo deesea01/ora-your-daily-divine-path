@@ -501,6 +501,25 @@ function PlanCard({ label, title, desc }: { label: string; title: string; desc: 
   );
 }
 
+function RecapRow({ label, value, onEdit, hint }: { label: string; value: string; onEdit?: () => void; hint?: string }) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4 flex items-start gap-3">
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] uppercase tracking-widest text-gold/60 mb-1">{label}</p>
+        <p className="text-sm text-foreground leading-snug break-words">{value}</p>
+        {hint && <p className="mt-1 text-[11px] text-muted-foreground italic">{hint}</p>}
+      </div>
+      {onEdit && (
+        <button
+          onClick={onEdit}
+          className="shrink-0 text-xs font-medium text-gold hover:text-gold/80 transition-colors px-2 py-1"
+        >
+          Edit
+        </button>
+      )}
+  );
+}
+
 function OnboardingTopBar() {
   const { language, setLanguage } = useLanguage();
   return (
