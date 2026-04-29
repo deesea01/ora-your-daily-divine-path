@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { ArrowLeft, Check, Loader2, Sparkles } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
