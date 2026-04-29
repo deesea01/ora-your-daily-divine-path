@@ -2,6 +2,11 @@ import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-
 
 export type Env = "sandbox" | "live";
 
+// Founder accounts that always have premium access. Mirror of src/lib/founders.ts
+const FOUNDER_EMAILS = new Set<string>([
+  "derek@oradevotion.com",
+]);
+
 export function getAdminClient(): SupabaseClient {
   return createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -9,14 +14,27 @@ export function getAdminClient(): SupabaseClient {
   );
 }
 
+async function isFounderUser(userId: string): Promise<boolean> {
+  try {
+    const admin = getAdminClient();
+    const { data } = await admin.auth.admin.getUserById(userId);
+    const email = data?.user?.email?.trim().toLowerCase();
+    return !!email && FOUNDER_EMAILS.has(email);
+  } catch {
+    return false;
+  }
+}
+
 /**
- * Returns true if the user has an active or trialing subscription in the given environment.
+ * Returns true if the user has an active or trialing subscription in the given environment,
+ * OR if the user is a founder account (always premium).
  * Defaults to checking BOTH environments so callers don't have to know which one the client is in.
  */
 export async function hasActiveSubscription(
   userId: string,
   env?: Env,
 ): Promise<boolean> {
+  if (await isFounderUser(userId)) return true;
   const admin = getAdminClient();
   const query = admin
     .from("subscriptions")

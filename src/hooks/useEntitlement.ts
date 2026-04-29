@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
+import { isFounderEmail } from "@/lib/founders";
 
 const FREE_DAILY_CHAT_LIMIT = 3;
 
@@ -54,7 +55,8 @@ export function useEntitlement() {
     refreshChatCount();
   }, [refreshChatCount]);
 
-  const isPremium = isActive;
+  const isFounder = isFounderEmail(user?.email);
+  const isPremium = isActive || isFounder;
   const chatRemaining = isPremium
     ? Infinity
     : Math.max(0, FREE_DAILY_CHAT_LIMIT - chatCountToday);
