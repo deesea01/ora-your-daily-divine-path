@@ -145,11 +145,24 @@ const Onboarding = () => {
   }, [step]);
 
   const buildPlanAndSave = async () => {
+    if (!user) return;
     setSaving(true);
     const goalCount = COMMITMENTS.find((c) => c.value === commitment)?.goal ?? 2;
     const level =
       stage === 'deep' || stage === 'regularly' ? 'advanced' : stage === 'occasionally' || stage === 'returning' ? 'intermediate' : 'beginner';
+
+    // 1) Generate the personalized plan deterministically
+    const generated = buildDevotionalPlan({ goals, stage, burdens, styles, commitment });
+    setPlan(generated);
+
+    // 2) Save user_profile (incl. chosen saint as their guide)
     await saveProfile(goals, level, goalCount, displayName.trim(), termsAccepted);
+    await supabase
+      .from('user_profiles')
+      .update({ spiritual_guide: generated.saint.key, updated_at: new Date().toISOString() })
+      .eq('user_id', user.id);
+
+    // 3) Save onboarding responses
     await saveResponses(
       {
         intent: goals[0],
@@ -157,9 +170,39 @@ const Onboarding = () => {
         struggles: burdens,
         growth_focus: goals,
         voice_style: styles[0],
+        chosen_guide: generated.saint.key,
       },
       true,
     );
+
+    // 4) Persist the plan to spiritual_profiles for the Memory Engine + dashboard
+    const recommendations = [
+      { type: 'saint' as const, title: generated.saint.name, reason: generated.saint.reason, action_label: 'Meet your guide', action_route: '/guides', priority: 1 },
+      ...generated.prayers.slice(0, 3).map((p, i) => ({
+        type: 'prayer' as const,
+        title: p.title,
+        reason: p.reason,
+        action_label: 'Pray now',
+        action_route: `/prayers/${p.prayer_id}`,
+        priority: 2 + i,
+      })),
+      { type: 'scripture' as const, title: generated.scripture.ref, reason: generated.scripture.reason, action_label: 'Open scripture', action_route: '/prayers', priority: 10 },
+      { type: 'sacrament' as const, title: `Confession — ${generated.confession_cadence.label}`, reason: generated.confession_cadence.reason, action_label: 'Prepare', action_route: '/confession', priority: 20 },
+    ];
+
+    await supabase.from('spiritual_profiles').upsert(
+      {
+        user_id: user.id,
+        growth_areas: goals,
+        struggles: burdens,
+        top_saint: generated.saint.key,
+        recommendations,
+        devotional_plan: generated as any,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id' },
+    );
+
     setSaving(false);
     setStep(7); // loading screen
   };
