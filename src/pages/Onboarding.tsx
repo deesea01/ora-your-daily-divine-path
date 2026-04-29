@@ -111,6 +111,7 @@ const Onboarding = () => {
   const [commitment, setCommitment] = useState<string>('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [plan, setPlan] = useState<DevotionalPlan | null>(null);
 
   useEffect(() => {
     if (user === null) navigate('/auth', { replace: true });
