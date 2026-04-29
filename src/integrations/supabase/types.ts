@@ -713,6 +713,7 @@ export type Database = {
           ai_summary: string | null
           created_at: string
           devotional_consistency: number | null
+          devotional_plan: Json
           growth_areas: Json
           id: string
           last_refreshed_at: string | null
@@ -729,6 +730,7 @@ export type Database = {
           ai_summary?: string | null
           created_at?: string
           devotional_consistency?: number | null
+          devotional_plan?: Json
           growth_areas?: Json
           id?: string
           last_refreshed_at?: string | null
@@ -745,6 +747,7 @@ export type Database = {
           ai_summary?: string | null
           created_at?: string
           devotional_consistency?: number | null
+          devotional_plan?: Json
           growth_areas?: Json
           id?: string
           last_refreshed_at?: string | null

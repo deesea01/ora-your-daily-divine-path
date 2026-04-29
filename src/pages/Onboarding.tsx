@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { ArrowLeft, Check, Loader2, Sparkles } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -7,6 +7,8 @@ import { useOnboardingResponses } from '@/hooks/useOnboardingResponses';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
+import { supabase } from '@/integrations/supabase/client';
+import { buildDevotionalPlan, DevotionalPlan } from '@/lib/devotionalPlan';
 import logoImg from '@/assets/logo.png';
 
 const TOTAL_STEPS = 10; // 0..9 visible progress (added recap)
@@ -109,6 +111,7 @@ const Onboarding = () => {
   const [commitment, setCommitment] = useState<string>('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [plan, setPlan] = useState<DevotionalPlan | null>(null);
 
   useEffect(() => {
     if (user === null) navigate('/auth', { replace: true });
@@ -142,11 +145,24 @@ const Onboarding = () => {
   }, [step]);
 
   const buildPlanAndSave = async () => {
+    if (!user) return;
     setSaving(true);
     const goalCount = COMMITMENTS.find((c) => c.value === commitment)?.goal ?? 2;
     const level =
       stage === 'deep' || stage === 'regularly' ? 'advanced' : stage === 'occasionally' || stage === 'returning' ? 'intermediate' : 'beginner';
+
+    // 1) Generate the personalized plan deterministically
+    const generated = buildDevotionalPlan({ goals, stage, burdens, styles, commitment });
+    setPlan(generated);
+
+    // 2) Save user_profile (incl. chosen saint as their guide)
     await saveProfile(goals, level, goalCount, displayName.trim(), termsAccepted);
+    await supabase
+      .from('user_profiles')
+      .update({ spiritual_guide: generated.saint.key, updated_at: new Date().toISOString() })
+      .eq('user_id', user.id);
+
+    // 3) Save onboarding responses
     await saveResponses(
       {
         intent: goals[0],
@@ -154,9 +170,39 @@ const Onboarding = () => {
         struggles: burdens,
         growth_focus: goals,
         voice_style: styles[0],
+        chosen_guide: generated.saint.key,
       },
       true,
     );
+
+    // 4) Persist the plan to spiritual_profiles for the Memory Engine + dashboard
+    const recommendations = [
+      { type: 'saint' as const, title: generated.saint.name, reason: generated.saint.reason, action_label: 'Meet your guide', action_route: '/guides', priority: 1 },
+      ...generated.prayers.slice(0, 3).map((p, i) => ({
+        type: 'prayer' as const,
+        title: p.title,
+        reason: p.reason,
+        action_label: 'Pray now',
+        action_route: `/prayers/${p.prayer_id}`,
+        priority: 2 + i,
+      })),
+      { type: 'scripture' as const, title: generated.scripture.ref, reason: generated.scripture.reason, action_label: 'Open scripture', action_route: '/prayers', priority: 10 },
+      { type: 'sacrament' as const, title: `Confession — ${generated.confession_cadence.label}`, reason: generated.confession_cadence.reason, action_label: 'Prepare', action_route: '/confession', priority: 20 },
+    ];
+
+    await supabase.from('spiritual_profiles').upsert(
+      {
+        user_id: user.id,
+        growth_areas: goals,
+        struggles: burdens,
+        top_saint: generated.saint.key,
+        recommendations,
+        devotional_plan: generated as any,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id' },
+    );
+
     setSaving(false);
     setStep(7); // loading screen
   };
@@ -174,11 +220,15 @@ const Onboarding = () => {
     return <Navigate to="/" replace />;
   }
 
-  // Build plan summary text
-  const topGoal = GOALS.find((g) => g.value === goals[0])?.label ?? 'a deeper prayer life';
-  const recommendedSaint = pickSaint(goals, burdens);
-  const cadence = burdens.includes('lust') || burdens.includes('anger') ? 'Confession every 2 weeks' : 'Confession monthly';
-  const scripture = pickScripture(goals, burdens);
+  // Plan summary — prefers the persisted plan, falls back to a live preview
+  const previewPlan = useMemo(
+    () => plan ?? buildDevotionalPlan({ goals, stage, burdens, styles, commitment }),
+    [plan, goals, stage, burdens, styles, commitment],
+  );
+  const topGoal = previewPlan.daily_focus.label;
+  const recommendedSaint = { name: previewPlan.saint.name, reason: previewPlan.saint.reason };
+  const cadence = `Confession — ${previewPlan.confession_cadence.label.toLowerCase()}`;
+  const scripture = { ref: previewPlan.scripture.ref, text: previewPlan.scripture.text };
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe">
@@ -382,13 +432,35 @@ const Onboarding = () => {
             <div className="space-y-3">
               <PlanCard label="Your guide" title={recommendedSaint.name} desc={recommendedSaint.reason} />
               <PlanCard label="Daily focus" title={topGoal} desc={`We'll center your daily prayer around ${topGoal.toLowerCase()}.`} />
-              <PlanCard label="Scripture anchor" title={scripture.ref} desc={`"${scripture.text}"`} />
-              <PlanCard label="Confession cadence" title={cadence} desc="A gentle rhythm for the sacrament — never a burden." />
+              <PlanCard label="Scripture anchor" title={scripture.ref} desc={`"${scripture.text}" — ${previewPlan.scripture.reason}`} />
+              <PlanCard label="Confession cadence" title={cadence} desc={previewPlan.confession_cadence.reason} />
               <PlanCard
                 label="Daily rhythm"
                 title={COMMITMENTS.find((c) => c.value === commitment)?.label ?? '10 minutes'}
-                desc="Morning prayer · midday pause · evening Examen."
+                desc={`Morning: ${previewPlan.routine.morning} · Evening: ${previewPlan.routine.evening}`}
               />
+              <div className="rounded-2xl border border-border bg-card p-4">
+                <p className="text-[10px] uppercase tracking-widest text-gold/60 mb-2">Your prayers ({previewPlan.prayers.length})</p>
+                <ul className="space-y-1.5">
+                  {previewPlan.prayers.map((p) => (
+                    <li key={p.prayer_id} className="flex items-start gap-2 text-sm">
+                      <span className="mt-1 h-1 w-1 rounded-full bg-gold/60 shrink-0" />
+                      <span className="text-foreground">{p.title}</span>
+                      <span className="text-muted-foreground/70 text-xs ml-auto capitalize shrink-0">{p.slot}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              {previewPlan.journal_prompts.length > 0 && (
+                <div className="rounded-2xl border border-border bg-card p-4">
+                  <p className="text-[10px] uppercase tracking-widest text-gold/60 mb-2">Journal prompts</p>
+                  <ul className="space-y-1.5">
+                    {previewPlan.journal_prompts.slice(0, 3).map((q) => (
+                      <li key={q} className="text-sm text-muted-foreground italic leading-snug">"{q}"</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
 
@@ -593,32 +665,6 @@ function OnboardingTopBar() {
       </select>
     </div>
   );
-}
-
-// Lightweight deterministic recommendations for the reveal
-function pickSaint(goals: string[], burdens: string[]): { name: string; reason: string } {
-  if (burdens.includes('anxiety') || goals.includes('peace'))
-    return { name: 'St. Francis of Assisi', reason: 'A companion of peace, simplicity, and trust.' };
-  if (burdens.includes('lust') || burdens.includes('forgiveness'))
-    return { name: 'St. Augustine', reason: 'A restless heart turned toward God — he understands your road.' };
-  if (goals.includes('discernment') || burdens.includes('vocation'))
-    return { name: 'St. Thomas Aquinas', reason: 'Clarity, reason, and quiet wisdom for the path ahead.' };
-  if (burdens.includes('grief') || goals.includes('grief'))
-    return { name: 'St. Padre Pio', reason: 'A friend in suffering who points always to mercy.' };
-  if (goals.includes('overcoming_temptation') || burdens.includes('anger'))
-    return { name: 'St. Michael', reason: 'Courage and protection in spiritual battle.' };
-  if (goals.includes('devotion') || goals.includes('prayer_habit'))
-    return { name: 'St. Teresa of Ávila', reason: 'A teacher of interior prayer and steady devotion.' };
-  return { name: 'St. Joan of Arc', reason: 'Holy boldness for the mission God places before you.' };
-}
-
-function pickScripture(goals: string[], burdens: string[]): { ref: string; text: string } {
-  if (burdens.includes('anxiety')) return { ref: 'Psalm 23', text: 'The Lord is my shepherd; I shall not want.' };
-  if (burdens.includes('grief')) return { ref: 'Matthew 5:4', text: 'Blessed are those who mourn, for they shall be comforted.' };
-  if (burdens.includes('loneliness')) return { ref: 'Deuteronomy 31:6', text: 'He will not leave you nor forsake you.' };
-  if (goals.includes('gratitude')) return { ref: '1 Thessalonians 5:18', text: 'Give thanks in all circumstances.' };
-  if (goals.includes('discernment')) return { ref: 'Proverbs 3:5–6', text: 'Trust in the Lord with all your heart.' };
-  return { ref: 'Psalm 46:10', text: 'Be still, and know that I am God.' };
 }
 
 export default Onboarding;
