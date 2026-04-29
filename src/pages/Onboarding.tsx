@@ -47,7 +47,6 @@ const GROWTH = [
 ];
 
 const SAINTS = [
-  { value: 'monk', label: 'The Monk', tier: 'Free', desc: 'A quiet companion for daily prayer' },
   { value: 'st_francis', label: 'St. Francis of Assisi', tier: 'Premium', desc: 'Joyful poverty, peace, creation' },
   { value: 'st_augustine', label: 'St. Augustine', tier: 'Premium', desc: 'Restless heart turned toward God' },
   { value: 'st_thomas_aquinas', label: 'St. Thomas Aquinas', tier: 'Premium', desc: 'Reason, clarity, deep theology' },
