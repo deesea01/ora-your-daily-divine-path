@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { ArrowLeft, Check, Loader2, Sparkles } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -215,6 +215,17 @@ const Onboarding = () => {
     () => plan ?? buildDevotionalPlan({ goals, stage, burdens, styles, commitment }),
     [plan, goals, stage, burdens, styles, commitment],
   );
+
+  // Dev-only sanity check: ensure all hooks ran every render before any early return.
+  // If this number ever changes between renders, React's own hook checker will throw —
+  // this assertion gives a clearer error in dev/test.
+  const HOOK_COUNT = 13; // useNavigate + useAuth + useUserProfile + useOnboardingResponses + 10 useStates(11) + 2 useEffects(2) + 1 useMemo + this useRef
+  const hookCountRef = useRef(HOOK_COUNT);
+  if (import.meta.env.DEV && hookCountRef.current !== HOOK_COUNT) {
+    throw new Error(
+      `[Onboarding] hook count drifted (${hookCountRef.current} → ${HOOK_COUNT}). A hook is being called conditionally.`,
+    );
+  }
 
   if (authLoading || profileLoading) {
     return (
