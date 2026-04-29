@@ -542,6 +542,15 @@ function PlanCard({ label, title, desc }: { label: string; title: string; desc: 
   );
 }
 
+function ConsentRow({ text }: { text: string }) {
+  return (
+    <div className="flex items-start gap-3 px-1">
+      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold/80" strokeWidth={2.5} />
+      <p className="text-xs text-muted-foreground leading-relaxed">{text}</p>
+    </div>
+  );
+}
+
 function RecapRow({ label, value, onEdit, hint }: { label: string; value: string; onEdit?: () => void; hint?: string }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-4 flex items-start gap-3">
