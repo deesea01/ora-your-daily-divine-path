@@ -240,6 +240,12 @@ const MonkChat = () => {
       role: 'user',
       content: `${userMsg.content} [guide:${guideKey}]`,
     });
+    // Log saint interaction for the Spiritual Memory Engine
+    supabase.from('saint_interactions').insert({
+      user_id: user.id,
+      saint_key: guideKey,
+      interaction_type: 'chat',
+    });
 
     let assistantContent = '';
     const upsert = (chunk: string) => {
