@@ -23,6 +23,15 @@ const Paywall = () => {
   const [plan, setPlan] = useState<'monthly' | 'yearly'>('yearly');
   const [reminderOn, setReminderOn] = useState(true);
 
+const INTRO_DISCOUNT_CODE = 'ORAFIRSTMONTH';
+
+const Paywall = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { openCheckout, loading } = usePaddleCheckout();
+  const [plan, setPlan] = useState<'intro' | 'monthly' | 'yearly'>('intro');
+  const [reminderOn, setReminderOn] = useState(true);
+
   const handleStartTrial = async () => {
     if (!user) {
       navigate('/auth');
@@ -33,8 +42,9 @@ const Paywall = () => {
       await openCheckout({
         priceId,
         customerEmail: user.email,
-        customData: { userId: user.id, reminderOn: String(reminderOn) },
+        customData: { userId: user.id, reminderOn: String(reminderOn), plan },
         successUrl: `${window.location.origin}/checkout/success`,
+        discountCode: plan === 'intro' ? INTRO_DISCOUNT_CODE : undefined,
       });
     } catch (e) {
       console.error('Checkout failed', e);
