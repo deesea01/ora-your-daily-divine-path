@@ -98,7 +98,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background px-6 pb-8 pt-safe">
-      <SEO title="Ora | Daily Catholic Prayer & Devotion App" description="Grow closer to God daily through guided Catholic prayer, rosary, spiritual reflection, and personalized devotion with Ora." canonicalPath="/" />
+      <SEO title="Ora — Daily Catholic Prayer App for Devotion, Rosary & Saints" description="Your personalized daily devotion: Catholic prayers, the rosary, the saints, Examen, and reflections to help you grow closer to God." canonicalPath="/" />
       <header className="flex items-center justify-between pb-6 pt-6 animate-fade-in">
         <div className="flex items-center gap-3">
           <img src={logoImg} alt="Ora" className="w-10 h-10 object-contain" />

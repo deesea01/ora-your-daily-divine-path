@@ -309,7 +309,7 @@ const MonkChat = () => {
 
   return (
     <div className="flex h-screen flex-col bg-background">
-      <SEO title="Talk with a Saint | Ora" description="Chat with Catholic saints for prayer, reflection, and spiritual guidance in Ora." canonicalPath="/monk-chat" />
+      <SEO title="Talk with a Catholic Saint — Daily Prayer & Reflection | Ora" description="Have a sacred conversation with a Catholic saint companion for daily devotion, prayer, scripture, and spiritual guidance. Grow closer to God with Ora." canonicalPath="/monk-chat" />
       <header className="flex items-center gap-3 border-b border-border px-4 py-3">
         <button
           onClick={() => navigate('/')}
