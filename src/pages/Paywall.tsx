@@ -31,13 +31,15 @@ const Paywall = () => {
       return;
     }
     const priceId = plan === 'yearly' ? 'ora_premium_yearly' : 'ora_premium_monthly';
+    // Intro discount is restricted to the monthly price only — never attach it on yearly.
+    const discountCode = plan === 'intro' && priceId === 'ora_premium_monthly' ? INTRO_DISCOUNT_CODE : undefined;
     try {
       await openCheckout({
         priceId,
         customerEmail: user.email,
         customData: { userId: user.id, reminderOn: String(reminderOn), plan },
         successUrl: `${window.location.origin}/checkout/success`,
-        discountCode: plan === 'intro' ? INTRO_DISCOUNT_CODE : undefined,
+        ...(discountCode ? { discountCode } : {}),
       });
     } catch (e) {
       console.error('Checkout failed', e);
