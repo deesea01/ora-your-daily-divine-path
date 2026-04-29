@@ -14,6 +14,7 @@ import PrayerCard from '@/components/PrayerCard';
 import SEO from '@/components/SEO';
 import FaithJourneyCard from '@/components/FaithJourneyCard';
 import SaintCompanionsCarousel from '@/components/SaintCompanionsCarousel';
+import TodaysPrayerPath from '@/components/TodaysPrayerPath';
 
 function computeStreak(dates: string[]): number {
   if (dates.length === 0) return 0;
@@ -192,17 +193,7 @@ const Index = () => {
         </section>
       )}
 
-      <section className="mb-8">
-        <h2 className="mb-1 font-serif text-xl text-gold animate-fade-in">{t.todaysPrayerPath}</h2>
-        <p className="mb-5 text-sm text-muted-foreground animate-fade-in">
-          {new Date().toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric' })}
-        </p>
-        <div className="space-y-3">
-          {prayers.map((prayer, i) => (
-            <PrayerCard key={prayer.time} {...prayer} index={i} completed={completions.has(prayer.time)} />
-          ))}
-        </div>
-      </section>
+      <TodaysPrayerPath completions={completions} />
 
       <div className="mb-8 flex items-center gap-3 animate-fade-in-delay-3">
         <div className="h-px flex-1 bg-border" />
