@@ -310,11 +310,7 @@ const Onboarding = () => {
   }
 
   if (authLoading || profileLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-6 w-6 rounded-full border-2 border-gold border-t-transparent animate-spin" />
-      </div>
-    );
+    return <OnboardingSkeleton />;
   }
   if (user && profile?.onboarding_completed) {
     return <Navigate to="/" replace />;
