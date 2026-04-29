@@ -16,11 +16,13 @@ const FEATURES = [
   { icon: Bell, text: 'Early access to new features' },
 ];
 
+const INTRO_DISCOUNT_CODE = 'ORAFIRSTMONTH';
+
 const Paywall = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { openCheckout, loading } = usePaddleCheckout();
-  const [plan, setPlan] = useState<'monthly' | 'yearly'>('yearly');
+  const [plan, setPlan] = useState<'intro' | 'monthly' | 'yearly'>('intro');
   const [reminderOn, setReminderOn] = useState(true);
 
   const handleStartTrial = async () => {
@@ -33,8 +35,9 @@ const Paywall = () => {
       await openCheckout({
         priceId,
         customerEmail: user.email,
-        customData: { userId: user.id, reminderOn: String(reminderOn) },
+        customData: { userId: user.id, reminderOn: String(reminderOn), plan },
         successUrl: `${window.location.origin}/checkout/success`,
+        discountCode: plan === 'intro' ? INTRO_DISCOUNT_CODE : undefined,
       });
     } catch (e) {
       console.error('Checkout failed', e);
@@ -66,37 +69,61 @@ const Paywall = () => {
         </div>
 
         {/* Plan selector */}
-        <div className="mt-8 grid grid-cols-2 gap-3">
+        <div className="mt-8 space-y-3">
           <button
-            onClick={() => setPlan('yearly')}
-            className={`relative rounded-xl border-2 px-4 py-4 text-left transition-all active:scale-[0.98] ${
-              plan === 'yearly' ? 'border-gold bg-gold/10' : 'border-border bg-card'
+            onClick={() => setPlan('intro')}
+            className={`relative w-full rounded-xl border-2 px-4 py-4 text-left transition-all active:scale-[0.98] ${
+              plan === 'intro' ? 'border-gold bg-gold/10' : 'border-border bg-card'
             }`}
           >
             <span className="absolute -top-2 right-3 rounded-full bg-gold px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground">
-              Best value
+              Intro offer
             </span>
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">Yearly</p>
-            <p className="mt-1 font-serif text-2xl text-foreground">$70<span className="text-sm text-muted-foreground">/yr</span></p>
-            <p className="mt-1 text-[11px] text-muted-foreground">Just $5.83/mo · save 42%</p>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">First month</p>
+            <p className="mt-1 font-serif text-2xl text-foreground">
+              $1<span className="text-sm text-muted-foreground"> for your first month</span>
+            </p>
+            <p className="mt-1 text-[11px] text-muted-foreground">After 3-day trial · then $10/mo · cancel anytime</p>
           </button>
-          <button
-            onClick={() => setPlan('monthly')}
-            className={`rounded-xl border-2 px-4 py-4 text-left transition-all active:scale-[0.98] ${
-              plan === 'monthly' ? 'border-gold bg-gold/10' : 'border-border bg-card'
-            }`}
-          >
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">Monthly</p>
-            <p className="mt-1 font-serif text-2xl text-foreground">$10<span className="text-sm text-muted-foreground">/mo</span></p>
-            <p className="mt-1 text-[11px] text-muted-foreground">Cancel anytime</p>
-          </button>
+
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => setPlan('yearly')}
+              className={`relative rounded-xl border-2 px-4 py-4 text-left transition-all active:scale-[0.98] ${
+                plan === 'yearly' ? 'border-gold bg-gold/10' : 'border-border bg-card'
+              }`}
+            >
+              <span className="absolute -top-2 right-3 rounded-full bg-foreground/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-background">
+                Best value
+              </span>
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">Yearly</p>
+              <p className="mt-1 font-serif text-2xl text-foreground">$70<span className="text-sm text-muted-foreground">/yr</span></p>
+              <p className="mt-1 text-[11px] text-muted-foreground">$5.83/mo · save 42%</p>
+            </button>
+            <button
+              onClick={() => setPlan('monthly')}
+              className={`rounded-xl border-2 px-4 py-4 text-left transition-all active:scale-[0.98] ${
+                plan === 'monthly' ? 'border-gold bg-gold/10' : 'border-border bg-card'
+              }`}
+            >
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">Monthly</p>
+              <p className="mt-1 font-serif text-2xl text-foreground">$10<span className="text-sm text-muted-foreground">/mo</span></p>
+              <p className="mt-1 text-[11px] text-muted-foreground">Cancel anytime</p>
+            </button>
+          </div>
         </div>
 
         {/* Trust strip */}
         <div className="mt-6 space-y-2 rounded-xl border border-border bg-card p-4">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Check className="h-3.5 w-3.5 text-gold" />
-            <span>3 days free — then ${plan === 'yearly' ? '70/year' : '10/month'}</span>
+            <span>
+              {plan === 'intro'
+                ? '3 days free — then $1 for your first month, then $10/month'
+                : plan === 'yearly'
+                ? '3 days free — then $70/year'
+                : '3 days free — then $10/month'}
+            </span>
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Check className="h-3.5 w-3.5 text-gold" />

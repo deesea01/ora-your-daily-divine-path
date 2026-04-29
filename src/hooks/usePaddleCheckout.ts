@@ -7,6 +7,7 @@ interface OpenCheckoutOptions {
   customerEmail?: string;
   customData?: Record<string, string>;
   successUrl?: string;
+  discountCode?: string;
 }
 
 export function usePaddleCheckout() {
@@ -22,6 +23,7 @@ export function usePaddleCheckout() {
         items: [{ priceId: paddlePriceId, quantity: options.quantity ?? 1 }],
         customer: options.customerEmail ? { email: options.customerEmail } : undefined,
         customData: options.customData,
+        ...(options.discountCode ? { discountCode: options.discountCode } : {}),
         settings: {
           displayMode: "overlay",
           successUrl: options.successUrl || `${window.location.origin}/checkout/success`,
