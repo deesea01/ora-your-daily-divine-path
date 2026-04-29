@@ -16,13 +16,6 @@ const FEATURES = [
   { icon: Bell, text: 'Early access to new features' },
 ];
 
-const Paywall = () => {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const { openCheckout, loading } = usePaddleCheckout();
-  const [plan, setPlan] = useState<'monthly' | 'yearly'>('yearly');
-  const [reminderOn, setReminderOn] = useState(true);
-
 const INTRO_DISCOUNT_CODE = 'ORAFIRSTMONTH';
 
 const Paywall = () => {
