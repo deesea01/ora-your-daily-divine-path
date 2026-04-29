@@ -667,30 +667,4 @@ function OnboardingTopBar() {
   );
 }
 
-// Lightweight deterministic recommendations for the reveal
-function pickSaint(goals: string[], burdens: string[]): { name: string; reason: string } {
-  if (burdens.includes('anxiety') || goals.includes('peace'))
-    return { name: 'St. Francis of Assisi', reason: 'A companion of peace, simplicity, and trust.' };
-  if (burdens.includes('lust') || burdens.includes('forgiveness'))
-    return { name: 'St. Augustine', reason: 'A restless heart turned toward God — he understands your road.' };
-  if (goals.includes('discernment') || burdens.includes('vocation'))
-    return { name: 'St. Thomas Aquinas', reason: 'Clarity, reason, and quiet wisdom for the path ahead.' };
-  if (burdens.includes('grief') || goals.includes('grief'))
-    return { name: 'St. Padre Pio', reason: 'A friend in suffering who points always to mercy.' };
-  if (goals.includes('overcoming_temptation') || burdens.includes('anger'))
-    return { name: 'St. Michael', reason: 'Courage and protection in spiritual battle.' };
-  if (goals.includes('devotion') || goals.includes('prayer_habit'))
-    return { name: 'St. Teresa of Ávila', reason: 'A teacher of interior prayer and steady devotion.' };
-  return { name: 'St. Joan of Arc', reason: 'Holy boldness for the mission God places before you.' };
-}
-
-function pickScripture(goals: string[], burdens: string[]): { ref: string; text: string } {
-  if (burdens.includes('anxiety')) return { ref: 'Psalm 23', text: 'The Lord is my shepherd; I shall not want.' };
-  if (burdens.includes('grief')) return { ref: 'Matthew 5:4', text: 'Blessed are those who mourn, for they shall be comforted.' };
-  if (burdens.includes('loneliness')) return { ref: 'Deuteronomy 31:6', text: 'He will not leave you nor forsake you.' };
-  if (goals.includes('gratitude')) return { ref: '1 Thessalonians 5:18', text: 'Give thanks in all circumstances.' };
-  if (goals.includes('discernment')) return { ref: 'Proverbs 3:5–6', text: 'Trust in the Lord with all your heart.' };
-  return { ref: 'Psalm 46:10', text: 'Be still, and know that I am God.' };
-}
-
 export default Onboarding;
