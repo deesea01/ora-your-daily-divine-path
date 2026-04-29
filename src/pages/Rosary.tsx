@@ -348,7 +348,7 @@ const Rosary = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <SEO title="Guided Rosary | Ora" description="Pray a guided Catholic rosary with step-by-step beads, mysteries, and saint-led reflections in Ora." canonicalPath="/rosary" />
+      <SEO title="Guided Rosary App — Pray the Catholic Rosary Daily | Ora" description="Pray the Catholic rosary with step-by-step beads, all four mysteries, audio guidance, and saint-led reflections. A daily devotion that grows your prayer life." canonicalPath="/rosary" />
       {/* Header */}
       <header className="sticky top-0 z-10 border-b border-border bg-background/80 px-4 py-3 backdrop-blur-md">
         <div className="flex items-center justify-between">

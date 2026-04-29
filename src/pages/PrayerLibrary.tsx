@@ -72,7 +72,7 @@ const PrayerLibrary = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <SEO title="Catholic Prayer Library | Ora" description="Explore 30+ traditional and modern Catholic prayers — read, listen, and practice the rosary, novenas, and daily devotions with Ora." canonicalPath="/prayer-library" />
+      <SEO title="Daily Catholic Prayers — Rosary, Novenas & Devotions | Ora" description="Browse 30+ daily Catholic prayers: the rosary, novenas, Liturgy of the Hours, Lent and Advent guides. Read, listen, and pray with Ora." canonicalPath="/prayer-library" />
       <header className="flex items-center gap-3 border-b border-border px-4 py-4">
         <button onClick={() => navigate('/')} className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground" aria-label={t.back}>
           <ArrowLeft className="h-4 w-4" />

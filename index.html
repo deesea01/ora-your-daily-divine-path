@@ -3,28 +3,39 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ora | Daily Catholic Prayer & Devotion App</title>
-    <meta name="description" content="Grow closer to God daily through guided Catholic prayer, rosary, spiritual reflection, and personalized devotion with Ora." />
+    <title>Ora — Daily Catholic Prayer App for Devotion, Rosary & Saints</title>
+    <meta name="description" content="Ora is a daily devotion app that helps you grow closer to God with guided Catholic prayers, the rosary, the saints, and a personalized prayer plan. Free to start." />
+    <meta name="keywords" content="daily devotion, catholic prayer app, daily catholic prayers, how to grow closer to God, rosary app, catholic saints, lent prayer guide, advent prayer guide, oraciones católicas, oração católica diária" />
     <meta name="author" content="Ora" />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
     <meta name="theme-color" content="#0a0a0a" />
+    <meta name="application-name" content="Ora" />
+    <meta name="apple-mobile-web-app-title" content="Ora" />
     <link rel="canonical" href="https://oradevotion.com/" />
+
+    <!-- Hreflang for multilingual reach (Spanish + Portuguese underserved Catholic markets) -->
+    <link rel="alternate" hreflang="en" href="https://oradevotion.com/" />
+    <link rel="alternate" hreflang="es" href="https://oradevotion.com/?lang=es" />
+    <link rel="alternate" hreflang="pt" href="https://oradevotion.com/?lang=pt" />
+    <link rel="alternate" hreflang="x-default" href="https://oradevotion.com/" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Ora" />
-    <meta property="og:title" content="Ora | Daily Catholic Prayer & Devotion App" />
-    <meta property="og:description" content="Grow closer to God daily through guided Catholic prayer, rosary, spiritual reflection, and personalized devotion with Ora." />
+    <meta property="og:title" content="Ora — Daily Catholic Prayer App for Devotion, Rosary & Saints" />
+    <meta property="og:description" content="Grow closer to God with daily Catholic prayer, the rosary, and saint-led devotion. A personalized spiritual path made for everyday life." />
     <meta property="og:url" content="https://oradevotion.com/" />
     <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/03a28cdf-367e-44c6-9dac-855d28cd2b06/id-preview-6c2a924e--402451b9-e2f4-4035-9c31-5d5149811cd4.lovable.app-1775525736791.png" />
     <meta property="og:image:alt" content="Ora — Daily Catholic Prayer & Devotion App" />
     <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="es_ES" />
+    <meta property="og:locale:alternate" content="pt_BR" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
-    <meta name="twitter:title" content="Ora | Daily Catholic Prayer & Devotion App" />
-    <meta name="twitter:description" content="Grow closer to God daily through guided Catholic prayer, rosary, spiritual reflection, and personalized devotion with Ora." />
+    <meta name="twitter:site" content="@oradevotion" />
+    <meta name="twitter:title" content="Ora — Daily Catholic Prayer App for Devotion, Rosary & Saints" />
+    <meta name="twitter:description" content="Grow closer to God with daily Catholic prayer, the rosary, and saint-led devotion in a personalized spiritual path." />
     <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/03a28cdf-367e-44c6-9dac-855d28cd2b06/id-preview-6c2a924e--402451b9-e2f4-4035-9c31-5d5149811cd4.lovable.app-1775525736791.png" />
     <meta name="twitter:image:alt" content="Ora — Daily Catholic Prayer & Devotion App" />
 
@@ -35,31 +46,31 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <!-- Google Search Console verification placeholder -->
-    <!-- <meta name="google-site-verification" content="REPLACE_WITH_TOKEN" /> -->
-
     <!-- Structured Data: Organization -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "Organization",
       "name": "Ora",
+      "alternateName": "Ora Devotion",
       "url": "https://oradevotion.com/",
       "logo": "https://oradevotion.com/favicon.png",
-      "description": "Ora helps Catholics grow closer to God daily through guided prayer, rosary, and spiritual reflection."
+      "description": "Ora helps Catholics grow closer to God through daily devotion, guided prayer, the rosary, and the saints.",
+      "sameAs": []
     }
     </script>
 
-    <!-- Structured Data: WebSite -->
+    <!-- Structured Data: WebSite + SearchAction -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "Ora",
       "url": "https://oradevotion.com/",
+      "inLanguage": ["en", "es", "pt"],
       "potentialAction": {
         "@type": "SearchAction",
-        "target": "https://oradevotion.com/?q={search_term_string}",
+        "target": "https://oradevotion.com/prayer-library?q={search_term_string}",
         "query-input": "required name=search_term_string"
       }
     }
@@ -70,21 +81,74 @@
     {
       "@context": "https://schema.org",
       "@type": "MobileApplication",
-      "name": "Ora",
+      "name": "Ora — Daily Catholic Prayer & Devotion",
       "operatingSystem": "Web, iOS, Android",
       "applicationCategory": "LifestyleApplication",
-      "description": "Daily Catholic prayer, guided rosary, spiritual reflection, and personalized devotion.",
+      "applicationSubCategory": "Religion",
+      "description": "Daily Catholic devotion, guided rosary, saint-led prayer, and a personalized spiritual plan to help you grow closer to God.",
       "url": "https://oradevotion.com/",
+      "inLanguage": ["en", "es", "pt"],
       "offers": {
         "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
+        "price": "10.00",
+        "priceCurrency": "USD",
+        "category": "subscription"
       },
       "aggregateRating": {
         "@type": "AggregateRating",
         "ratingValue": "4.9",
         "ratingCount": "120"
       }
+    }
+    </script>
+
+    <!-- Structured Data: FAQ for long-tail SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the best Catholic prayer app for daily devotion?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ora is a daily Catholic prayer app that guides you through morning prayer, the rosary, the Examen, and saint-led reflections. Each day's devotion is personalized to your prayer life so you can grow closer to God consistently."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How can I grow closer to God every day?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Begin with a small, faithful daily devotion: a few minutes of guided prayer, a Scripture passage, and an evening Examen. Ora builds this rhythm for you and pairs you with a saint companion to walk the journey."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Ora include daily Catholic prayers and the rosary?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Ora includes 30+ traditional and modern Catholic prayers, a fully guided rosary with all four sets of mysteries, novenas, the Liturgy of the Hours moments, Lent and Advent guides, and saint-led reflections."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Ora available in Spanish and Portuguese?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Ora supports multiple languages including English, Spanish (oraciones católicas) and Portuguese (oração católica diária), with localized prayers, audio, and saint guidance."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How much does Ora cost?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Ora Premium is $10 per month or $70 per year. You can begin with a free trial. A portion of subscriptions supports Catholic charities and ministries."
+          }
+        }
+      ]
     }
     </script>
   </head>

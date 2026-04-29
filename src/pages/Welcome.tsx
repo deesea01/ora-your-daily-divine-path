@@ -43,7 +43,32 @@ const Welcome = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe">
-      <SEO title="Ora | Daily Catholic Prayer & Devotion App" description="Grow closer to God daily through guided Catholic prayer, rosary, spiritual reflection, and personalized devotion with Ora." canonicalPath="/welcome" />
+      <SEO title="Daily Catholic Prayer App — Grow Closer to God with Ora" description="Start a daily devotion with guided Catholic prayers, the rosary, and saint-led reflections. Ora helps you grow closer to God with a personalized spiritual path." canonicalPath="/welcome" />
+
+      {/* SEO content (visually hidden, indexable) */}
+      <section className="sr-only" aria-hidden="true">
+        <h1>Ora — Daily Catholic Prayer & Devotion App</h1>
+        <h2>Daily devotion, the rosary, and the Catholic saints</h2>
+        <p>
+          Ora is a daily Catholic prayer app that helps you grow closer to God through guided
+          daily devotion, the rosary, novenas, the Liturgy of the Hours, and the saints. Build a
+          personalized prayer plan and follow Lent and Advent prayer guides chosen for your
+          spiritual life.
+        </p>
+        <h2>How to grow closer to God every day</h2>
+        <p>
+          Begin with a few minutes of guided morning prayer, pray a decade of the rosary at
+          midday, and end the day with the Examen. Ora adapts your daily Catholic prayers to your
+          life and pairs you with a saint companion — Francis of Assisi, Augustine, Teresa of
+          Ávila, Padre Pio, Thérèse of Lisieux, Joan of Arc, or Thomas Aquinas.
+        </p>
+        <h2>Available in English, Spanish (oraciones católicas) and Portuguese (oração católica diária)</h2>
+        <p>
+          Ora supports multilingual Catholic content for an underserved global Church, with daily
+          devotion, audio prayer, and saint guidance in multiple languages.
+        </p>
+      </section>
+
       {/* Top bar: language picker */}
       <div className="flex justify-end pt-4">
         <select
