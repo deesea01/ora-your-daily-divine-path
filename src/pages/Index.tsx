@@ -8,6 +8,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { SPIRITUAL_GUIDES, SpiritualGuideKey } from '@/lib/guides';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useWeeklyRecaps } from '@/hooks/useWeeklyRecaps';
+import { useEntitlement } from '@/hooks/useEntitlement';
 
 import PrayerCard from '@/components/PrayerCard';
 import SEO from '@/components/SEO';
