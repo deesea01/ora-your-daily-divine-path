@@ -669,4 +669,12 @@ function OnboardingTopBar() {
   );
 }
 
-export default Onboarding;
+import { OnboardingErrorBoundary } from '@/components/OnboardingErrorBoundary';
+
+const OnboardingWithBoundary = () => (
+  <OnboardingErrorBoundary>
+    <Onboarding />
+  </OnboardingErrorBoundary>
+);
+
+export default OnboardingWithBoundary;
