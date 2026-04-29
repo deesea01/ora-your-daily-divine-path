@@ -113,6 +113,68 @@ const Onboarding = () => {
   const [saving, setSaving] = useState(false);
   const [plan, setPlan] = useState<DevotionalPlan | null>(null);
 
+  // ----- Persistent progress (resume after refresh / navigation) -----
+  // Scope storage to the authed user so different accounts on the same device don't collide.
+  const STORAGE_VERSION = 1;
+  const storageKey = user?.id ? `ora.onboarding.v${STORAGE_VERSION}.${user.id}` : null;
+  const [restored, setRestored] = useState(false);
+
+  // Restore once we know who the user is.
+  useEffect(() => {
+    if (!storageKey || restored) return;
+    try {
+      const raw = typeof window !== 'undefined' ? window.localStorage.getItem(storageKey) : null;
+      if (raw) {
+        const saved = JSON.parse(raw) as Partial<{
+          step: number;
+          displayName: string;
+          goals: string[];
+          stage: string;
+          burdens: string[];
+          styles: string[];
+          commitment: string;
+          termsAccepted: boolean;
+        }>;
+        if (typeof saved.step === 'number') {
+          // Don't resume on the loading screen (7) — bounce forward to the recap reveal.
+          setStep(saved.step === 7 ? 8 : Math.min(Math.max(saved.step, 0), TOTAL_STEPS - 1));
+        }
+        if (typeof saved.displayName === 'string') setDisplayName(saved.displayName);
+        if (Array.isArray(saved.goals)) setGoals(saved.goals);
+        if (typeof saved.stage === 'string') setStage(saved.stage);
+        if (Array.isArray(saved.burdens)) setBurdens(saved.burdens);
+        if (Array.isArray(saved.styles)) setStyles(saved.styles);
+        if (typeof saved.commitment === 'string') setCommitment(saved.commitment);
+        if (typeof saved.termsAccepted === 'boolean') setTermsAccepted(saved.termsAccepted);
+      }
+    } catch {
+      // corrupt entry — ignore and start fresh
+    }
+    setRestored(true);
+  }, [storageKey, restored]);
+
+  // Save on any change (after restore so we don't overwrite saved state with defaults).
+  useEffect(() => {
+    if (!storageKey || !restored) return;
+    try {
+      window.localStorage.setItem(
+        storageKey,
+        JSON.stringify({ step, displayName, goals, stage, burdens, styles, commitment, termsAccepted }),
+      );
+    } catch {
+      // quota / privacy mode — best-effort only
+    }
+  }, [storageKey, restored, step, displayName, goals, stage, burdens, styles, commitment, termsAccepted]);
+
+  const clearPersistedProgress = () => {
+    if (!storageKey) return;
+    try {
+      window.localStorage.removeItem(storageKey);
+    } catch {
+      /* noop */
+    }
+  };
+
   useEffect(() => {
     if (user === null) navigate('/auth', { replace: true });
   }, [user, navigate]);
