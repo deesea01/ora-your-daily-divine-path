@@ -269,7 +269,16 @@ const Onboarding = () => {
     setStep(7); // loading screen
   };
 
-  const goToPaywall = () => navigate('/paywall', { replace: true });
+  const goToPaywall = () => {
+    clearPersistedProgress();
+    navigate('/paywall', { replace: true });
+  };
+
+  // If the profile already shows onboarding completed, drop any leftover draft.
+  useEffect(() => {
+    if (user && profile?.onboarding_completed) clearPersistedProgress();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, profile?.onboarding_completed]);
 
   // Plan summary — prefers the persisted plan, falls back to a live preview.
   // Must be declared before any early return to keep hook order stable.
