@@ -113,6 +113,68 @@ const Onboarding = () => {
   const [saving, setSaving] = useState(false);
   const [plan, setPlan] = useState<DevotionalPlan | null>(null);
 
+  // ----- Persistent progress (resume after refresh / navigation) -----
+  // Scope storage to the authed user so different accounts on the same device don't collide.
+  const STORAGE_VERSION = 1;
+  const storageKey = user?.id ? `ora.onboarding.v${STORAGE_VERSION}.${user.id}` : null;
+  const [restored, setRestored] = useState(false);
+
+  // Restore once we know who the user is.
+  useEffect(() => {
+    if (!storageKey || restored) return;
+    try {
+      const raw = typeof window !== 'undefined' ? window.localStorage.getItem(storageKey) : null;
+      if (raw) {
+        const saved = JSON.parse(raw) as Partial<{
+          step: number;
+          displayName: string;
+          goals: string[];
+          stage: string;
+          burdens: string[];
+          styles: string[];
+          commitment: string;
+          termsAccepted: boolean;
+        }>;
+        if (typeof saved.step === 'number') {
+          // Don't resume on the loading screen (7) — bounce forward to the recap reveal.
+          setStep(saved.step === 7 ? 8 : Math.min(Math.max(saved.step, 0), TOTAL_STEPS - 1));
+        }
+        if (typeof saved.displayName === 'string') setDisplayName(saved.displayName);
+        if (Array.isArray(saved.goals)) setGoals(saved.goals);
+        if (typeof saved.stage === 'string') setStage(saved.stage);
+        if (Array.isArray(saved.burdens)) setBurdens(saved.burdens);
+        if (Array.isArray(saved.styles)) setStyles(saved.styles);
+        if (typeof saved.commitment === 'string') setCommitment(saved.commitment);
+        if (typeof saved.termsAccepted === 'boolean') setTermsAccepted(saved.termsAccepted);
+      }
+    } catch {
+      // corrupt entry — ignore and start fresh
+    }
+    setRestored(true);
+  }, [storageKey, restored]);
+
+  // Save on any change (after restore so we don't overwrite saved state with defaults).
+  useEffect(() => {
+    if (!storageKey || !restored) return;
+    try {
+      window.localStorage.setItem(
+        storageKey,
+        JSON.stringify({ step, displayName, goals, stage, burdens, styles, commitment, termsAccepted }),
+      );
+    } catch {
+      // quota / privacy mode — best-effort only
+    }
+  }, [storageKey, restored, step, displayName, goals, stage, burdens, styles, commitment, termsAccepted]);
+
+  const clearPersistedProgress = () => {
+    if (!storageKey) return;
+    try {
+      window.localStorage.removeItem(storageKey);
+    } catch {
+      /* noop */
+    }
+  };
+
   useEffect(() => {
     if (user === null) navigate('/auth', { replace: true });
   }, [user, navigate]);
@@ -207,7 +269,16 @@ const Onboarding = () => {
     setStep(7); // loading screen
   };
 
-  const goToPaywall = () => navigate('/paywall', { replace: true });
+  const goToPaywall = () => {
+    clearPersistedProgress();
+    navigate('/paywall', { replace: true });
+  };
+
+  // If the profile already shows onboarding completed, drop any leftover draft.
+  useEffect(() => {
+    if (user && profile?.onboarding_completed) clearPersistedProgress();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, profile?.onboarding_completed]);
 
   // Plan summary — prefers the persisted plan, falls back to a live preview.
   // Must be declared before any early return to keep hook order stable.
@@ -219,7 +290,7 @@ const Onboarding = () => {
   // Dev-only sanity check: ensure all hooks ran every render before any early return.
   // If this number ever changes between renders, React's own hook checker will throw —
   // this assertion gives a clearer error in dev/test.
-  const HOOK_COUNT = 13; // useNavigate + useAuth + useUserProfile + useOnboardingResponses + 10 useStates(11) + 2 useEffects(2) + 1 useMemo + this useRef
+  const HOOK_COUNT = 18; // base 13 + 1 useState (restored) + 3 useEffects (restore, save, completed-cleanup) + 1 reserved
   const hookCountRef = useRef(HOOK_COUNT);
   if (import.meta.env.DEV && hookCountRef.current !== HOOK_COUNT) {
     throw new Error(
