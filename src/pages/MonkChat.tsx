@@ -119,7 +119,7 @@ const MonkChat = () => {
   };
   const [mood, setMood] = useState<SaintMood>(inferInitialMood);
 
-  const guide = SPIRITUAL_GUIDES[guideKey] || SPIRITUAL_GUIDES.monk;
+  const guide = SPIRITUAL_GUIDES[guideKey] || SPIRITUAL_GUIDES.st_francis;
 
   const SUGGESTED_PROMPTS = [
     t.helpMePray,
