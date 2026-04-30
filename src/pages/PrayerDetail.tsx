@@ -88,25 +88,69 @@ const PrayerDetail = () => {
   const prayerType = type as PrayerType;
   const meta = prayerMeta[prayerType];
 
-  // Load saved progress (today only) before fetching, so we can skip the AI call when resuming
+  // Load saved progress (today only) — DB first (cross-device), then localStorage cache
   useEffect(() => {
     if (!user || !meta) return;
+    let cancelled = false;
+
+    const applySaved = (content: string, stageIds: string[]) => {
+      if (cancelled || !content) return;
+      setContent(content);
+      setCompletedStageIds(stageIds || []);
+      setResumed(true);
+      setLoading(false);
+    };
+
+    // 1. Optimistic: hydrate from localStorage immediately
+    let localApplied = false;
     try {
       const raw = localStorage.getItem(storageKey(user.id, prayerType));
-      if (!raw) return;
-      const saved: SavedProgress = JSON.parse(raw);
-      if (saved.date === todayStr() && saved.content) {
-        setContent(saved.content);
-        setCompletedStageIds(saved.completedStageIds || []);
-        setResumed(true);
-        setLoading(false);
-      } else {
-        // stale (different day) — clear
-        localStorage.removeItem(storageKey(user.id, prayerType));
+      if (raw) {
+        const saved: SavedProgress = JSON.parse(raw);
+        if (saved.date === todayStr() && saved.content) {
+          applySaved(saved.content, saved.completedStageIds || []);
+          localApplied = true;
+        } else {
+          localStorage.removeItem(storageKey(user.id, prayerType));
+        }
       }
     } catch {
       // ignore corrupt storage
     }
+
+    // 2. Authoritative: pull today's session from Supabase to sync across devices
+    supabase
+      .from('prayer_progress_sessions')
+      .select('content, completed_stage_ids, updated_at')
+      .eq('user_id', user.id)
+      .eq('prayer_type', prayerType)
+      .eq('prayer_date', todayStr())
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled || !data || !data.content) return;
+        const remoteStages = Array.isArray(data.completed_stage_ids)
+          ? (data.completed_stage_ids as string[])
+          : [];
+        applySaved(data.content, remoteStages);
+        // Refresh local cache with authoritative copy
+        try {
+          localStorage.setItem(
+            storageKey(user.id, prayerType),
+            JSON.stringify({
+              date: todayStr(),
+              content: data.content,
+              completedStageIds: remoteStages,
+              updatedAt: Date.now(),
+            } satisfies SavedProgress),
+          );
+        } catch {}
+      });
+
+    return () => {
+      cancelled = true;
+    };
+    // localApplied intentionally unused after this point
+    void localApplied;
   }, [user, prayerType]);
 
   // Check completion status (DB)
@@ -190,19 +234,40 @@ const PrayerDetail = () => {
   const stages = useMemo(() => parseStages(content), [content]);
 
   // Persist progress whenever content or completed stages change (today's session only)
+  // Writes to localStorage immediately + debounced upsert to Supabase for cross-device sync.
   useEffect(() => {
     if (!user || !content || loading) return;
+    const payload: SavedProgress = {
+      date: todayStr(),
+      content,
+      completedStageIds,
+      updatedAt: Date.now(),
+    };
     try {
-      const payload: SavedProgress = {
-        date: todayStr(),
-        content,
-        completedStageIds,
-        updatedAt: Date.now(),
-      };
       localStorage.setItem(storageKey(user.id, prayerType), JSON.stringify(payload));
     } catch {
       // storage full / disabled — silent
     }
+
+    const handle = setTimeout(() => {
+      supabase
+        .from('prayer_progress_sessions')
+        .upsert(
+          {
+            user_id: user.id,
+            prayer_type: prayerType,
+            prayer_date: todayStr(),
+            content,
+            completed_stage_ids: completedStageIds,
+          },
+          { onConflict: 'user_id,prayer_type,prayer_date' },
+        )
+        .then(({ error }) => {
+          if (error) console.warn('Failed to sync prayer progress:', error.message);
+        });
+    }, 800);
+
+    return () => clearTimeout(handle);
   }, [user, prayerType, content, completedStageIds, loading]);
 
   // Auto-scroll while streaming a fresh prayer (not when resuming)
@@ -218,9 +283,15 @@ const PrayerDetail = () => {
     );
   };
 
-  const restart = () => {
+  const restart = async () => {
     if (!user) return;
-    localStorage.removeItem(storageKey(user.id, prayerType));
+    try { localStorage.removeItem(storageKey(user.id, prayerType)); } catch {}
+    await supabase
+      .from('prayer_progress_sessions')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('prayer_type', prayerType)
+      .eq('prayer_date', todayStr());
     setContent('');
     setCompletedStageIds([]);
     setResumed(false);
@@ -238,6 +309,15 @@ const PrayerDetail = () => {
       setCompleted(true);
       // Clear saved progress — session is done
       try { localStorage.removeItem(storageKey(user.id, prayerType)); } catch {}
+      supabase
+        .from('prayer_progress_sessions')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('prayer_type', prayerType)
+        .eq('prayer_date', todayStr())
+        .then(({ error: delErr }) => {
+          if (delErr) console.warn('Failed to clear synced progress:', delErr.message);
+        });
     }
     setMarking(false);
   };
