@@ -8,6 +8,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import ReactMarkdown from 'react-markdown';
 import { notifyAdminError } from '@/lib/notifyAdmin';
 import { usePrayerNarration } from '@/hooks/usePrayerNarration';
+import { SacredPause } from '@/components/SacredPause';
 
 const prayerMeta = {
   morning: { title: 'Morning Lauds', subtitle: 'Start your day in grace', Icon: Sun },
