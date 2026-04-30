@@ -26,8 +26,11 @@ interface SavedProgress {
   date: string;
   content: string;
   completedStageIds: string[];
+  stageNotes: Record<string, string>;
   updatedAt: number;
 }
+
+const MAX_NOTE_LENGTH = 500;
 
 const todayStr = () => new Date().toISOString().split('T')[0];
 const storageKey = (userId: string, type: string) => `ora:prayer-progress:${userId}:${type}`;
