@@ -441,15 +441,16 @@ const PrayerDetail = () => {
 
   const downloadPdf = () => {
     if (!meta) return;
+    const reflection = stageNotes['__reflection__'];
     exportPrayerPathPdf({
       prayerType,
       prayerTitle: meta.title,
       date: todayStr(),
-      stages: stages.map((s) => ({
+      stages: stages.map((s, i) => ({
         title: s.title,
         body: s.body,
-        completed: completedStageIds.includes(s.id),
-        note: stageNotes[s.id],
+        completed: completed,
+        note: i === stages.length - 1 ? reflection : undefined,
       })),
     });
   };
