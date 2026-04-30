@@ -39,6 +39,18 @@
     --gold: 43 52% 54%;
     --gold-muted: 43 30% 30%;
     --gold-glow: 43 60% 65%;
+    --gold-deep: 38 55% 38%;
+
+    /* Reusable design primitives */
+    --gradient-gold: linear-gradient(135deg, hsl(var(--gold-deep)) 0%, hsl(var(--gold)) 50%, hsl(var(--gold-glow)) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 9%) 0%, hsl(0 0% 6%) 100%);
+    --gradient-surface: linear-gradient(180deg, hsl(0 0% 6% / 0.6) 0%, hsl(0 0% 4% / 0.6) 100%);
+    --shadow-gold-soft: 0 1px 0 hsl(var(--gold-glow) / 0.18) inset, 0 8px 24px -10px hsl(var(--gold) / 0.35);
+    --shadow-gold-strong: 0 0 0 1px hsl(var(--gold) / 0.35), 0 18px 42px -14px hsl(var(--gold) / 0.5), 0 1px 0 hsl(var(--gold-glow) / 0.35) inset;
+    --shadow-elegant: 0 1px 0 hsl(0 0% 100% / 0.04) inset, 0 12px 30px -16px hsl(0 0% 0% / 0.6);
+    --ring-gold: 0 0 0 1px hsl(var(--gold) / 0.45), 0 0 24px -8px hsl(var(--gold) / 0.55);
+
+    --transition-elegant: cubic-bezier(0.22, 1, 0.36, 1);
 
     --font-serif: 'Cormorant Garamond', Georgia, serif;
     --font-sans: 'Inter', system-ui, sans-serif;
@@ -78,11 +90,64 @@
     box-shadow: 0 0 20px hsl(var(--gold) / 0.15), 0 0 60px hsl(var(--gold) / 0.05);
   }
 
+  .glow-gold-strong {
+    box-shadow: var(--shadow-gold-strong);
+  }
+
+  .ring-gold {
+    box-shadow: var(--ring-gold);
+  }
+
   .text-gradient-gold {
-    background: linear-gradient(135deg, hsl(var(--gold)), hsl(var(--gold-glow)));
+    background: var(--gradient-gold);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  .bg-gradient-gold {
+    background-image: var(--gradient-gold);
+  }
+
+  .bg-gradient-card {
+    background-image: var(--gradient-card);
+  }
+
+  .bg-gradient-surface {
+    background-image: var(--gradient-surface);
+  }
+
+  .surface-elegant {
+    background-image: var(--gradient-card);
+    border: 1px solid hsl(var(--border));
+    box-shadow: var(--shadow-elegant);
+  }
+
+  .surface-gold {
+    position: relative;
+    background-image: var(--gradient-card);
+    border: 1px solid hsl(var(--gold) / 0.25);
+    box-shadow: var(--shadow-gold-soft);
+  }
+
+  .ease-elegant {
+    transition-timing-function: var(--transition-elegant);
+  }
+
+  /* Subtle gold shimmer travelling across an element. Pair with overflow-hidden parent. */
+  .shimmer-gold::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      110deg,
+      transparent 30%,
+      hsl(var(--gold-glow) / 0.18) 50%,
+      transparent 70%
+    );
+    transform: translateX(-100%);
+    animation: gold-shimmer 2.4s ease-in-out infinite;
+    pointer-events: none;
   }
 }
 
@@ -94,6 +159,30 @@
 @keyframes pulse-soft {
   0%, 100% { opacity: 0.4; }
   50% { opacity: 0.8; }
+}
+
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(6px); filter: blur(2px); }
+  to   { opacity: 1; transform: translateY(0);   filter: blur(0); }
+}
+
+@keyframes gold-shimmer {
+  0%   { transform: translateX(-100%); }
+  60%  { transform: translateX(100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--gold) / 0.0), 0 0 18px -6px hsl(var(--gold) / 0.35); }
+  50%      { box-shadow: 0 0 0 4px hsl(var(--gold) / 0.08), 0 0 28px -4px hsl(var(--gold) / 0.55); }
+}
+
+.animate-page-enter {
+  animation: page-enter 0.45s var(--transition-elegant) both;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2.6s ease-in-out infinite;
 }
 
 .animate-fade-in {
@@ -136,4 +225,17 @@
 
 .bg-gradient-radial {
   background: radial-gradient(circle, var(--tw-gradient-from), var(--tw-gradient-to));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-page-enter,
+  .animate-fade-in,
+  .animate-fade-in-delay-1,
+  .animate-fade-in-delay-2,
+  .animate-fade-in-delay-3,
+  .animate-pulse-soft,
+  .animate-glow-pulse,
+  .shimmer-gold::after {
+    animation: none !important;
+  }
 }
