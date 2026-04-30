@@ -97,10 +97,15 @@ const PrayerDetail = () => {
     if (!user || !meta) return;
     let cancelled = false;
 
-    const applySaved = (content: string, stageIds: string[]) => {
+    const applySaved = (
+      content: string,
+      stageIds: string[],
+      notes: Record<string, string> = {},
+    ) => {
       if (cancelled || !content) return;
       setContent(content);
       setCompletedStageIds(stageIds || []);
+      setStageNotes(notes || {});
       setResumed(true);
       setLoading(false);
     };
