@@ -180,6 +180,21 @@ const PrayerDetail = () => {
   const prayerType = type as PrayerType;
   const meta = prayerMeta[prayerType];
 
+  // Sacred pause: shown once per browser session per slot.
+  const pauseKey = prayerType ? `ora:sacred-pause:${prayerType}:${todayStr()}` : '';
+  const [showPause, setShowPause] = useState<boolean>(() => {
+    if (!prayerType) return false;
+    try {
+      return sessionStorage.getItem(pauseKey) !== 'done';
+    } catch {
+      return true;
+    }
+  });
+  const dismissPause = () => {
+    try { sessionStorage.setItem(pauseKey, 'done'); } catch {}
+    setShowPause(false);
+  };
+
   // Load saved progress (today only) — DB first (cross-device), then localStorage cache
   useEffect(() => {
     if (!user || !meta) return;
