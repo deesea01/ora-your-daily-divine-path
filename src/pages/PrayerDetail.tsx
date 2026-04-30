@@ -26,8 +26,11 @@ interface SavedProgress {
   date: string;
   content: string;
   completedStageIds: string[];
+  stageNotes: Record<string, string>;
   updatedAt: number;
 }
+
+const MAX_NOTE_LENGTH = 500;
 
 const todayStr = () => new Date().toISOString().split('T')[0];
 const storageKey = (userId: string, type: string) => `ora:prayer-progress:${userId}:${type}`;
@@ -82,6 +85,7 @@ const PrayerDetail = () => {
   const [completed, setCompleted] = useState(false);
   const [marking, setMarking] = useState(false);
   const [completedStageIds, setCompletedStageIds] = useState<string[]>([]);
+  const [stageNotes, setStageNotes] = useState<Record<string, string>>({});
   const [resumed, setResumed] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -93,10 +97,15 @@ const PrayerDetail = () => {
     if (!user || !meta) return;
     let cancelled = false;
 
-    const applySaved = (content: string, stageIds: string[]) => {
+    const applySaved = (
+      content: string,
+      stageIds: string[],
+      notes: Record<string, string> = {},
+    ) => {
       if (cancelled || !content) return;
       setContent(content);
       setCompletedStageIds(stageIds || []);
+      setStageNotes(notes || {});
       setResumed(true);
       setLoading(false);
     };
@@ -108,7 +117,7 @@ const PrayerDetail = () => {
       if (raw) {
         const saved: SavedProgress = JSON.parse(raw);
         if (saved.date === todayStr() && saved.content) {
-          applySaved(saved.content, saved.completedStageIds || []);
+          applySaved(saved.content, saved.completedStageIds || [], saved.stageNotes || {});
           localApplied = true;
         } else {
           localStorage.removeItem(storageKey(user.id, prayerType));
@@ -121,7 +130,7 @@ const PrayerDetail = () => {
     // 2. Authoritative: pull today's session from Supabase to sync across devices
     supabase
       .from('prayer_progress_sessions')
-      .select('content, completed_stage_ids, updated_at')
+      .select('content, completed_stage_ids, stage_notes, updated_at')
       .eq('user_id', user.id)
       .eq('prayer_type', prayerType)
       .eq('prayer_date', todayStr())
@@ -131,7 +140,11 @@ const PrayerDetail = () => {
         const remoteStages = Array.isArray(data.completed_stage_ids)
           ? (data.completed_stage_ids as string[])
           : [];
-        applySaved(data.content, remoteStages);
+        const remoteNotes =
+          data.stage_notes && typeof data.stage_notes === 'object' && !Array.isArray(data.stage_notes)
+            ? (data.stage_notes as Record<string, string>)
+            : {};
+        applySaved(data.content, remoteStages, remoteNotes);
         // Refresh local cache with authoritative copy
         try {
           localStorage.setItem(
@@ -140,6 +153,7 @@ const PrayerDetail = () => {
               date: todayStr(),
               content: data.content,
               completedStageIds: remoteStages,
+              stageNotes: remoteNotes,
               updatedAt: Date.now(),
             } satisfies SavedProgress),
           );
@@ -241,6 +255,7 @@ const PrayerDetail = () => {
       date: todayStr(),
       content,
       completedStageIds,
+      stageNotes,
       updatedAt: Date.now(),
     };
     try {
@@ -259,6 +274,7 @@ const PrayerDetail = () => {
             prayer_date: todayStr(),
             content,
             completed_stage_ids: completedStageIds,
+            stage_notes: stageNotes,
           },
           { onConflict: 'user_id,prayer_type,prayer_date' },
         )
@@ -268,7 +284,7 @@ const PrayerDetail = () => {
     }, 800);
 
     return () => clearTimeout(handle);
-  }, [user, prayerType, content, completedStageIds, loading]);
+  }, [user, prayerType, content, completedStageIds, stageNotes, loading]);
 
   // Auto-scroll while streaming a fresh prayer (not when resuming)
   useEffect(() => {
@@ -283,6 +299,19 @@ const PrayerDetail = () => {
     );
   };
 
+  const updateStageNote = (id: string, value: string) => {
+    const trimmed = value.slice(0, MAX_NOTE_LENGTH);
+    setStageNotes((prev) => {
+      if (!trimmed) {
+        if (!prev[id]) return prev;
+        const { [id]: _omit, ...rest } = prev;
+        return rest;
+      }
+      if (prev[id] === trimmed) return prev;
+      return { ...prev, [id]: trimmed };
+    });
+  };
+
   const restart = async () => {
     if (!user) return;
     try { localStorage.removeItem(storageKey(user.id, prayerType)); } catch {}
@@ -294,6 +323,7 @@ const PrayerDetail = () => {
       .eq('prayer_date', todayStr());
     setContent('');
     setCompletedStageIds([]);
+    setStageNotes({});
     setResumed(false);
   };
 
@@ -495,6 +525,29 @@ const PrayerDetail = () => {
                       Audio unavailable right now. Please try again.
                     </p>
                   )}
+
+                  {/* Reflection note */}
+                  <div className="mt-4 border-t border-border/60 pt-3">
+                    <label
+                      htmlFor={`note-${stage.id}`}
+                      className="flex items-center justify-between text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground"
+                    >
+                      <span>Your reflection</span>
+                      <span className="text-muted-foreground/60 normal-case tracking-normal">
+                        {(stageNotes[stage.id]?.length ?? 0)}/{MAX_NOTE_LENGTH}
+                      </span>
+                    </label>
+                    <textarea
+                      id={`note-${stage.id}`}
+                      value={stageNotes[stage.id] ?? ''}
+                      onChange={(e) => updateStageNote(stage.id, e.target.value)}
+                      maxLength={MAX_NOTE_LENGTH}
+                      disabled={completed}
+                      rows={2}
+                      placeholder="What is rising in your heart?"
+                      className="mt-2 w-full resize-y rounded-xl border border-border bg-background/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition-colors focus:border-gold/60 disabled:opacity-60"
+                    />
+                  </div>
                 </section>
               );
             })}
