@@ -234,19 +234,40 @@ const PrayerDetail = () => {
   const stages = useMemo(() => parseStages(content), [content]);
 
   // Persist progress whenever content or completed stages change (today's session only)
+  // Writes to localStorage immediately + debounced upsert to Supabase for cross-device sync.
   useEffect(() => {
     if (!user || !content || loading) return;
+    const payload: SavedProgress = {
+      date: todayStr(),
+      content,
+      completedStageIds,
+      updatedAt: Date.now(),
+    };
     try {
-      const payload: SavedProgress = {
-        date: todayStr(),
-        content,
-        completedStageIds,
-        updatedAt: Date.now(),
-      };
       localStorage.setItem(storageKey(user.id, prayerType), JSON.stringify(payload));
     } catch {
       // storage full / disabled — silent
     }
+
+    const handle = setTimeout(() => {
+      supabase
+        .from('prayer_progress_sessions')
+        .upsert(
+          {
+            user_id: user.id,
+            prayer_type: prayerType,
+            prayer_date: todayStr(),
+            content,
+            completed_stage_ids: completedStageIds,
+          },
+          { onConflict: 'user_id,prayer_type,prayer_date' },
+        )
+        .then(({ error }) => {
+          if (error) console.warn('Failed to sync prayer progress:', error.message);
+        });
+    }, 800);
+
+    return () => clearTimeout(handle);
   }, [user, prayerType, content, completedStageIds, loading]);
 
   // Auto-scroll while streaming a fresh prayer (not when resuming)
@@ -262,9 +283,15 @@ const PrayerDetail = () => {
     );
   };
 
-  const restart = () => {
+  const restart = async () => {
     if (!user) return;
-    localStorage.removeItem(storageKey(user.id, prayerType));
+    try { localStorage.removeItem(storageKey(user.id, prayerType)); } catch {}
+    await supabase
+      .from('prayer_progress_sessions')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('prayer_type', prayerType)
+      .eq('prayer_date', todayStr());
     setContent('');
     setCompletedStageIds([]);
     setResumed(false);
