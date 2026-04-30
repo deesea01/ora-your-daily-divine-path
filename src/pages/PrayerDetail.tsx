@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { ArrowLeft, Check, Sun, CloudSun, Moon, Loader2, RotateCcw, Circle, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Check, Sun, CloudSun, Moon, Loader2, RotateCcw, Circle, CheckCircle2, Play, Pause, Volume2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import ReactMarkdown from 'react-markdown';
 import { notifyAdminError } from '@/lib/notifyAdmin';
+import { usePrayerNarration } from '@/hooks/usePrayerNarration';
 
 const prayerMeta = {
   morning: { title: 'Morning Lauds', subtitle: 'Start your day in grace', Icon: Sun },
