@@ -98,6 +98,9 @@ export function TodaysPrayerPath({ completions, tickMs = 60_000 }: Props) {
   const active = useMemo(() => getActiveSlot(now), [now]);
   const buckets = useMemo(() => bucketPlanPrayers(plan, active), [plan, active]);
   const locale = language === 'tl' ? 'fil' : language;
+  const userTz = typeof Intl !== 'undefined'
+    ? Intl.DateTimeFormat().resolvedOptions().timeZone
+    : undefined;
 
   return (
     <section className="mb-8">
@@ -108,7 +111,7 @@ export function TodaysPrayerPath({ completions, tickMs = 60_000 }: Props) {
         </span>
       </div>
       <p className="mb-5 text-sm text-muted-foreground animate-fade-in">
-        {now.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric' })}
+        {now.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric', timeZone: userTz })}
       </p>
 
       <div className="space-y-3">
