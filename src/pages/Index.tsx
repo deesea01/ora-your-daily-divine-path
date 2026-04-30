@@ -46,6 +46,9 @@ const Index = () => {
   const [streak, setStreak] = useState(0);
   const [showGoalPicker, setShowGoalPicker] = useState(false);
 
+  // Gentle in-app reminders for Morning / Midday / Night when Ora is open.
+  usePrayerReminders();
+
   useEffect(() => {
     if (!user) return;
     const today = new Date().toISOString().split('T')[0];
