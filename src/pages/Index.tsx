@@ -15,6 +15,7 @@ import SEO from '@/components/SEO';
 import FaithJourneyCard from '@/components/FaithJourneyCard';
 import SaintCompanionsCarousel from '@/components/SaintCompanionsCarousel';
 import TodaysPrayerPath from '@/components/TodaysPrayerPath';
+import { usePrayerReminders } from '@/hooks/usePrayerReminders';
 
 function computeStreak(dates: string[]): number {
   if (dates.length === 0) return 0;
@@ -44,6 +45,9 @@ const Index = () => {
   const [completions, setCompletions] = useState<Set<string>>(new Set());
   const [streak, setStreak] = useState(0);
   const [showGoalPicker, setShowGoalPicker] = useState(false);
+
+  // Gentle in-app reminders for Morning / Midday / Night when Ora is open.
+  usePrayerReminders();
 
   useEffect(() => {
     if (!user) return;
