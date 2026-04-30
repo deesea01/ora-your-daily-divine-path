@@ -525,6 +525,29 @@ const PrayerDetail = () => {
                       Audio unavailable right now. Please try again.
                     </p>
                   )}
+
+                  {/* Reflection note */}
+                  <div className="mt-4 border-t border-border/60 pt-3">
+                    <label
+                      htmlFor={`note-${stage.id}`}
+                      className="flex items-center justify-between text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground"
+                    >
+                      <span>Your reflection</span>
+                      <span className="text-muted-foreground/60 normal-case tracking-normal">
+                        {(stageNotes[stage.id]?.length ?? 0)}/{MAX_NOTE_LENGTH}
+                      </span>
+                    </label>
+                    <textarea
+                      id={`note-${stage.id}`}
+                      value={stageNotes[stage.id] ?? ''}
+                      onChange={(e) => updateStageNote(stage.id, e.target.value)}
+                      maxLength={MAX_NOTE_LENGTH}
+                      disabled={completed}
+                      rows={2}
+                      placeholder="What is rising in your heart?"
+                      className="mt-2 w-full resize-y rounded-xl border border-border bg-background/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition-colors focus:border-gold/60 disabled:opacity-60"
+                    />
+                  </div>
                 </section>
               );
             })}
