@@ -55,7 +55,7 @@ const App = () => (
             <PaymentTestModeBanner />
             <AuthNav />
             <Routes>
-              <Route path="/" element={<RouteTransition><Index /></RouteTransition>} />
+              <Route path="/" element={<Index />} />
               <Route path="/welcome" element={<Welcome />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/reset-password" element={<ResetPassword />} />
