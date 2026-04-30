@@ -57,7 +57,10 @@ const Settings = () => {
 
   if (!user) return <Navigate to="/auth" replace />;
 
-  const guideKey = (profile?.spiritual_guide || 'monk') as SpiritualGuideKey;
+  const storedGuideKey = (profile?.spiritual_guide || 'st_francis') as SpiritualGuideKey;
+  const guideKey: SpiritualGuideKey = SPIRITUAL_GUIDES[storedGuideKey]
+    ? storedGuideKey
+    : ('st_francis' as SpiritualGuideKey);
   const guideData = SPIRITUAL_GUIDES[guideKey];
 
   const toggleSeeking = (value: string) => {

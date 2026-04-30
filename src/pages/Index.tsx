@@ -90,7 +90,10 @@ const Index = () => {
   const greeting = hour < 12 ? t.goodMorning : hour < 17 ? t.goodAfternoon : t.goodEvening;
   const dailyGoal = profile?.daily_prayer_goal || 3;
   const todayCompleted = completions.size;
-  const guideKey = (profile?.spiritual_guide || 'monk') as SpiritualGuideKey;
+  const storedGuideKey = (profile?.spiritual_guide || 'st_francis') as SpiritualGuideKey;
+  const guideKey: SpiritualGuideKey = SPIRITUAL_GUIDES[storedGuideKey]
+    ? storedGuideKey
+    : ('st_francis' as SpiritualGuideKey);
   const guideData = SPIRITUAL_GUIDES[guideKey];
 
   const allPrayers = [
