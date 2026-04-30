@@ -439,6 +439,21 @@ const PrayerDetail = () => {
     setMarking(false);
   };
 
+  const downloadPdf = () => {
+    if (!meta) return;
+    exportPrayerPathPdf({
+      prayerType,
+      prayerTitle: meta.title,
+      date: todayStr(),
+      stages: stages.map((s) => ({
+        title: s.title,
+        body: s.body,
+        completed: completedStageIds.includes(s.id),
+        note: stageNotes[s.id],
+      })),
+    });
+  };
+
   if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
