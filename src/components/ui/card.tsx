@@ -2,9 +2,25 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("rounded-lg border bg-card text-card-foreground shadow-sm", className)} {...props} />
-));
+type CardVariant = "default" | "elegant" | "gold";
+
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: CardVariant;
+}
+
+const variantStyles: Record<CardVariant, string> = {
+  default: "border bg-card text-card-foreground shadow-sm",
+  elegant:
+    "surface-elegant text-card-foreground transition-all duration-300 ease-elegant hover:-translate-y-[1px] hover:border-[hsl(var(--gold)/0.25)]",
+  gold:
+    "surface-gold text-card-foreground transition-all duration-300 ease-elegant hover:shadow-[var(--shadow-gold-strong)]",
+};
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, variant = "default", ...props }, ref) => (
+    <div ref={ref} className={cn("rounded-lg", variantStyles[variant], className)} {...props} />
+  ),
+);
 Card.displayName = "Card";
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
