@@ -117,7 +117,7 @@ const PrayerDetail = () => {
       if (raw) {
         const saved: SavedProgress = JSON.parse(raw);
         if (saved.date === todayStr() && saved.content) {
-          applySaved(saved.content, saved.completedStageIds || []);
+          applySaved(saved.content, saved.completedStageIds || [], saved.stageNotes || {});
           localApplied = true;
         } else {
           localStorage.removeItem(storageKey(user.id, prayerType));
