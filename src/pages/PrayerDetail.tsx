@@ -495,7 +495,9 @@ const PrayerDetail = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      {/* Header */}
+      {showPause && (
+        <SacredPause slot={prayerType as 'morning' | 'midday' | 'night'} onContinue={dismissPause} />
+      )}
       <header className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur-md">
         <div className="flex items-center gap-3 px-4 py-4">
           <button
