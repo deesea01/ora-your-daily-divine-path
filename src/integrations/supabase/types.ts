@@ -488,6 +488,39 @@ export type Database = {
         }
         Relationships: []
       }
+      prayer_progress_sessions: {
+        Row: {
+          completed_stage_ids: Json
+          content: string
+          created_at: string
+          id: string
+          prayer_date: string
+          prayer_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_stage_ids?: Json
+          content?: string
+          created_at?: string
+          id?: string
+          prayer_date?: string
+          prayer_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_stage_ids?: Json
+          content?: string
+          created_at?: string
+          id?: string
+          prayer_date?: string
+          prayer_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       prayer_routines: {
         Row: {
           created_at: string
