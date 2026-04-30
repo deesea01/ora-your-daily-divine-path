@@ -284,6 +284,11 @@ const Settings = () => {
         </div>
       </section>
 
+      {/* Prayer Reminders */}
+      <section className="mb-4">
+        <PrayerRemindersCard />
+      </section>
+
       {/* Subscription */}
       <section className="mb-4">
         <SubscriptionCard />
