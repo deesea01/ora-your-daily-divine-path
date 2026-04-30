@@ -88,25 +88,69 @@ const PrayerDetail = () => {
   const prayerType = type as PrayerType;
   const meta = prayerMeta[prayerType];
 
-  // Load saved progress (today only) before fetching, so we can skip the AI call when resuming
+  // Load saved progress (today only) — DB first (cross-device), then localStorage cache
   useEffect(() => {
     if (!user || !meta) return;
+    let cancelled = false;
+
+    const applySaved = (content: string, stageIds: string[]) => {
+      if (cancelled || !content) return;
+      setContent(content);
+      setCompletedStageIds(stageIds || []);
+      setResumed(true);
+      setLoading(false);
+    };
+
+    // 1. Optimistic: hydrate from localStorage immediately
+    let localApplied = false;
     try {
       const raw = localStorage.getItem(storageKey(user.id, prayerType));
-      if (!raw) return;
-      const saved: SavedProgress = JSON.parse(raw);
-      if (saved.date === todayStr() && saved.content) {
-        setContent(saved.content);
-        setCompletedStageIds(saved.completedStageIds || []);
-        setResumed(true);
-        setLoading(false);
-      } else {
-        // stale (different day) — clear
-        localStorage.removeItem(storageKey(user.id, prayerType));
+      if (raw) {
+        const saved: SavedProgress = JSON.parse(raw);
+        if (saved.date === todayStr() && saved.content) {
+          applySaved(saved.content, saved.completedStageIds || []);
+          localApplied = true;
+        } else {
+          localStorage.removeItem(storageKey(user.id, prayerType));
+        }
       }
     } catch {
       // ignore corrupt storage
     }
+
+    // 2. Authoritative: pull today's session from Supabase to sync across devices
+    supabase
+      .from('prayer_progress_sessions')
+      .select('content, completed_stage_ids, updated_at')
+      .eq('user_id', user.id)
+      .eq('prayer_type', prayerType)
+      .eq('prayer_date', todayStr())
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled || !data || !data.content) return;
+        const remoteStages = Array.isArray(data.completed_stage_ids)
+          ? (data.completed_stage_ids as string[])
+          : [];
+        applySaved(data.content, remoteStages);
+        // Refresh local cache with authoritative copy
+        try {
+          localStorage.setItem(
+            storageKey(user.id, prayerType),
+            JSON.stringify({
+              date: todayStr(),
+              content: data.content,
+              completedStageIds: remoteStages,
+              updatedAt: Date.now(),
+            } satisfies SavedProgress),
+          );
+        } catch {}
+      });
+
+    return () => {
+      cancelled = true;
+    };
+    // localApplied intentionally unused after this point
+    void localApplied;
   }, [user, prayerType]);
 
   // Check completion status (DB)
