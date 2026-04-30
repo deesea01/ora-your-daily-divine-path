@@ -660,28 +660,39 @@ const PrayerDetail = () => {
 
       {/* Footer */}
       <footer className="sticky bottom-0 border-t border-border bg-background/80 px-6 py-4 backdrop-blur-md">
-        <button
-          onClick={markComplete}
-          disabled={completed || marking || loading}
-          className={`flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-medium transition-all active:scale-[0.98] ${
-            completed
-              ? 'bg-secondary text-gold'
-              : 'bg-gold text-primary-foreground hover:brightness-110'
-          } disabled:opacity-60`}
-        >
-          {marking ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : completed ? (
-            <>
-              <Check className="h-4 w-4" />
-              <span>Completed</span>
-            </>
-          ) : totalStages > 0 && doneCount < totalStages ? (
-            <span>Finish Prayer ({doneCount}/{totalStages})</span>
-          ) : (
-            <span>Mark as Complete</span>
-          )}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={markComplete}
+            disabled={completed || marking || loading}
+            className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-3.5 font-medium transition-all active:scale-[0.98] ${
+              completed
+                ? 'bg-secondary text-gold'
+                : 'bg-gold text-primary-foreground hover:brightness-110'
+            } disabled:opacity-60`}
+          >
+            {marking ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : completed ? (
+              <>
+                <Check className="h-4 w-4" />
+                <span>Completed</span>
+              </>
+            ) : totalStages > 0 && doneCount < totalStages ? (
+              <span>Finish Prayer ({doneCount}/{totalStages})</span>
+            ) : (
+              <span>Mark as Complete</span>
+            )}
+          </button>
+          <button
+            onClick={downloadPdf}
+            disabled={loading || stages.length === 0}
+            className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-xl border border-gold/40 text-gold transition-all hover:bg-gold/10 active:scale-95 disabled:opacity-50"
+            aria-label="Download today's prayer as PDF"
+            title="Download today's prayer as PDF"
+          >
+            <Download className="h-4 w-4" />
+          </button>
+        </div>
       </footer>
     </div>
   );
