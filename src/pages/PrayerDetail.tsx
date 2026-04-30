@@ -255,6 +255,7 @@ const PrayerDetail = () => {
       date: todayStr(),
       content,
       completedStageIds,
+      stageNotes,
       updatedAt: Date.now(),
     };
     try {
@@ -273,6 +274,7 @@ const PrayerDetail = () => {
             prayer_date: todayStr(),
             content,
             completed_stage_ids: completedStageIds,
+            stage_notes: stageNotes,
           },
           { onConflict: 'user_id,prayer_type,prayer_date' },
         )
@@ -282,7 +284,7 @@ const PrayerDetail = () => {
     }, 800);
 
     return () => clearTimeout(handle);
-  }, [user, prayerType, content, completedStageIds, loading]);
+  }, [user, prayerType, content, completedStageIds, stageNotes, loading]);
 
   // Auto-scroll while streaming a fresh prayer (not when resuming)
   useEffect(() => {
