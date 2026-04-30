@@ -15,6 +15,7 @@ import SEO from '@/components/SEO';
 import FaithJourneyCard from '@/components/FaithJourneyCard';
 import SaintCompanionsCarousel from '@/components/SaintCompanionsCarousel';
 import TodaysPrayerPath from '@/components/TodaysPrayerPath';
+import { usePrayerReminders } from '@/hooks/usePrayerReminders';
 
 function computeStreak(dates: string[]): number {
   if (dates.length === 0) return 0;
