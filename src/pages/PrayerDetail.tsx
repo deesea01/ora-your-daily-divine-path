@@ -288,6 +288,27 @@ const PrayerDetail = () => {
               </p>
             </div>
           </div>
+          {stages.length > 0 && !completed && (
+            <button
+              onClick={() => narration.play(ALL_KEY, allText)}
+              disabled={narration.isLoading(ALL_KEY) || !allText}
+              className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                narration.isPlaying(ALL_KEY)
+                  ? 'border-gold/60 bg-gold/15 text-gold'
+                  : 'border-border text-muted-foreground hover:text-gold'
+              } disabled:opacity-60`}
+              aria-label={narration.isPlaying(ALL_KEY) ? 'Stop narration' : 'Listen to full prayer'}
+              title={narration.isPlaying(ALL_KEY) ? 'Stop' : 'Listen to full prayer'}
+            >
+              {narration.isLoading(ALL_KEY) ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : narration.isPlaying(ALL_KEY) ? (
+                <Pause className="h-4 w-4" />
+              ) : (
+                <Volume2 className="h-4 w-4" />
+              )}
+            </button>
+          )}
           {(content && !completed) && (
             <button
               onClick={restart}
