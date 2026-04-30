@@ -15,6 +15,7 @@ import SEO from '@/components/SEO';
 import FaithJourneyCard from '@/components/FaithJourneyCard';
 import SaintCompanionsCarousel from '@/components/SaintCompanionsCarousel';
 import TodaysPrayerPath from '@/components/TodaysPrayerPath';
+import InstallPrompt from '@/components/InstallPrompt';
 import { usePrayerReminders } from '@/hooks/usePrayerReminders';
 
 function computeStreak(dates: string[]): number {
@@ -310,6 +311,7 @@ const Index = () => {
           </div>
         </button>
       </section>
+      <InstallPrompt />
     </div>
   );
 };

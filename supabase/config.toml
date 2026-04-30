@@ -38,3 +38,6 @@ verify_jwt = false
 
 [functions.handle-email-suppression]
 verify_jwt = false
+
+[functions.dispatch-prayer-reminders]
+verify_jwt = false

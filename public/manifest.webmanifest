@@ -1,0 +1,18 @@
+{
+  "name": "Ora — Daily Catholic Prayer & Devotion",
+  "short_name": "Ora",
+  "description": "Daily Catholic devotion, guided rosary, and saint-led prayer.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0a08",
+  "theme_color": "#0b0a08",
+  "lang": "en",
+  "categories": ["lifestyle", "religion"],
+  "icons": [
+    { "src": "/favicon.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/favicon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/favicon.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
