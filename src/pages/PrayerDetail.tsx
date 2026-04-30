@@ -36,42 +36,128 @@ const todayStr = () => new Date().toISOString().split('T')[0];
 const storageKey = (userId: string, type: string) => `ora:prayer-progress:${userId}:${type}`;
 
 /**
- * Parse streamed markdown into ordered stages by `##` (or `#`) headings.
- * If no headings exist, returns one stage containing the full body.
+ * Detect a stage heading from a single line. Supports:
+ *   - ATX:           `# Title`, `## Title`, `### Title`
+ *   - Bold-only:     `**Title**` or `__Title__` (whole line)
+ *   - Numbered:      `1. Title`, `1) Title`, `(1) Title`
+ *   - Step / Part:   `Step 1: Title`, `Stage 2 — Title`, `Part III. Title`
+ *
+ * Returns the cleaned title or null. Trailing markdown emphasis and
+ * punctuation are stripped so IDs stay stable across streaming chunks.
+ */
+function detectHeading(rawLine: string): string | null {
+  const line = rawLine.trim();
+  if (!line) return null;
+
+  // ATX headings: # / ## / ###
+  const atx = line.match(/^#{1,3}\s+(.+?)\s*#*\s*$/);
+  if (atx) return cleanTitle(atx[1]);
+
+  // Whole-line bold: **Title**  or  __Title__   (no other content)
+  const bold = line.match(/^(?:\*\*|__)(.+?)(?:\*\*|__)[\s:.\-—]*$/);
+  if (bold && !/[*_]/.test(bold[1])) return cleanTitle(bold[1]);
+
+  // Step / Stage / Part / Movement N [:.\-—] Title   (Title optional)
+  const step = line.match(
+    /^(?:\*\*|__)?\s*(?:Step|Stage|Part|Movement|Section)\s+(?:[IVXLC]+|\d+)\s*[:.\-—)]?\s*(.*?)\s*(?:\*\*|__)?[:.\-—]?\s*$/i,
+  );
+  if (step) {
+    const title = step[1].trim();
+    return cleanTitle(title || rawLine.trim().replace(/^(?:\*\*|__)|(?:\*\*|__)$/g, ''));
+  }
+
+  // Numbered:  1. Title   1) Title   (1) Title    — only when title is short-ish
+  const num = line.match(/^\(?(\d{1,2})[.)]\s+(.+?)\s*$/);
+  if (num) {
+    const title = num[2].trim();
+    // Avoid treating ordinary numbered list items inside a stage as new stages:
+    // only promote if line has no sentence-ending punctuation in the middle.
+    if (title.length <= 80 && !/[.!?]\s/.test(title)) {
+      return cleanTitle(title.replace(/^(?:\*\*|__)|(?:\*\*|__)$/g, ''));
+    }
+  }
+
+  return null;
+}
+
+function cleanTitle(t: string): string {
+  return t
+    .replace(/^[\s\-—:]+|[\s\-—:]+$/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function slugify(t: string): string {
+  return t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'stage';
+}
+
+/**
+ * Parse streamed markdown into ordered stages.
+ *
+ * Stage IDs are derived purely from the (slugified) title with a collision
+ * suffix — they do NOT include the running index. This keeps IDs stable as
+ * the stream grows so toggled checkboxes and reflection notes remain attached
+ * to the correct stage.
  */
 function parseStages(markdown: string): PrayerStage[] {
   if (!markdown.trim()) return [];
   const lines = markdown.split('\n');
   const stages: PrayerStage[] = [];
-  let currentTitle = 'Prayer';
+  const seenSlugs = new Map<string, number>();
+
+  let currentTitle: string | null = null;
   let currentBody: string[] = [];
-  let foundHeading = false;
-  let idx = 0;
+  let inFence = false;
 
   const flush = () => {
     const body = currentBody.join('\n').trim();
-    if (currentTitle || body) {
-      stages.push({
-        id: `stage-${idx++}-${currentTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 32)}`,
-        title: currentTitle,
-        body,
-      });
-    }
+    const title = currentTitle?.trim() || '';
+    if (!title && !body) return;
+
+    const baseSlug = slugify(title || 'preamble');
+    const count = (seenSlugs.get(baseSlug) ?? 0) + 1;
+    seenSlugs.set(baseSlug, count);
+    const id = count === 1 ? `stage-${baseSlug}` : `stage-${baseSlug}-${count}`;
+
+    stages.push({ id, title: title || 'Opening', body });
   };
 
-  for (const line of lines) {
-    const m = line.match(/^#{1,3}\s+(.+?)\s*$/);
-    if (m) {
-      if (foundHeading) flush();
-      else if (currentBody.join('').trim()) flush(); // preamble before first heading
-      currentTitle = m[1];
-      currentBody = [];
-      foundHeading = true;
-    } else {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Don't detect headings inside fenced code blocks
+    if (/^\s*```/.test(line)) {
+      inFence = !inFence;
       currentBody.push(line);
+      continue;
     }
+    if (inFence) {
+      currentBody.push(line);
+      continue;
+    }
+
+    // Setext heading: next line is === or ---
+    const next = lines[i + 1];
+    if (next && /^\s*(=|-){3,}\s*$/.test(next) && line.trim()) {
+      if (currentTitle !== null || currentBody.join('').trim()) flush();
+      currentTitle = cleanTitle(line);
+      currentBody = [];
+      i += 1; // skip underline
+      continue;
+    }
+
+    const heading = detectHeading(line);
+    if (heading) {
+      if (currentTitle !== null || currentBody.join('').trim()) flush();
+      currentTitle = heading;
+      currentBody = [];
+      continue;
+    }
+
+    currentBody.push(line);
   }
   flush();
+
   return stages.filter((s) => s.body || s.title);
 }
 
