@@ -533,17 +533,17 @@ const PrayerDetail = () => {
           )}
         </div>
 
-        {/* Progress bar */}
-        {totalStages > 0 && (
+        {/* Progress bar (simple in-progress vs complete state) */}
+        {content && (
           <div className="px-4 pb-3">
             <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              <span>{doneCount} of {totalStages} stages</span>
-              <span className="text-gold/80">{progressPct}%</span>
+              <span>{completed ? 'Prayer complete' : 'In prayer'}</span>
+              <span className="text-gold/80">{completed ? '100%' : '—'}</span>
             </div>
             <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-secondary">
               <div
                 className="h-full rounded-full bg-gold transition-all duration-500 ease-out"
-                style={{ width: `${progressPct}%` }}
+                style={{ width: completed ? '100%' : '8%' }}
               />
             </div>
           </div>
