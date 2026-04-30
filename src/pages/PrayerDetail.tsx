@@ -85,6 +85,7 @@ const PrayerDetail = () => {
   const [completed, setCompleted] = useState(false);
   const [marking, setMarking] = useState(false);
   const [completedStageIds, setCompletedStageIds] = useState<string[]>([]);
+  const [stageNotes, setStageNotes] = useState<Record<string, string>>({});
   const [resumed, setResumed] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
