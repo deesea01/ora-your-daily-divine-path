@@ -299,6 +299,19 @@ const PrayerDetail = () => {
     );
   };
 
+  const updateStageNote = (id: string, value: string) => {
+    const trimmed = value.slice(0, MAX_NOTE_LENGTH);
+    setStageNotes((prev) => {
+      if (!trimmed) {
+        if (!prev[id]) return prev;
+        const { [id]: _omit, ...rest } = prev;
+        return rest;
+      }
+      if (prev[id] === trimmed) return prev;
+      return { ...prev, [id]: trimmed };
+    });
+  };
+
   const restart = async () => {
     if (!user) return;
     try { localStorage.removeItem(storageKey(user.id, prayerType)); } catch {}
@@ -310,6 +323,7 @@ const PrayerDetail = () => {
       .eq('prayer_date', todayStr());
     setContent('');
     setCompletedStageIds([]);
+    setStageNotes({});
     setResumed(false);
   };
 
