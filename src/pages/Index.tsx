@@ -311,6 +311,7 @@ const Index = () => {
           </div>
         </button>
       </section>
+      <InstallPrompt />
     </div>
   );
 };
