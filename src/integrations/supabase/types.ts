@@ -416,6 +416,10 @@ export type Database = {
           id: string
           prayer_date: string
           prayer_type: string
+          reflection: string | null
+          saint_key: string | null
+          scripture_ref: string | null
+          themes: string[]
           user_id: string
         }
         Insert: {
@@ -423,6 +427,10 @@ export type Database = {
           id?: string
           prayer_date?: string
           prayer_type: string
+          reflection?: string | null
+          saint_key?: string | null
+          scripture_ref?: string | null
+          themes?: string[]
           user_id: string
         }
         Update: {
@@ -430,6 +438,10 @@ export type Database = {
           id?: string
           prayer_date?: string
           prayer_type?: string
+          reflection?: string | null
+          saint_key?: string | null
+          scripture_ref?: string | null
+          themes?: string[]
           user_id?: string
         }
         Relationships: []
