@@ -614,8 +614,6 @@ const PrayerDetail = () => {
                 <Check className="h-4 w-4" />
                 <span>Completed</span>
               </>
-            ) : totalStages > 0 && doneCount < totalStages ? (
-              <span>Finish Prayer ({doneCount}/{totalStages})</span>
             ) : (
               <span>Mark as Complete</span>
             )}
