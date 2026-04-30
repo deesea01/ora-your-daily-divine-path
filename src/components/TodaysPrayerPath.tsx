@@ -54,9 +54,9 @@ function bucketPlanPrayers(plan: DevotionalPlan | null, active: Slot): Record<Sl
 }
 
 function defaultStepsFor(slot: Slot, t: any): { title: string; subtitle: string } {
-  if (slot === 'morning') return { title: t.morningLauds ?? 'Morning Lauds', subtitle: t.morningLaudsDesc ?? 'Begin the day with God' };
-  if (slot === 'midday') return { title: t.middayAngelus ?? 'Midday Angelus', subtitle: t.middayAngelusDesc ?? 'A pause to remember the Incarnation' };
-  return { title: t.nightCompline ?? 'Night Compline', subtitle: t.nightComplineDesc ?? 'Close the day in peace' };
+  if (slot === 'morning') return { title: t.morningLauds ?? 'Morning Prayer', subtitle: t.morningLaudsDesc ?? 'Begin the day with God' };
+  if (slot === 'midday') return { title: t.middayAngelus ?? 'Midday Angelus', subtitle: t.middayAngelusDesc ?? 'A pause to remember His presence' };
+  return { title: t.nightCompline ?? 'Night Prayer', subtitle: t.nightComplineDesc ?? 'Rest the day in His peace' };
 }
 
 interface Props {

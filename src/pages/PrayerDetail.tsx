@@ -1,166 +1,47 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { ArrowLeft, Check, Sun, CloudSun, Moon, Loader2, RotateCcw, Circle, CheckCircle2, Play, Pause, Volume2, Download } from 'lucide-react';
-import { exportPrayerPathPdf } from '@/lib/exportPdf';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
-import { useUserProfile } from '@/hooks/useUserProfile';
-import ReactMarkdown from 'react-markdown';
-import { notifyAdminError } from '@/lib/notifyAdmin';
-import { usePrayerNarration } from '@/hooks/usePrayerNarration';
-import { SacredPause } from '@/components/SacredPause';
+import { useEffect, useMemo, useState } from "react";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  CloudSun,
+  Heart,
+  Loader2,
+  Moon,
+  Sparkles,
+  Sun,
+} from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { notifyAdminError } from "@/lib/notifyAdmin";
+import { SacredPause } from "@/components/SacredPause";
 
-const prayerMeta = {
-  morning: { title: 'Morning Lauds', subtitle: 'Start your day in grace', Icon: Sun },
-  midday: { title: 'Midday Angelus', subtitle: 'Pause and remember', Icon: CloudSun },
-  night: { title: 'Night Compline', subtitle: 'Rest in His peace', Icon: Moon },
-} as const;
+type Slot = "morning" | "midday" | "night";
 
-type PrayerType = keyof typeof prayerMeta;
+const SLOT_META: Record<Slot, { title: string; subtitle: string; Icon: typeof Sun }> = {
+  morning: { title: "Morning Prayer", subtitle: "Begin the day with God", Icon: Sun },
+  midday: { title: "Midday Angelus", subtitle: "Pause and remember", Icon: CloudSun },
+  night: { title: "Night Prayer", subtitle: "Rest in His peace", Icon: Moon },
+};
 
-interface PrayerStage {
-  id: string;
-  title: string;
-  body: string;
+interface Devotion {
+  opening: string;
+  prayer: string;
+  scripture: { ref: string; text: string };
+  saint: null | { key: string; name: string; intercession: string };
+  blessing: string;
+  themes: string[];
+  next_step: null | { kind: string; label: string; reason: string };
 }
 
-interface SavedProgress {
-  date: string;
-  content: string;
-  completedStageIds: string[];
-  stageNotes: Record<string, string>;
-  updatedAt: number;
-}
+const todayStr = () => new Date().toISOString().split("T")[0];
+const cacheKey = (uid: string, slot: Slot) => `ora:devotion:${uid}:${slot}:${todayStr()}`;
 
-const MAX_NOTE_LENGTH = 500;
-
-const todayStr = () => new Date().toISOString().split('T')[0];
-const storageKey = (userId: string, type: string) => `ora:prayer-progress:${userId}:${type}`;
-
-/**
- * Detect a stage heading from a single line. Supports:
- *   - ATX:           `# Title`, `## Title`, `### Title`
- *   - Bold-only:     `**Title**` or `__Title__` (whole line)
- *   - Numbered:      `1. Title`, `1) Title`, `(1) Title`
- *   - Step / Part:   `Step 1: Title`, `Stage 2 — Title`, `Part III. Title`
- *
- * Returns the cleaned title or null. Trailing markdown emphasis and
- * punctuation are stripped so IDs stay stable across streaming chunks.
- */
-function detectHeading(rawLine: string): string | null {
-  const line = rawLine.trim();
-  if (!line) return null;
-
-  // ATX headings: # / ## / ###
-  const atx = line.match(/^#{1,3}\s+(.+?)\s*#*\s*$/);
-  if (atx) return cleanTitle(atx[1]);
-
-  // Whole-line bold: **Title**  or  __Title__   (no other content)
-  const bold = line.match(/^(?:\*\*|__)(.+?)(?:\*\*|__)[\s:.\-—]*$/);
-  if (bold && !/[*_]/.test(bold[1])) return cleanTitle(bold[1]);
-
-  // Step / Stage / Part / Movement N [:.\-—] Title   (Title optional)
-  const step = line.match(
-    /^(?:\*\*|__)?\s*(?:Step|Stage|Part|Movement|Section)\s+(?:[IVXLC]+|\d+)\s*[:.\-—)]?\s*(.*?)\s*(?:\*\*|__)?[:.\-—]?\s*$/i,
-  );
-  if (step) {
-    const title = step[1].trim();
-    return cleanTitle(title || rawLine.trim().replace(/^(?:\*\*|__)|(?:\*\*|__)$/g, ''));
-  }
-
-  // Numbered:  1. Title   1) Title   (1) Title    — only when title is short-ish
-  const num = line.match(/^\(?(\d{1,2})[.)]\s+(.+?)\s*$/);
-  if (num) {
-    const title = num[2].trim();
-    // Avoid treating ordinary numbered list items inside a stage as new stages:
-    // only promote if line has no sentence-ending punctuation in the middle.
-    if (title.length <= 80 && !/[.!?]\s/.test(title)) {
-      return cleanTitle(title.replace(/^(?:\*\*|__)|(?:\*\*|__)$/g, ''));
-    }
-  }
-
-  return null;
-}
-
-function cleanTitle(t: string): string {
-  return t
-    .replace(/^[\s\-—:]+|[\s\-—:]+$/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function slugify(t: string): string {
-  return t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'stage';
-}
-
-/**
- * Parse streamed markdown into ordered stages.
- *
- * Stage IDs are derived purely from the (slugified) title with a collision
- * suffix — they do NOT include the running index. This keeps IDs stable as
- * the stream grows so toggled checkboxes and reflection notes remain attached
- * to the correct stage.
- */
-function parseStages(markdown: string): PrayerStage[] {
-  if (!markdown.trim()) return [];
-  const lines = markdown.split('\n');
-  const stages: PrayerStage[] = [];
-  const seenSlugs = new Map<string, number>();
-
-  let currentTitle: string | null = null;
-  let currentBody: string[] = [];
-  let inFence = false;
-
-  const flush = () => {
-    const body = currentBody.join('\n').trim();
-    const title = currentTitle?.trim() || '';
-    if (!title && !body) return;
-
-    const baseSlug = slugify(title || 'preamble');
-    const count = (seenSlugs.get(baseSlug) ?? 0) + 1;
-    seenSlugs.set(baseSlug, count);
-    const id = count === 1 ? `stage-${baseSlug}` : `stage-${baseSlug}-${count}`;
-
-    stages.push({ id, title: title || 'Opening', body });
-  };
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-
-    // Don't detect headings inside fenced code blocks
-    if (/^\s*```/.test(line)) {
-      inFence = !inFence;
-      currentBody.push(line);
-      continue;
-    }
-    if (inFence) {
-      currentBody.push(line);
-      continue;
-    }
-
-    // Setext heading: next line is === or ---
-    const next = lines[i + 1];
-    if (next && /^\s*(=|-){3,}\s*$/.test(next) && line.trim()) {
-      if (currentTitle !== null || currentBody.join('').trim()) flush();
-      currentTitle = cleanTitle(line);
-      currentBody = [];
-      i += 1; // skip underline
-      continue;
-    }
-
-    const heading = detectHeading(line);
-    if (heading) {
-      if (currentTitle !== null || currentBody.join('').trim()) flush();
-      currentTitle = heading;
-      currentBody = [];
-      continue;
-    }
-
-    currentBody.push(line);
-  }
-  flush();
-
-  return stages.filter((s) => s.body || s.title);
+interface Step {
+  key: "opening" | "prayer" | "scripture" | "saint" | "blessing";
+  label: string;
+  content: JSX.Element;
 }
 
 const PrayerDetail = () => {
@@ -168,306 +49,170 @@ const PrayerDetail = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { profile } = useUserProfile();
-  const [content, setContent] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [completed, setCompleted] = useState(false);
-  const [marking, setMarking] = useState(false);
-  const [completedStageIds, setCompletedStageIds] = useState<string[]>([]);
-  const [stageNotes, setStageNotes] = useState<Record<string, string>>({});
-  const [resumed, setResumed] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
 
-  const prayerType = type as PrayerType;
-  const meta = prayerMeta[prayerType];
+  const slot = type as Slot;
+  const meta = SLOT_META[slot];
 
-  // Sacred pause: shown once per browser session per slot.
-  const pauseKey = prayerType ? `ora:sacred-pause:${prayerType}:${todayStr()}` : '';
+  // Sacred pause: once per session per slot per day.
+  const pauseKey = slot ? `ora:sacred-pause:${slot}:${todayStr()}` : "";
   const [showPause, setShowPause] = useState<boolean>(() => {
-    if (!prayerType) return false;
-    try {
-      return sessionStorage.getItem(pauseKey) !== 'done';
-    } catch {
-      return true;
-    }
+    if (!slot) return false;
+    try { return sessionStorage.getItem(pauseKey) !== "done"; } catch { return true; }
   });
   const dismissPause = () => {
-    try { sessionStorage.setItem(pauseKey, 'done'); } catch {}
+    try { sessionStorage.setItem(pauseKey, "done"); } catch {}
     setShowPause(false);
   };
 
-  // Load saved progress (today only) — DB first (cross-device), then localStorage cache
+  const [devotion, setDevotion] = useState<Devotion | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [stepIdx, setStepIdx] = useState(0);
+  const [reflection, setReflection] = useState("");
+  const [completed, setCompleted] = useState(false);
+  const [marking, setMarking] = useState(false);
+
+  // Already completed today?
+  useEffect(() => {
+    if (!user || !meta) return;
+    supabase
+      .from("prayer_completions")
+      .select("id, reflection, saint_key")
+      .eq("user_id", user.id)
+      .eq("prayer_date", todayStr())
+      .eq("prayer_type", slot)
+      .maybeSingle()
+      .then(({ data }) => { if (data) setCompleted(true); });
+  }, [user, slot, meta]);
+
+  // Load devotion (cache today; otherwise fetch).
   useEffect(() => {
     if (!user || !meta) return;
     let cancelled = false;
-
-    const applySaved = (
-      content: string,
-      stageIds: string[],
-      notes: Record<string, string> = {},
-    ) => {
-      if (cancelled || !content) return;
-      setContent(content);
-      setCompletedStageIds(stageIds || []);
-      setStageNotes(notes || {});
-      setResumed(true);
-      setLoading(false);
-    };
-
-    // 1. Optimistic: hydrate from localStorage immediately
-    let localApplied = false;
-    try {
-      const raw = localStorage.getItem(storageKey(user.id, prayerType));
-      if (raw) {
-        const saved: SavedProgress = JSON.parse(raw);
-        if (saved.date === todayStr() && saved.content) {
-          applySaved(saved.content, saved.completedStageIds || [], saved.stageNotes || {});
-          localApplied = true;
-        } else {
-          localStorage.removeItem(storageKey(user.id, prayerType));
-        }
-      }
-    } catch {
-      // ignore corrupt storage
-    }
-
-    // 2. Authoritative: pull today's session from Supabase to sync across devices
-    supabase
-      .from('prayer_progress_sessions')
-      .select('content, completed_stage_ids, stage_notes, updated_at')
-      .eq('user_id', user.id)
-      .eq('prayer_type', prayerType)
-      .eq('prayer_date', todayStr())
-      .maybeSingle()
-      .then(({ data }) => {
-        if (cancelled || !data || !data.content) return;
-        const remoteStages = Array.isArray(data.completed_stage_ids)
-          ? (data.completed_stage_ids as string[])
-          : [];
-        const remoteNotes =
-          data.stage_notes && typeof data.stage_notes === 'object' && !Array.isArray(data.stage_notes)
-            ? (data.stage_notes as Record<string, string>)
-            : {};
-        applySaved(data.content, remoteStages, remoteNotes);
-        // Refresh local cache with authoritative copy
-        try {
-          localStorage.setItem(
-            storageKey(user.id, prayerType),
-            JSON.stringify({
-              date: todayStr(),
-              content: data.content,
-              completedStageIds: remoteStages,
-              stageNotes: remoteNotes,
-              updatedAt: Date.now(),
-            } satisfies SavedProgress),
-          );
-        } catch {}
-      });
-
-    return () => {
-      cancelled = true;
-    };
-    // localApplied intentionally unused after this point
-    void localApplied;
-  }, [user, prayerType]);
-
-  // Check completion status (DB)
-  useEffect(() => {
-    if (!user || !meta) return;
-    supabase
-      .from('prayer_completions')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('prayer_date', todayStr())
-      .eq('prayer_type', prayerType)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) setCompleted(true);
-      });
-  }, [user, prayerType]);
-
-  // Fetch AI-generated prayer (skip if resumed from saved content)
-  useEffect(() => {
-    if (!user || !meta) return;
-    if (resumed) return; // already have content
-    if (content) return; // guard against double-fetch in StrictMode
     setLoading(true);
+    setError(null);
 
-    const fetchPrayer = async () => {
-      try {
-        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-        const { data: { session } } = await supabase.auth.getSession();
-        const accessToken = session?.access_token;
-        if (!accessToken) throw new Error('Not authenticated');
-
-        const res = await fetch(
-          `https://${projectId}.supabase.co/functions/v1/prayer-guide`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify({
-              prayerType,
-              preferences: profile ? { seeking: profile.seeking, experience_level: profile.experience_level, spiritual_guide: profile.spiritual_guide } : undefined,
-            }),
-          }
-        );
-
-        if (!res.ok) throw new Error('Failed to fetch prayer');
-
-        const reader = res.body?.getReader();
-        const decoder = new TextDecoder();
-        if (!reader) return;
-
-        let buffer = '';
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-          for (const line of lines) {
-            if (!line.startsWith('data: ') || line === 'data: [DONE]') continue;
-            try {
-              const json = JSON.parse(line.slice(6));
-              const delta = json.choices?.[0]?.delta?.content;
-              if (delta) setContent((prev) => prev + delta);
-            } catch {}
-          }
-        }
-      } catch (err: any) {
-        console.error('Prayer generation error:', err);
-        notifyAdminError('prayer-guide', err?.message || String(err), user?.id, { prayerType });
-        setContent('Peace be with you. Take a moment to pray quietly and reflect.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPrayer();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, prayerType, resumed]);
-
-  const stages = useMemo(() => parseStages(content), [content]);
-
-  // Persist progress whenever content or completed stages change (today's session only)
-  // Writes to localStorage immediately + debounced upsert to Supabase for cross-device sync.
-  useEffect(() => {
-    if (!user || !content || loading) return;
-    const payload: SavedProgress = {
-      date: todayStr(),
-      content,
-      completedStageIds,
-      stageNotes,
-      updatedAt: Date.now(),
-    };
     try {
-      localStorage.setItem(storageKey(user.id, prayerType), JSON.stringify(payload));
-    } catch {
-      // storage full / disabled — silent
-    }
-
-    const handle = setTimeout(() => {
-      supabase
-        .from('prayer_progress_sessions')
-        .upsert(
-          {
-            user_id: user.id,
-            prayer_type: prayerType,
-            prayer_date: todayStr(),
-            content,
-            completed_stage_ids: completedStageIds,
-            stage_notes: stageNotes,
-          },
-          { onConflict: 'user_id,prayer_type,prayer_date' },
-        )
-        .then(({ error }) => {
-          if (error) console.warn('Failed to sync prayer progress:', error.message);
-        });
-    }, 800);
-
-    return () => clearTimeout(handle);
-  }, [user, prayerType, content, completedStageIds, stageNotes, loading]);
-
-  // Auto-scroll while streaming a fresh prayer (not when resuming)
-  useEffect(() => {
-    if (loading || !content) return;
-    if (resumed) return;
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [content, loading, resumed]);
-
-  const toggleStage = (id: string) => {
-    setCompletedStageIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  };
-
-  const updateStageNote = (id: string, value: string) => {
-    const trimmed = value.slice(0, MAX_NOTE_LENGTH);
-    setStageNotes((prev) => {
-      if (!trimmed) {
-        if (!prev[id]) return prev;
-        const { [id]: _omit, ...rest } = prev;
-        return rest;
+      const raw = localStorage.getItem(cacheKey(user.id, slot));
+      if (raw) {
+        const parsed = JSON.parse(raw) as Devotion;
+        if (parsed?.prayer) {
+          setDevotion(parsed);
+          setLoading(false);
+          return;
+        }
       }
-      if (prev[id] === trimmed) return prev;
-      return { ...prev, [id]: trimmed };
+    } catch {}
+
+    (async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        if (!token) throw new Error("Not authenticated");
+        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+        const res = await fetch(
+          `https://${projectId}.supabase.co/functions/v1/guided-devotion`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({
+              slot,
+              preferences: profile
+                ? {
+                    seeking: profile.seeking,
+                    experience_level: profile.experience_level,
+                    spiritual_guide: profile.spiritual_guide,
+                  }
+                : undefined,
+            }),
+          },
+        );
+        if (!res.ok) throw new Error(`status ${res.status}`);
+        const json = (await res.json()) as Devotion;
+        if (cancelled) return;
+        setDevotion(json);
+        try { localStorage.setItem(cacheKey(user.id, slot), JSON.stringify(json)); } catch {}
+      } catch (err: any) {
+        console.error("guided-devotion error", err);
+        notifyAdminError("guided-devotion", err?.message || String(err), user?.id, { slot });
+        if (!cancelled) setError("We couldn't prepare your devotion. Please try again in a moment.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [user, slot, meta, profile]);
+
+  const steps: Step[] = useMemo(() => {
+    if (!devotion) return [];
+    const list: Step[] = [
+      {
+        key: "opening",
+        label: slot === "night" ? "Examen" : slot === "midday" ? "Angelus" : "Opening",
+        content: <Prose text={devotion.opening} />,
+      },
+      {
+        key: "prayer",
+        label: "Prayer",
+        content: <Prose text={devotion.prayer} serif />,
+      },
+      {
+        key: "scripture",
+        label: "Scripture",
+        content: (
+          <div className="space-y-3">
+            <p className="font-serif text-xl leading-relaxed text-foreground">
+              "{devotion.scripture.text}"
+            </p>
+            <p className="text-[11px] uppercase tracking-[0.22em] text-gold/80">
+              {devotion.scripture.ref}
+            </p>
+          </div>
+        ),
+      },
+    ];
+    if (devotion.saint) {
+      list.push({
+        key: "saint",
+        label: "Pray with",
+        content: (
+          <div className="space-y-3">
+            <p className="text-[11px] uppercase tracking-[0.22em] text-gold/80">
+              {devotion.saint.name}
+            </p>
+            <p className="font-serif text-lg leading-relaxed text-foreground">
+              {devotion.saint.intercession}
+            </p>
+          </div>
+        ),
+      });
+    }
+    list.push({
+      key: "blessing",
+      label: "Blessing",
+      content: (
+        <p className="font-serif text-2xl leading-relaxed text-foreground">{devotion.blessing}</p>
+      ),
     });
-  };
+    return list;
+  }, [devotion, slot]);
 
-  const restart = async () => {
-    if (!user) return;
-    try { localStorage.removeItem(storageKey(user.id, prayerType)); } catch {}
-    await supabase
-      .from('prayer_progress_sessions')
-      .delete()
-      .eq('user_id', user.id)
-      .eq('prayer_type', prayerType)
-      .eq('prayer_date', todayStr());
-    setContent('');
-    setCompletedStageIds([]);
-    setStageNotes({});
-    setResumed(false);
-  };
-
-  const markComplete = async () => {
-    if (!user || completed || marking) return;
+  const finish = async () => {
+    if (!user || marking) return;
     setMarking(true);
-    const { error } = await supabase.from('prayer_completions').insert({
+    const trimmed = reflection.trim().slice(0, 500);
+    const { error: insErr } = await supabase.from("prayer_completions").insert({
       user_id: user.id,
       prayer_date: todayStr(),
-      prayer_type: prayerType,
+      prayer_type: slot,
+      saint_key: devotion?.saint?.key ?? null,
+      themes: devotion?.themes ?? [],
+      scripture_ref: devotion?.scripture?.ref ?? null,
+      reflection: trimmed || null,
     });
-    if (!error) {
-      setCompleted(true);
-      // Clear saved progress — session is done
-      try { localStorage.removeItem(storageKey(user.id, prayerType)); } catch {}
-      supabase
-        .from('prayer_progress_sessions')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('prayer_type', prayerType)
-        .eq('prayer_date', todayStr())
-        .then(({ error: delErr }) => {
-          if (delErr) console.warn('Failed to clear synced progress:', delErr.message);
-        });
-    }
+    if (!insErr) setCompleted(true);
     setMarking(false);
-  };
-
-  const downloadPdf = () => {
-    if (!meta) return;
-    exportPrayerPathPdf({
-      prayerType,
-      prayerTitle: meta.title,
-      date: todayStr(),
-      stages: stages.map((s) => ({
-        title: s.title,
-        body: s.body,
-        completed: completedStageIds.includes(s.id),
-        note: stageNotes[s.id],
-      })),
-    });
   };
 
   if (authLoading) {
@@ -477,31 +222,23 @@ const PrayerDetail = () => {
       </div>
     );
   }
-
   if (!user) return <Navigate to="/auth" replace />;
   if (!meta) return <Navigate to="/" replace />;
 
   const { Icon } = meta;
-  const totalStages = stages.length;
-  const doneCount = stages.filter((s) => completedStageIds.includes(s.id)).length;
-  const progressPct = totalStages > 0 ? Math.round((doneCount / totalStages) * 100) : 0;
-
-  const narration = usePrayerNarration({
-    guide: profile?.spiritual_guide || 'monk',
-    mood: 'prayer',
-  });
-  const ALL_KEY = '__all__';
-  const allText = stages.map((s) => `${s.title}. ${s.body}`).join('\n\n');
+  const totalSteps = steps.length;
+  const isLastStep = stepIdx >= totalSteps - 1;
+  const onLastShown = totalSteps > 0 && stepIdx === totalSteps - 1;
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      {showPause && (
-        <SacredPause slot={prayerType as 'morning' | 'midday' | 'night'} onContinue={dismissPause} />
-      )}
+      {showPause && <SacredPause slot={slot} onContinue={dismissPause} />}
+
+      {/* Header */}
       <header className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur-md">
         <div className="flex items-center gap-3 px-4 py-4">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground"
             aria-label="Back"
           >
@@ -513,207 +250,190 @@ const PrayerDetail = () => {
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="truncate font-serif text-lg font-medium text-foreground">{meta.title}</h1>
-              <p className="truncate text-xs text-muted-foreground">
-                {resumed ? 'Resumed where you left off' : meta.subtitle}
-              </p>
+              <p className="truncate text-xs text-muted-foreground">{meta.subtitle}</p>
             </div>
           </div>
-          {stages.length > 0 && !completed && (
-            <button
-              onClick={() => narration.play(ALL_KEY, allText)}
-              disabled={narration.isLoading(ALL_KEY) || !allText}
-              className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
-                narration.isPlaying(ALL_KEY)
-                  ? 'border-gold/60 bg-gold/15 text-gold'
-                  : 'border-border text-muted-foreground hover:text-gold'
-              } disabled:opacity-60`}
-              aria-label={narration.isPlaying(ALL_KEY) ? 'Stop narration' : 'Listen to full prayer'}
-              title={narration.isPlaying(ALL_KEY) ? 'Stop' : 'Listen to full prayer'}
-            >
-              {narration.isLoading(ALL_KEY) ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : narration.isPlaying(ALL_KEY) ? (
-                <Pause className="h-4 w-4" />
-              ) : (
-                <Volume2 className="h-4 w-4" />
-              )}
-            </button>
-          )}
-          {(content && !completed) && (
-            <button
-              onClick={restart}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:text-gold"
-              aria-label="Restart prayer"
-              title="Start over"
-            >
-              <RotateCcw className="h-4 w-4" />
-            </button>
+          {totalSteps > 0 && !completed && (
+            <span className="text-[10px] uppercase tracking-[0.2em] text-gold/70">
+              {Math.min(stepIdx + 1, totalSteps)} / {totalSteps}
+            </span>
           )}
         </div>
-
         {/* Progress bar */}
-        {totalStages > 0 && (
-          <div className="px-4 pb-3">
-            <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              <span>{doneCount} of {totalStages} stages</span>
-              <span className="text-gold/80">{progressPct}%</span>
-            </div>
-            <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-secondary">
-              <div
-                className="h-full rounded-full bg-gold transition-all duration-500 ease-out"
-                style={{ width: `${progressPct}%` }}
-              />
-            </div>
+        {totalSteps > 0 && !completed && (
+          <div className="h-[2px] w-full bg-border/40">
+            <div
+              className="h-full bg-gold transition-all duration-500"
+              style={{ width: `${((stepIdx + 1) / totalSteps) * 100}%` }}
+            />
           </div>
         )}
       </header>
 
-      {/* Content */}
-      <main className="flex-1 overflow-y-auto px-6 py-6">
-        {loading && !content && (
-          <div className="flex flex-col items-center gap-3 pt-16 text-center">
-            <Loader2 className="h-6 w-6 animate-spin text-gold" />
-            <p className="text-sm text-muted-foreground">Preparing your prayer…</p>
+      <main className="flex flex-1 flex-col px-5 pb-24 pt-10">
+        {loading && (
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+            <Loader2 className="h-5 w-5 animate-spin text-gold" />
+            <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+              Preparing your devotion…
+            </p>
           </div>
         )}
 
-        {stages.length > 0 && (
-          <div className="space-y-4 animate-fade-in">
-            {stages.map((stage, i) => {
-              const done = completedStageIds.includes(stage.id);
-              return (
-                <section
-                  key={stage.id}
-                  className={`rounded-2xl border p-5 transition-all ${
-                    done
-                      ? 'border-gold/40 bg-card/60'
-                      : 'border-border bg-card'
-                  }`}
-                >
-                  <div className="mb-3 flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-                        Stage {i + 1}
-                      </p>
-                      <h2 className={`mt-1 font-serif text-lg font-medium ${done ? 'text-gold' : 'text-foreground'}`}>
-                        {stage.title}
-                      </h2>
-                    </div>
-                    <div className="flex shrink-0 items-center gap-2">
-                      {stage.body && (
-                        <button
-                          onClick={() => narration.play(stage.id, `${stage.title}. ${stage.body}`)}
-                          disabled={narration.isLoading(stage.id)}
-                          className={`flex h-8 w-8 items-center justify-center rounded-full border transition-all active:scale-90 ${
-                            narration.isPlaying(stage.id)
-                              ? 'border-gold/60 bg-gold/15 text-gold'
-                              : 'border-border text-muted-foreground hover:text-gold'
-                          } disabled:opacity-60`}
-                          aria-label={narration.isPlaying(stage.id) ? 'Stop' : 'Listen to this stage'}
-                          title={narration.isPlaying(stage.id) ? 'Stop' : 'Listen'}
-                        >
-                          {narration.isLoading(stage.id) ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          ) : narration.isPlaying(stage.id) ? (
-                            <Pause className="h-3.5 w-3.5" />
-                          ) : (
-                            <Play className="h-3.5 w-3.5" />
-                          )}
-                        </button>
-                      )}
-                      <button
-                        onClick={() => toggleStage(stage.id)}
-                        disabled={completed}
-                        className="transition-transform active:scale-90 disabled:opacity-60"
-                        aria-label={done ? 'Mark stage incomplete' : 'Mark stage complete'}
-                      >
-                        {done ? (
-                          <CheckCircle2 className="h-6 w-6 text-gold" />
-                        ) : (
-                          <Circle className="h-6 w-6 text-muted-foreground/60" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                  {stage.body && (
-                    <article className="prose prose-invert prose-sm max-w-none prose-headings:font-serif prose-headings:text-gold prose-headings:font-medium prose-p:text-foreground/90 prose-p:leading-relaxed prose-li:text-foreground/90 prose-strong:text-foreground prose-em:text-gold/70">
-                      <ReactMarkdown>{stage.body}</ReactMarkdown>
-                    </article>
-                  )}
-                  {narration.errorKey === stage.id && (
-                    <p className="mt-2 text-[11px] text-muted-foreground/80">
-                      Audio unavailable right now. Please try again.
-                    </p>
-                  )}
-
-                  {/* Reflection note */}
-                  <div className="mt-4 border-t border-border/60 pt-3">
-                    <label
-                      htmlFor={`note-${stage.id}`}
-                      className="flex items-center justify-between text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground"
-                    >
-                      <span>Your reflection</span>
-                      <span className="text-muted-foreground/60 normal-case tracking-normal">
-                        {(stageNotes[stage.id]?.length ?? 0)}/{MAX_NOTE_LENGTH}
-                      </span>
-                    </label>
-                    <textarea
-                      id={`note-${stage.id}`}
-                      value={stageNotes[stage.id] ?? ''}
-                      onChange={(e) => updateStageNote(stage.id, e.target.value)}
-                      maxLength={MAX_NOTE_LENGTH}
-                      disabled={completed}
-                      rows={2}
-                      placeholder="What is rising in your heart?"
-                      className="mt-2 w-full resize-y rounded-xl border border-border bg-background/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition-colors focus:border-gold/60 disabled:opacity-60"
-                    />
-                  </div>
-                </section>
-              );
-            })}
+        {!loading && error && (
+          <div className="mx-auto max-w-md rounded-xl border border-border bg-card p-6 text-center">
+            <p className="text-sm text-muted-foreground">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 rounded-full border border-gold/40 px-5 py-2 text-xs uppercase tracking-[0.22em] text-gold hover:bg-gold/10"
+            >
+              Try again
+            </button>
           </div>
         )}
-        <div ref={bottomRef} />
+
+        {!loading && !error && devotion && !completed && (
+          <div key={stepIdx} className="mx-auto flex w-full max-w-md flex-1 flex-col animate-fade-in">
+            <p className="mb-6 text-[10px] uppercase tracking-[0.32em] text-gold/70">
+              {steps[stepIdx]?.label}
+            </p>
+            <div className="flex-1">{steps[stepIdx]?.content}</div>
+
+            {/* Optional reflection on the last step */}
+            {onLastShown && (
+              <div className="mt-8 space-y-2">
+                <label className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                  A word from your heart (optional)
+                </label>
+                <textarea
+                  value={reflection}
+                  onChange={(e) => setReflection(e.target.value.slice(0, 500))}
+                  placeholder="What rose in you during this prayer?"
+                  rows={3}
+                  className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-gold/40 focus:outline-none"
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {!loading && !error && completed && (
+          <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-6 text-center animate-fade-in">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gold/15 ring-1 ring-gold/40">
+              <Check className="h-7 w-7 text-gold" />
+            </div>
+            <div>
+              <h2 className="font-serif text-2xl text-foreground">Amen.</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Your prayer has been received. Carry it gently into the rest of your day.
+              </p>
+            </div>
+
+            {devotion?.next_step && <NextStepCard step={devotion.next_step} navigate={navigate} />}
+
+            <button
+              onClick={() => navigate("/")}
+              className="mt-2 rounded-full border border-border px-5 py-2 text-xs uppercase tracking-[0.22em] text-muted-foreground hover:text-foreground"
+            >
+              Return home
+            </button>
+          </div>
+        )}
       </main>
 
-      {/* Footer */}
-      <footer className="sticky bottom-0 border-t border-border bg-background/80 px-6 py-4 backdrop-blur-md">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={markComplete}
-            disabled={completed || marking || loading}
-            className={`flex flex-1 items-center justify-center gap-2 rounded-xl py-3.5 font-medium transition-all active:scale-[0.98] ${
-              completed
-                ? 'bg-secondary text-gold'
-                : 'bg-gold text-primary-foreground hover:brightness-110'
-            } disabled:opacity-60`}
-          >
-            {marking ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : completed ? (
-              <>
-                <Check className="h-4 w-4" />
-                <span>Completed</span>
-              </>
-            ) : totalStages > 0 && doneCount < totalStages ? (
-              <span>Finish Prayer ({doneCount}/{totalStages})</span>
+      {/* Footer step controls */}
+      {!loading && !error && devotion && !completed && (
+        <footer className="fixed inset-x-0 bottom-0 border-t border-border bg-background/90 backdrop-blur-md">
+          <div className="mx-auto flex w-full max-w-md items-center justify-between gap-3 px-5 py-4">
+            <button
+              onClick={() => setStepIdx((i) => Math.max(0, i - 1))}
+              disabled={stepIdx === 0}
+              className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground disabled:opacity-30"
+            >
+              Back
+            </button>
+            {!isLastStep ? (
+              <button
+                onClick={() => setStepIdx((i) => Math.min(totalSteps - 1, i + 1))}
+                className="inline-flex items-center gap-2 rounded-full bg-gold px-6 py-2.5 text-xs font-medium uppercase tracking-[0.22em] text-background transition-transform active:scale-[0.98]"
+              >
+                Continue <ArrowRight className="h-3.5 w-3.5" />
+              </button>
             ) : (
-              <span>Mark as Complete</span>
+              <button
+                onClick={finish}
+                disabled={marking}
+                className="inline-flex items-center gap-2 rounded-full bg-gold px-6 py-2.5 text-xs font-medium uppercase tracking-[0.22em] text-background transition-transform active:scale-[0.98] disabled:opacity-60"
+              >
+                {marking ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Heart className="h-3.5 w-3.5" />}
+                Amen
+              </button>
             )}
-          </button>
-          <button
-            onClick={downloadPdf}
-            disabled={loading || stages.length === 0}
-            className="flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-xl border border-gold/40 text-gold transition-all hover:bg-gold/10 active:scale-95 disabled:opacity-50"
-            aria-label="Download today's prayer as PDF"
-            title="Download today's prayer as PDF"
-          >
-            <Download className="h-4 w-4" />
-          </button>
-        </div>
-      </footer>
+          </div>
+        </footer>
+      )}
     </div>
   );
 };
+
+function Prose({ text, serif }: { text: string; serif?: boolean }) {
+  const lines = text.split(/\n+/).map((l) => l.trim()).filter(Boolean);
+  return (
+    <div className="space-y-3">
+      {lines.map((l, i) => (
+        <p
+          key={i}
+          className={
+            serif
+              ? "font-serif text-xl leading-relaxed text-foreground"
+              : "text-[15px] leading-relaxed text-muted-foreground"
+          }
+        >
+          {l}
+        </p>
+      ))}
+    </div>
+  );
+}
+
+function NextStepCard({
+  step,
+  navigate,
+}: {
+  step: { kind: string; label: string; reason: string };
+  navigate: (path: string) => void;
+}) {
+  const routeFor = (kind: string): string | null => {
+    switch (kind) {
+      case "confession": return "/confession";
+      case "rosary": return "/rosary";
+      case "scripture":
+      case "novena":
+      case "saint":
+        return "/prayer-library";
+      default: return null;
+    }
+  };
+  const route = routeFor(step.kind);
+  return (
+    <button
+      onClick={() => route && navigate(route)}
+      disabled={!route}
+      className="group w-full rounded-xl border border-gold/30 bg-card p-4 text-left transition-colors hover:border-gold/60 disabled:cursor-default"
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold/15">
+          <Sparkles className="h-4 w-4 text-gold" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] uppercase tracking-[0.22em] text-gold/80">A gentle invitation</p>
+          <p className="mt-0.5 truncate font-serif text-base text-foreground">{step.label}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{step.reason}</p>
+        </div>
+        {route && <ArrowRight className="h-4 w-4 text-gold/70 transition-transform group-hover:translate-x-0.5" />}
+      </div>
+    </button>
+  );
+}
 
 export default PrayerDetail;
