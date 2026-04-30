@@ -496,6 +496,7 @@ export type Database = {
           id: string
           prayer_date: string
           prayer_type: string
+          stage_notes: Json
           updated_at: string
           user_id: string
         }
@@ -506,6 +507,7 @@ export type Database = {
           id?: string
           prayer_date?: string
           prayer_type: string
+          stage_notes?: Json
           updated_at?: string
           user_id: string
         }
@@ -516,6 +518,7 @@ export type Database = {
           id?: string
           prayer_date?: string
           prayer_type?: string
+          stage_notes?: Json
           updated_at?: string
           user_id?: string
         }
