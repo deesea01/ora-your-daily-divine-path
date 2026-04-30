@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { ArrowLeft, Check, Sun, CloudSun, Moon, Loader2, RotateCcw, Circle, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Check, Sun, CloudSun, Moon, Loader2, RotateCcw, Circle, CheckCircle2, Play, Pause, Volume2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import ReactMarkdown from 'react-markdown';
 import { notifyAdminError } from '@/lib/notifyAdmin';
+import { usePrayerNarration } from '@/hooks/usePrayerNarration';
 
 const prayerMeta = {
   morning: { title: 'Morning Lauds', subtitle: 'Start your day in grace', Icon: Sun },
@@ -257,6 +258,13 @@ const PrayerDetail = () => {
   const doneCount = stages.filter((s) => completedStageIds.includes(s.id)).length;
   const progressPct = totalStages > 0 ? Math.round((doneCount / totalStages) * 100) : 0;
 
+  const narration = usePrayerNarration({
+    guide: profile?.spiritual_guide || 'monk',
+    mood: 'prayer',
+  });
+  const ALL_KEY = '__all__';
+  const allText = stages.map((s) => `${s.title}. ${s.body}`).join('\n\n');
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       {/* Header */}
@@ -280,6 +288,27 @@ const PrayerDetail = () => {
               </p>
             </div>
           </div>
+          {stages.length > 0 && !completed && (
+            <button
+              onClick={() => narration.play(ALL_KEY, allText)}
+              disabled={narration.isLoading(ALL_KEY) || !allText}
+              className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                narration.isPlaying(ALL_KEY)
+                  ? 'border-gold/60 bg-gold/15 text-gold'
+                  : 'border-border text-muted-foreground hover:text-gold'
+              } disabled:opacity-60`}
+              aria-label={narration.isPlaying(ALL_KEY) ? 'Stop narration' : 'Listen to full prayer'}
+              title={narration.isPlaying(ALL_KEY) ? 'Stop' : 'Listen to full prayer'}
+            >
+              {narration.isLoading(ALL_KEY) ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : narration.isPlaying(ALL_KEY) ? (
+                <Pause className="h-4 w-4" />
+              ) : (
+                <Volume2 className="h-4 w-4" />
+              )}
+            </button>
+          )}
           {(content && !completed) && (
             <button
               onClick={restart}
@@ -340,23 +369,51 @@ const PrayerDetail = () => {
                         {stage.title}
                       </h2>
                     </div>
-                    <button
-                      onClick={() => toggleStage(stage.id)}
-                      disabled={completed}
-                      className="shrink-0 transition-transform active:scale-90 disabled:opacity-60"
-                      aria-label={done ? 'Mark stage incomplete' : 'Mark stage complete'}
-                    >
-                      {done ? (
-                        <CheckCircle2 className="h-6 w-6 text-gold" />
-                      ) : (
-                        <Circle className="h-6 w-6 text-muted-foreground/60" />
+                    <div className="flex shrink-0 items-center gap-2">
+                      {stage.body && (
+                        <button
+                          onClick={() => narration.play(stage.id, `${stage.title}. ${stage.body}`)}
+                          disabled={narration.isLoading(stage.id)}
+                          className={`flex h-8 w-8 items-center justify-center rounded-full border transition-all active:scale-90 ${
+                            narration.isPlaying(stage.id)
+                              ? 'border-gold/60 bg-gold/15 text-gold'
+                              : 'border-border text-muted-foreground hover:text-gold'
+                          } disabled:opacity-60`}
+                          aria-label={narration.isPlaying(stage.id) ? 'Stop' : 'Listen to this stage'}
+                          title={narration.isPlaying(stage.id) ? 'Stop' : 'Listen'}
+                        >
+                          {narration.isLoading(stage.id) ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : narration.isPlaying(stage.id) ? (
+                            <Pause className="h-3.5 w-3.5" />
+                          ) : (
+                            <Play className="h-3.5 w-3.5" />
+                          )}
+                        </button>
                       )}
-                    </button>
+                      <button
+                        onClick={() => toggleStage(stage.id)}
+                        disabled={completed}
+                        className="transition-transform active:scale-90 disabled:opacity-60"
+                        aria-label={done ? 'Mark stage incomplete' : 'Mark stage complete'}
+                      >
+                        {done ? (
+                          <CheckCircle2 className="h-6 w-6 text-gold" />
+                        ) : (
+                          <Circle className="h-6 w-6 text-muted-foreground/60" />
+                        )}
+                      </button>
+                    </div>
                   </div>
                   {stage.body && (
                     <article className="prose prose-invert prose-sm max-w-none prose-headings:font-serif prose-headings:text-gold prose-headings:font-medium prose-p:text-foreground/90 prose-p:leading-relaxed prose-li:text-foreground/90 prose-strong:text-foreground prose-em:text-gold/70">
                       <ReactMarkdown>{stage.body}</ReactMarkdown>
                     </article>
+                  )}
+                  {narration.errorKey === stage.id && (
+                    <p className="mt-2 text-[11px] text-muted-foreground/80">
+                      Audio unavailable right now. Please try again.
+                    </p>
                   )}
                 </section>
               );
