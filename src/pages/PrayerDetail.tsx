@@ -130,7 +130,7 @@ const PrayerDetail = () => {
     // 2. Authoritative: pull today's session from Supabase to sync across devices
     supabase
       .from('prayer_progress_sessions')
-      .select('content, completed_stage_ids, updated_at')
+      .select('content, completed_stage_ids, stage_notes, updated_at')
       .eq('user_id', user.id)
       .eq('prayer_type', prayerType)
       .eq('prayer_date', todayStr())
@@ -140,7 +140,11 @@ const PrayerDetail = () => {
         const remoteStages = Array.isArray(data.completed_stage_ids)
           ? (data.completed_stage_ids as string[])
           : [];
-        applySaved(data.content, remoteStages);
+        const remoteNotes =
+          data.stage_notes && typeof data.stage_notes === 'object' && !Array.isArray(data.stage_notes)
+            ? (data.stage_notes as Record<string, string>)
+            : {};
+        applySaved(data.content, remoteStages, remoteNotes);
         // Refresh local cache with authoritative copy
         try {
           localStorage.setItem(
@@ -149,6 +153,7 @@ const PrayerDetail = () => {
               date: todayStr(),
               content: data.content,
               completedStageIds: remoteStages,
+              stageNotes: remoteNotes,
               updatedAt: Date.now(),
             } satisfies SavedProgress),
           );
