@@ -309,6 +309,15 @@ const PrayerDetail = () => {
       setCompleted(true);
       // Clear saved progress — session is done
       try { localStorage.removeItem(storageKey(user.id, prayerType)); } catch {}
+      supabase
+        .from('prayer_progress_sessions')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('prayer_type', prayerType)
+        .eq('prayer_date', todayStr())
+        .then(({ error: delErr }) => {
+          if (delErr) console.warn('Failed to clear synced progress:', delErr.message);
+        });
     }
     setMarking(false);
   };
