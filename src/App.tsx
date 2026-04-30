@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import RouteTransition from "@/components/RouteTransition";
 import Index from "./pages/Index.tsx";
 import Welcome from "./pages/Welcome.tsx";
 import Auth from "./pages/Auth.tsx";
