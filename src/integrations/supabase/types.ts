@@ -614,6 +614,93 @@ export type Database = {
         }
         Relationships: []
       }
+      reminder_prefs: {
+        Row: {
+          created_at: string
+          email_address: string | null
+          email_enabled: boolean
+          enabled: boolean
+          midday_hour: number
+          midday_minute: number
+          morning_hour: number
+          morning_minute: number
+          night_hour: number
+          night_minute: number
+          phone_e164: string | null
+          sms_enabled: boolean
+          timezone: string
+          unfinished_followup: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_address?: string | null
+          email_enabled?: boolean
+          enabled?: boolean
+          midday_hour?: number
+          midday_minute?: number
+          morning_hour?: number
+          morning_minute?: number
+          night_hour?: number
+          night_minute?: number
+          phone_e164?: string | null
+          sms_enabled?: boolean
+          timezone?: string
+          unfinished_followup?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_address?: string | null
+          email_enabled?: boolean
+          enabled?: boolean
+          midday_hour?: number
+          midday_minute?: number
+          morning_hour?: number
+          morning_minute?: number
+          night_hour?: number
+          night_minute?: number
+          phone_e164?: string | null
+          sms_enabled?: boolean
+          timezone?: string
+          unfinished_followup?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reminder_send_log: {
+        Row: {
+          channel: string
+          created_at: string
+          id: string
+          kind: string
+          sent_for_date: string
+          slot: string
+          user_id: string
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          id?: string
+          kind?: string
+          sent_for_date: string
+          slot: string
+          user_id: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          sent_for_date?: string
+          slot?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       saint_interactions: {
         Row: {
           created_at: string
