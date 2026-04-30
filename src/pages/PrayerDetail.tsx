@@ -441,16 +441,15 @@ const PrayerDetail = () => {
 
   const downloadPdf = () => {
     if (!meta) return;
-    const reflection = stageNotes['__reflection__'];
     exportPrayerPathPdf({
       prayerType,
       prayerTitle: meta.title,
       date: todayStr(),
-      stages: stages.map((s, i) => ({
+      stages: stages.map((s) => ({
         title: s.title,
         body: s.body,
-        completed: completed,
-        note: i === stages.length - 1 ? reflection : undefined,
+        completed: completedStageIds.includes(s.id),
+        note: stageNotes[s.id],
       })),
     });
   };
@@ -534,17 +533,17 @@ const PrayerDetail = () => {
           )}
         </div>
 
-        {/* Progress bar (simple in-progress vs complete state) */}
-        {content && (
+        {/* Progress bar */}
+        {totalStages > 0 && (
           <div className="px-4 pb-3">
             <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-              <span>{completed ? 'Prayer complete' : 'In prayer'}</span>
-              <span className="text-gold/80">{completed ? '100%' : '—'}</span>
+              <span>{doneCount} of {totalStages} stages</span>
+              <span className="text-gold/80">{progressPct}%</span>
             </div>
             <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-secondary">
               <div
                 className="h-full rounded-full bg-gold transition-all duration-500 ease-out"
-                style={{ width: completed ? '100%' : '8%' }}
+                style={{ width: `${progressPct}%` }}
               />
             </div>
           </div>
@@ -561,36 +560,99 @@ const PrayerDetail = () => {
         )}
 
         {stages.length > 0 && (
-          <div className="space-y-6 animate-fade-in">
-            <article className="prose prose-invert prose-sm max-w-none prose-headings:font-serif prose-headings:text-gold prose-headings:font-medium prose-p:text-foreground/90 prose-p:leading-relaxed prose-p:mb-4 prose-li:text-foreground/90 prose-strong:text-foreground prose-em:text-gold/70">
-              <ReactMarkdown>{content}</ReactMarkdown>
-            </article>
+          <div className="space-y-4 animate-fade-in">
+            {stages.map((stage, i) => {
+              const done = completedStageIds.includes(stage.id);
+              return (
+                <section
+                  key={stage.id}
+                  className={`rounded-2xl border p-5 transition-all ${
+                    done
+                      ? 'border-gold/40 bg-card/60'
+                      : 'border-border bg-card'
+                  }`}
+                >
+                  <div className="mb-3 flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                        Stage {i + 1}
+                      </p>
+                      <h2 className={`mt-1 font-serif text-lg font-medium ${done ? 'text-gold' : 'text-foreground'}`}>
+                        {stage.title}
+                      </h2>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      {stage.body && (
+                        <button
+                          onClick={() => narration.play(stage.id, `${stage.title}. ${stage.body}`)}
+                          disabled={narration.isLoading(stage.id)}
+                          className={`flex h-8 w-8 items-center justify-center rounded-full border transition-all active:scale-90 ${
+                            narration.isPlaying(stage.id)
+                              ? 'border-gold/60 bg-gold/15 text-gold'
+                              : 'border-border text-muted-foreground hover:text-gold'
+                          } disabled:opacity-60`}
+                          aria-label={narration.isPlaying(stage.id) ? 'Stop' : 'Listen to this stage'}
+                          title={narration.isPlaying(stage.id) ? 'Stop' : 'Listen'}
+                        >
+                          {narration.isLoading(stage.id) ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : narration.isPlaying(stage.id) ? (
+                            <Pause className="h-3.5 w-3.5" />
+                          ) : (
+                            <Play className="h-3.5 w-3.5" />
+                          )}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => toggleStage(stage.id)}
+                        disabled={completed}
+                        className="transition-transform active:scale-90 disabled:opacity-60"
+                        aria-label={done ? 'Mark stage incomplete' : 'Mark stage complete'}
+                      >
+                        {done ? (
+                          <CheckCircle2 className="h-6 w-6 text-gold" />
+                        ) : (
+                          <Circle className="h-6 w-6 text-muted-foreground/60" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  {stage.body && (
+                    <article className="prose prose-invert prose-sm max-w-none prose-headings:font-serif prose-headings:text-gold prose-headings:font-medium prose-p:text-foreground/90 prose-p:leading-relaxed prose-li:text-foreground/90 prose-strong:text-foreground prose-em:text-gold/70">
+                      <ReactMarkdown>{stage.body}</ReactMarkdown>
+                    </article>
+                  )}
+                  {narration.errorKey === stage.id && (
+                    <p className="mt-2 text-[11px] text-muted-foreground/80">
+                      Audio unavailable right now. Please try again.
+                    </p>
+                  )}
 
-            {narration.errorKey === ALL_KEY && (
-              <p className="text-[11px] text-muted-foreground/80">
-                Audio unavailable right now. Please try again.
-              </p>
-            )}
-
-            {/* Single reflection at the end */}
-            <section className="rounded-2xl border border-border bg-card p-5">
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="font-serif text-lg font-medium text-gold">Your reflection</h2>
-                <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                  {(stageNotes['__reflection__']?.length ?? 0)}/{MAX_NOTE_LENGTH}
-                </span>
-              </div>
-              <textarea
-                id="prayer-reflection"
-                value={stageNotes['__reflection__'] ?? ''}
-                onChange={(e) => updateStageNote('__reflection__', e.target.value)}
-                maxLength={MAX_NOTE_LENGTH}
-                disabled={completed}
-                rows={5}
-                placeholder="What is rising in your heart after this prayer?"
-                className="w-full resize-y rounded-xl border border-border bg-background/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition-colors focus:border-gold/60 disabled:opacity-60"
-              />
-            </section>
+                  {/* Reflection note */}
+                  <div className="mt-4 border-t border-border/60 pt-3">
+                    <label
+                      htmlFor={`note-${stage.id}`}
+                      className="flex items-center justify-between text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground"
+                    >
+                      <span>Your reflection</span>
+                      <span className="text-muted-foreground/60 normal-case tracking-normal">
+                        {(stageNotes[stage.id]?.length ?? 0)}/{MAX_NOTE_LENGTH}
+                      </span>
+                    </label>
+                    <textarea
+                      id={`note-${stage.id}`}
+                      value={stageNotes[stage.id] ?? ''}
+                      onChange={(e) => updateStageNote(stage.id, e.target.value)}
+                      maxLength={MAX_NOTE_LENGTH}
+                      disabled={completed}
+                      rows={2}
+                      placeholder="What is rising in your heart?"
+                      className="mt-2 w-full resize-y rounded-xl border border-border bg-background/40 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none transition-colors focus:border-gold/60 disabled:opacity-60"
+                    />
+                  </div>
+                </section>
+              );
+            })}
           </div>
         )}
         <div ref={bottomRef} />
@@ -615,6 +677,8 @@ const PrayerDetail = () => {
                 <Check className="h-4 w-4" />
                 <span>Completed</span>
               </>
+            ) : totalStages > 0 && doneCount < totalStages ? (
+              <span>Finish Prayer ({doneCount}/{totalStages})</span>
             ) : (
               <span>Mark as Complete</span>
             )}
