@@ -258,6 +258,13 @@ const PrayerDetail = () => {
   const doneCount = stages.filter((s) => completedStageIds.includes(s.id)).length;
   const progressPct = totalStages > 0 ? Math.round((doneCount / totalStages) * 100) : 0;
 
+  const narration = usePrayerNarration({
+    guide: profile?.spiritual_guide || 'monk',
+    mood: 'prayer',
+  });
+  const ALL_KEY = '__all__';
+  const allText = stages.map((s) => `${s.title}. ${s.body}`).join('\n\n');
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       {/* Header */}
