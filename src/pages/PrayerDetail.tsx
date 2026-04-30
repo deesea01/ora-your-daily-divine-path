@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { ArrowLeft, Check, Sun, CloudSun, Moon, Loader2, RotateCcw, Circle, CheckCircle2, Play, Pause, Volume2 } from 'lucide-react';
+import { ArrowLeft, Check, Sun, CloudSun, Moon, Loader2, RotateCcw, Circle, CheckCircle2, Play, Pause, Volume2, Download } from 'lucide-react';
+import { exportPrayerPathPdf } from '@/lib/exportPdf';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserProfile } from '@/hooks/useUserProfile';
