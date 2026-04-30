@@ -8,6 +8,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import ReactMarkdown from 'react-markdown';
 import { notifyAdminError } from '@/lib/notifyAdmin';
 import { usePrayerNarration } from '@/hooks/usePrayerNarration';
+import { SacredPause } from '@/components/SacredPause';
 
 const prayerMeta = {
   morning: { title: 'Morning Lauds', subtitle: 'Start your day in grace', Icon: Sun },
@@ -178,6 +179,21 @@ const PrayerDetail = () => {
 
   const prayerType = type as PrayerType;
   const meta = prayerMeta[prayerType];
+
+  // Sacred pause: shown once per browser session per slot.
+  const pauseKey = prayerType ? `ora:sacred-pause:${prayerType}:${todayStr()}` : '';
+  const [showPause, setShowPause] = useState<boolean>(() => {
+    if (!prayerType) return false;
+    try {
+      return sessionStorage.getItem(pauseKey) !== 'done';
+    } catch {
+      return true;
+    }
+  });
+  const dismissPause = () => {
+    try { sessionStorage.setItem(pauseKey, 'done'); } catch {}
+    setShowPause(false);
+  };
 
   // Load saved progress (today only) — DB first (cross-device), then localStorage cache
   useEffect(() => {
@@ -479,7 +495,9 @@ const PrayerDetail = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      {/* Header */}
+      {showPause && (
+        <SacredPause slot={prayerType as 'morning' | 'midday' | 'night'} onContinue={dismissPause} />
+      )}
       <header className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur-md">
         <div className="flex items-center gap-3 px-4 py-4">
           <button
