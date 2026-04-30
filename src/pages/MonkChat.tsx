@@ -103,8 +103,9 @@ const MonkChat = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const speech = useSpeechRecognition();
   const { isPremium, canChat, chatRemaining, chatLimit, refreshChatCount } = useEntitlement();
-  const storedGuide = (profile?.spiritual_guide || 'monk') as SpiritualGuideKey;
-  const guideKey: SpiritualGuideKey = isPremium ? storedGuide : (FREE_GUIDE_KEY as SpiritualGuideKey);
+  const storedGuide = (profile?.spiritual_guide || 'st_francis') as SpiritualGuideKey;
+  const safeStored: SpiritualGuideKey = SPIRITUAL_GUIDES[storedGuide] ? storedGuide : ('st_francis' as SpiritualGuideKey);
+  const guideKey: SpiritualGuideKey = isPremium ? safeStored : (FREE_GUIDE_KEY as SpiritualGuideKey);
   const voice = useSaintVoice(guideKey);
 
   // Mood: infer from referrer/route, allow user override
