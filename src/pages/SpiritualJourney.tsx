@@ -179,7 +179,7 @@ export default function SpiritualJourney() {
           ) : (
             <div className="mt-2 flex flex-wrap gap-1.5">
               {struggles.map((s) => (
-                <span key={s} className="rounded-full border border-border bg-background/60 px-2.5 py-0.5 text-xs text-muted-foreground capitalize">{s}</span>
+                <span key={s} className="rounded-full border border-border bg-background/60 px-2.5 py-0.5 text-xs text-muted-foreground capitalize">{humanizeLabel(s)}</span>
               ))}
             </div>
           )}
