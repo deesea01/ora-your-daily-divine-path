@@ -1,0 +1,128 @@
+import { useState } from 'react';
+import { Loader2, RefreshCw, Check } from 'lucide-react';
+import { toast } from 'sonner';
+import { useRevenueCat, type IapPlan } from '@/hooks/useRevenueCat';
+
+/**
+ * iOS-only paywall surface, swapped in by `Paywall.tsx` when `isNativeIOS()`.
+ *
+ * Uses RevenueCat to render Apple's native StoreKit purchase sheet. Includes
+ * the "Restore Purchases" button required by App Store Review Guideline 3.1.1.
+ *
+ * Web users never see this — the existing Paddle UI in `Paywall.tsx` is shown
+ * instead. Auth + subscription gating logic is identical for both.
+ */
+export function IapPaywallSection() {
+  const { ready, loading, plans, error, hasPremiumEntitlement, purchase, restore } = useRevenueCat();
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const handlePurchase = async (plan: IapPlan) => {
+    setBusyId(plan.identifier);
+    try {
+      const info = await purchase(plan);
+      if (info?.entitlements?.active?.['premium']) {
+        toast.success('Welcome to Ora Premium ✦');
+      }
+    } catch (e: any) {
+      toast.error(e?.message ?? 'Purchase failed');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleRestore = async () => {
+    setBusyId('restore');
+    try {
+      const info = await restore();
+      if (info?.entitlements?.active?.['premium']) {
+        toast.success('Premium restored');
+      } else {
+        toast('No previous purchase found on this Apple ID', {
+          description: 'If you bought Premium with a different Apple ID, sign in to that ID in iOS Settings and try again.',
+        });
+      }
+    } catch (e: any) {
+      toast.error(e?.message ?? 'Restore failed');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  if (!ready && loading) {
+    return (
+      <div className="flex items-center justify-center py-10 text-muted-foreground">
+        <Loader2 className="h-5 w-5 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
+        {error}
+      </div>
+    );
+  }
+
+  if (hasPremiumEntitlement) {
+    return (
+      <div className="rounded-xl border border-gold/40 bg-gold/10 p-4 text-sm text-foreground">
+        <div className="flex items-center gap-2">
+          <Check className="h-4 w-4 text-gold" />
+          <span>You have Ora Premium.</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (plans.length === 0) {
+    return (
+      <div className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
+        Subscription plans aren't available right now. Please try again in a moment.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {plans.map((plan) => (
+        <button
+          key={plan.identifier}
+          onClick={() => handlePurchase(plan)}
+          disabled={busyId !== null}
+          className="flex w-full items-center justify-between rounded-xl border-2 border-border bg-card px-4 py-4 text-left transition-all active:scale-[0.98] disabled:opacity-60"
+        >
+          <div>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">
+              {plan.period === 'yearly' ? 'Yearly' : plan.period === 'monthly' ? 'Monthly' : plan.title}
+            </p>
+            <p className="mt-1 font-serif text-2xl text-foreground">{plan.priceString}</p>
+          </div>
+          {busyId === plan.identifier ? (
+            <Loader2 className="h-5 w-5 animate-spin text-gold" />
+          ) : (
+            <span className="rounded-full bg-gold px-4 py-2 text-sm font-medium text-primary-foreground">Subscribe</span>
+          )}
+        </button>
+      ))}
+
+      <button
+        onClick={handleRestore}
+        disabled={busyId !== null}
+        className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-transparent py-3 text-sm text-muted-foreground transition-all active:scale-[0.98] disabled:opacity-60"
+      >
+        {busyId === 'restore' ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <RefreshCw className="h-4 w-4" />
+        )}
+        Restore Purchases
+      </button>
+
+      <p className="px-2 pt-2 text-[11px] leading-relaxed text-muted-foreground">
+        Subscriptions auto-renew unless cancelled at least 24 hours before the end of the period. Manage or
+        cancel anytime in your Apple ID settings. Payment is charged to your Apple ID account at confirmation.
+      </p>
+    </div>
+  );
+}
