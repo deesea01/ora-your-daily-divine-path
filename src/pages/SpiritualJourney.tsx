@@ -165,7 +165,7 @@ export default function SpiritualJourney() {
           ) : (
             <div className="mt-2 flex flex-wrap gap-1.5">
               {growthAreas.map((g) => (
-                <span key={g} className="rounded-full border border-gold/20 bg-gold/5 px-2.5 py-0.5 text-xs text-foreground capitalize">{g}</span>
+                <span key={g} className="rounded-full border border-gold/20 bg-gold/5 px-2.5 py-0.5 text-xs text-foreground capitalize">{humanizeLabel(g)}</span>
               ))}
             </div>
           )}
