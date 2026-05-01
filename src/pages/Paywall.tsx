@@ -5,6 +5,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePaddleCheckout } from '@/hooks/usePaddleCheckout';
 import { MissionNote } from '@/components/MissionNote';
 import SEO from '@/components/SEO';
+import { isNativeIOS } from '@/lib/platform';
+import { IapPaywallSection } from '@/components/IapPaywallSection';
 
 const FEATURES = [
   { icon: Users, text: 'Unlimited Saint companions' },
@@ -46,6 +48,8 @@ const Paywall = () => {
     }
   };
 
+  const onIos = isNativeIOS();
+
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe">
       <SEO title="Ora Premium — Daily Catholic Prayer & Devotion Plans" description="Begin a guided life of prayer, devotion, and spiritual growth. Ora Premium is $10/month or $70/year with a free trial. Cancel anytime." canonicalPath="/paywall" />
@@ -69,6 +73,16 @@ const Paywall = () => {
             </div>
           ))}
         </div>
+
+        {/* iOS: Apple In-App Purchases (App Store policy compliant). Web continues with Paddle below. */}
+        {onIos && (
+          <div className="mt-8">
+            <IapPaywallSection />
+            <div className="mt-6">
+              <MissionNote />
+            </div>
+          </div>
+        )}
 
         {/* Plan selector */}
         <div className="mt-8 space-y-3">
