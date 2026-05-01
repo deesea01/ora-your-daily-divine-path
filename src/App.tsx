@@ -41,8 +41,17 @@ import { AuthNav } from "@/components/AuthNav";
 import { AuthFooterFallback } from "@/components/AuthFooterFallback";
 import { RequirePremium } from "@/components/RequirePremium";
 import SpiritualJourney from "./pages/SpiritualJourney.tsx";
+import { useNativeShell } from "@/hooks/useNativeShell";
+import { useNativeNotifications } from "@/hooks/useNativeNotifications";
 
 const queryClient = new QueryClient();
+
+/** Mounts native-only effects (splash hide, status bar, local notifications). No-op on web. */
+const NativeBootstrap = () => {
+  useNativeShell();
+  useNativeNotifications();
+  return null;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -52,6 +61,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <NativeBootstrap />
             <PaymentTestModeBanner />
             <AuthNav />
             <RouteTransition>
