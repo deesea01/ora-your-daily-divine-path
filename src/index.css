@@ -244,7 +244,17 @@
    notch / Dynamic Island never overlaps content in the native shell. */
 @layer utilities {
   .pt-safe {
-    padding-top: max(env(safe-area-inset-top), 1rem);
+    /* Bumped baseline so back buttons sit lower and are easier to tap on mobile */
+    padding-top: calc(max(env(safe-area-inset-top), 1rem) + 1.25rem);
+  }
+}
+
+/* Ensure every page-level <header> sits below the notch / status bar so the
+   back button is comfortably reachable on mobile. Pages can still override
+   with their own padding. */
+@layer base {
+  header {
+    padding-top: calc(max(env(safe-area-inset-top), 0.75rem) + 1rem);
   }
   .pb-safe {
     padding-bottom: max(env(safe-area-inset-bottom), 1rem);
