@@ -4,6 +4,7 @@ import { ArrowLeft, Sparkles, Flame, Compass, Heart, BookOpen, Shield, RefreshCw
 import { useSpiritualProfile, type Recommendation } from "@/hooks/useSpiritualProfile";
 import { SPIRITUAL_GUIDES } from "@/lib/guides";
 import SEO from "@/components/SEO";
+import { humanizeLabel } from "@/lib/utils";
 
 const TYPE_ICON: Record<Recommendation["type"], typeof Sparkles> = {
   prayer: BookOpen,
