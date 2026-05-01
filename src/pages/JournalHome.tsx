@@ -4,6 +4,7 @@ import { ArrowLeft, Plus, Sparkles, BookOpen, Loader2, Trash2, ChevronDown, Lock
 import { useAuth } from '@/hooks/useAuth';
 import { useJournal } from '@/hooks/useJournal';
 import { useEntitlement } from '@/hooks/useEntitlement';
+import { humanizeLabel } from '@/lib/utils';
 
 const MOOD_OPTIONS = [
   { value: 'peaceful', label: '🕊️ Peaceful' },
