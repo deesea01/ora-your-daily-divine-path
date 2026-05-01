@@ -4,6 +4,7 @@ import { ArrowLeft, Plus, Sparkles, BookOpen, Loader2, Trash2, ChevronDown, Lock
 import { useAuth } from '@/hooks/useAuth';
 import { useJournal } from '@/hooks/useJournal';
 import { useEntitlement } from '@/hooks/useEntitlement';
+import { humanizeLabel } from '@/lib/utils';
 
 const MOOD_OPTIONS = [
   { value: 'peaceful', label: '🕊️ Peaceful' },
@@ -114,10 +115,10 @@ const JournalHome = () => {
             )}
             <div className="flex flex-wrap gap-1.5">
               {(insight.patterns as string[]).slice(0, 3).map((p, i) => (
-                <span key={i} className="rounded-full bg-destructive/10 px-2.5 py-0.5 text-[10px] text-destructive">{p}</span>
+                <span key={i} className="rounded-full bg-destructive/10 px-2.5 py-0.5 text-[10px] text-destructive capitalize">{humanizeLabel(p)}</span>
               ))}
               {(insight.strengths as string[]).slice(0, 3).map((s, i) => (
-                <span key={i} className="rounded-full bg-gold/10 px-2.5 py-0.5 text-[10px] text-gold">{s}</span>
+                <span key={i} className="rounded-full bg-gold/10 px-2.5 py-0.5 text-[10px] text-gold capitalize">{humanizeLabel(s)}</span>
               ))}
             </div>
           </div>

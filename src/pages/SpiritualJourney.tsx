@@ -4,6 +4,7 @@ import { ArrowLeft, Sparkles, Flame, Compass, Heart, BookOpen, Shield, RefreshCw
 import { useSpiritualProfile, type Recommendation } from "@/hooks/useSpiritualProfile";
 import { SPIRITUAL_GUIDES } from "@/lib/guides";
 import SEO from "@/components/SEO";
+import { humanizeLabel } from "@/lib/utils";
 
 const TYPE_ICON: Record<Recommendation["type"], typeof Sparkles> = {
   prayer: BookOpen,
@@ -164,7 +165,7 @@ export default function SpiritualJourney() {
           ) : (
             <div className="mt-2 flex flex-wrap gap-1.5">
               {growthAreas.map((g) => (
-                <span key={g} className="rounded-full border border-gold/20 bg-gold/5 px-2.5 py-0.5 text-xs text-foreground capitalize">{g}</span>
+                <span key={g} className="rounded-full border border-gold/20 bg-gold/5 px-2.5 py-0.5 text-xs text-foreground capitalize">{humanizeLabel(g)}</span>
               ))}
             </div>
           )}
@@ -178,7 +179,7 @@ export default function SpiritualJourney() {
           ) : (
             <div className="mt-2 flex flex-wrap gap-1.5">
               {struggles.map((s) => (
-                <span key={s} className="rounded-full border border-border bg-background/60 px-2.5 py-0.5 text-xs text-muted-foreground capitalize">{s}</span>
+                <span key={s} className="rounded-full border border-border bg-background/60 px-2.5 py-0.5 text-xs text-muted-foreground capitalize">{humanizeLabel(s)}</span>
               ))}
             </div>
           )}
