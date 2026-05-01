@@ -5,6 +5,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePaddleCheckout } from '@/hooks/usePaddleCheckout';
 import { MissionNote } from '@/components/MissionNote';
 import SEO from '@/components/SEO';
+import { isNativeIOS } from '@/lib/platform';
+import { IapPaywallSection } from '@/components/IapPaywallSection';
 
 const FEATURES = [
   { icon: Users, text: 'Unlimited Saint companions' },
@@ -46,6 +48,8 @@ const Paywall = () => {
     }
   };
 
+  const onIos = isNativeIOS();
+
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe">
       <SEO title="Ora Premium — Daily Catholic Prayer & Devotion Plans" description="Begin a guided life of prayer, devotion, and spiritual growth. Ora Premium is $10/month or $70/year with a free trial. Cancel anytime." canonicalPath="/paywall" />
@@ -70,98 +74,114 @@ const Paywall = () => {
           ))}
         </div>
 
-        {/* Plan selector */}
-        <div className="mt-8 space-y-3">
+        {/* iOS: Apple In-App Purchases (App Store policy compliant). Web continues with Paddle below. */}
+        {onIos && (
+          <div className="mt-8">
+            <IapPaywallSection />
+            <div className="mt-6">
+              <MissionNote />
+            </div>
+          </div>
+        )}
+
+        {/* Web (Paddle) plan selector — hidden on iOS where IapPaywallSection takes over. */}
+        {!onIos && (
+          <>
+            <div className="mt-8 space-y-3">
+              <button
+                onClick={() => setPlan('intro')}
+                className={`relative w-full rounded-xl border-2 px-4 py-4 text-left transition-all active:scale-[0.98] ${
+                  plan === 'intro' ? 'border-gold bg-gold/10' : 'border-border bg-card'
+                }`}
+              >
+                <span className="absolute -top-2 right-3 rounded-full bg-gold px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground">
+                  Intro offer
+                </span>
+                <p className="text-xs uppercase tracking-widest text-muted-foreground">First month</p>
+                <p className="mt-1 font-serif text-2xl text-foreground">
+                  $1<span className="text-sm text-muted-foreground"> for your first month</span>
+                </p>
+                <p className="mt-1 text-[11px] text-muted-foreground">After 3-day trial · then $10/mo · cancel anytime</p>
+              </button>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setPlan('yearly')}
+                  className={`relative rounded-xl border-2 px-4 py-4 text-left transition-all active:scale-[0.98] ${
+                    plan === 'yearly' ? 'border-gold bg-gold/10' : 'border-border bg-card'
+                  }`}
+                >
+                  <span className="absolute -top-2 right-3 rounded-full bg-foreground/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-background">
+                    Best value
+                  </span>
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground">Yearly</p>
+                  <p className="mt-1 font-serif text-2xl text-foreground">$70<span className="text-sm text-muted-foreground">/yr</span></p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">$5.83/mo · save 42%</p>
+                </button>
+                <button
+                  onClick={() => setPlan('monthly')}
+                  className={`rounded-xl border-2 px-4 py-4 text-left transition-all active:scale-[0.98] ${
+                    plan === 'monthly' ? 'border-gold bg-gold/10' : 'border-border bg-card'
+                  }`}
+                >
+                  <p className="text-xs uppercase tracking-widest text-muted-foreground">Monthly</p>
+                  <p className="mt-1 font-serif text-2xl text-foreground">$10<span className="text-sm text-muted-foreground">/mo</span></p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">Cancel anytime</p>
+                </button>
+              </div>
+            </div>
+
+            {/* Trust strip */}
+            <div className="mt-6 space-y-2 rounded-xl border border-border bg-card p-4">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Check className="h-3.5 w-3.5 text-gold" />
+                <span>
+                  {plan === 'intro'
+                    ? '3 days free — then $1 for your first month, then $10/month'
+                    : plan === 'yearly'
+                    ? '3 days free — then $70/year'
+                    : '3 days free — then $10/month'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Check className="h-3.5 w-3.5 text-gold" />
+                <span>Cancel anytime, no questions asked</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Shield className="h-3.5 w-3.5 text-gold" />
+                <span>Secure checkout · taxes handled for you</span>
+              </div>
+              <label className="flex items-center justify-between pt-2 cursor-pointer">
+                <span className="text-xs text-foreground">Remind me before my trial ends</span>
+                <input
+                  type="checkbox"
+                  checked={reminderOn}
+                  onChange={(e) => setReminderOn(e.target.checked)}
+                  className="h-4 w-4 accent-gold"
+                />
+              </label>
+            </div>
+
+            {/* Mission + sponsor */}
+            <div className="mt-6">
+              <MissionNote />
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* CTA — Paddle only. iOS purchases happen inline via IapPaywallSection. */}
+      {!onIos && (
+        <div className="mt-6 space-y-3">
           <button
-            onClick={() => setPlan('intro')}
-            className={`relative w-full rounded-xl border-2 px-4 py-4 text-left transition-all active:scale-[0.98] ${
-              plan === 'intro' ? 'border-gold bg-gold/10' : 'border-border bg-card'
-            }`}
+            disabled={loading}
+            onClick={handleStartTrial}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
           >
-            <span className="absolute -top-2 right-3 rounded-full bg-gold px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground">
-              Intro offer
-            </span>
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">First month</p>
-            <p className="mt-1 font-serif text-2xl text-foreground">
-              $1<span className="text-sm text-muted-foreground"> for your first month</span>
-            </p>
-            <p className="mt-1 text-[11px] text-muted-foreground">After 3-day trial · then $10/mo · cancel anytime</p>
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Begin Premium Journey'}
           </button>
-
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => setPlan('yearly')}
-              className={`relative rounded-xl border-2 px-4 py-4 text-left transition-all active:scale-[0.98] ${
-                plan === 'yearly' ? 'border-gold bg-gold/10' : 'border-border bg-card'
-              }`}
-            >
-              <span className="absolute -top-2 right-3 rounded-full bg-foreground/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-background">
-                Best value
-              </span>
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">Yearly</p>
-              <p className="mt-1 font-serif text-2xl text-foreground">$70<span className="text-sm text-muted-foreground">/yr</span></p>
-              <p className="mt-1 text-[11px] text-muted-foreground">$5.83/mo · save 42%</p>
-            </button>
-            <button
-              onClick={() => setPlan('monthly')}
-              className={`rounded-xl border-2 px-4 py-4 text-left transition-all active:scale-[0.98] ${
-                plan === 'monthly' ? 'border-gold bg-gold/10' : 'border-border bg-card'
-              }`}
-            >
-              <p className="text-xs uppercase tracking-widest text-muted-foreground">Monthly</p>
-              <p className="mt-1 font-serif text-2xl text-foreground">$10<span className="text-sm text-muted-foreground">/mo</span></p>
-              <p className="mt-1 text-[11px] text-muted-foreground">Cancel anytime</p>
-            </button>
-          </div>
         </div>
-
-        {/* Trust strip */}
-        <div className="mt-6 space-y-2 rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Check className="h-3.5 w-3.5 text-gold" />
-            <span>
-              {plan === 'intro'
-                ? '3 days free — then $1 for your first month, then $10/month'
-                : plan === 'yearly'
-                ? '3 days free — then $70/year'
-                : '3 days free — then $10/month'}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Check className="h-3.5 w-3.5 text-gold" />
-            <span>Cancel anytime, no questions asked</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Shield className="h-3.5 w-3.5 text-gold" />
-            <span>Secure checkout · taxes handled for you</span>
-          </div>
-          <label className="flex items-center justify-between pt-2 cursor-pointer">
-            <span className="text-xs text-foreground">Remind me before my trial ends</span>
-            <input
-              type="checkbox"
-              checked={reminderOn}
-              onChange={(e) => setReminderOn(e.target.checked)}
-              className="h-4 w-4 accent-gold"
-            />
-          </label>
-        </div>
-
-        {/* Mission + sponsor */}
-        <div className="mt-6">
-          <MissionNote />
-        </div>
-      </div>
-
-      {/* CTAs */}
-      <div className="mt-6 space-y-3">
-        <button
-          disabled={loading}
-          onClick={handleStartTrial}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
-        >
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Begin Premium Journey'}
-        </button>
-      </div>
+      )}
     </div>
   );
 };
