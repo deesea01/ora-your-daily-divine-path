@@ -123,20 +123,28 @@ const ExaminationOfConscience = () => {
                     <p className="text-xs text-gold italic">{cat.prompt}</p>
 
                     <div className="space-y-2">
-                      {cat.items.map((item) => (
-                        <label key={item} className="flex items-start gap-3 cursor-pointer group">
-                          <div
-                            className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-all ${
-                              checkedItems.includes(item)
-                                ? 'border-gold bg-gold/20'
-                                : 'border-muted-foreground/30 group-hover:border-gold/40'
-                            }`}
+                      {cat.items.map((item) => {
+                        const isChecked = checkedItems.includes(item);
+                        return (
+                          <button
+                            key={item}
+                            type="button"
+                            onClick={() => toggleItem(cat.key, item)}
+                            className="flex w-full items-start gap-3 text-left py-2 -my-1 rounded-md group active:bg-gold/5 transition-colors"
                           >
-                            {checkedItems.includes(item) && <Check className="h-3 w-3 text-gold" />}
-                          </div>
-                          <span className="text-sm text-foreground/80">{item}</span>
-                        </label>
-                      ))}
+                            <div
+                              className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-all ${
+                                isChecked
+                                  ? 'border-gold bg-gold/20'
+                                  : 'border-muted-foreground/30 group-hover:border-gold/40'
+                              }`}
+                            >
+                              {isChecked && <Check className="h-3.5 w-3.5 text-gold" />}
+                            </div>
+                            <span className={`text-sm ${isChecked ? 'text-foreground' : 'text-foreground/80'}`}>{item}</span>
+                          </button>
+                        );
+                      })}
                     </div>
 
                     <Textarea
