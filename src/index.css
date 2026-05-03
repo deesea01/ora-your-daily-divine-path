@@ -244,8 +244,14 @@
    notch / Dynamic Island never overlaps content in the native shell. */
 @layer utilities {
   .pt-safe {
-    /* Bumped baseline so top controls sit lower and are easier to tap on mobile */
-    padding-top: calc(max(env(safe-area-inset-top), 1rem) + 1.75rem);
+    /* Comfortable baseline on mobile, tighter on desktop. */
+    padding-top: calc(max(env(safe-area-inset-top), 0.75rem) + 0.75rem);
+  }
+
+  @media (max-width: 640px) {
+    .pt-safe {
+      padding-top: calc(max(env(safe-area-inset-top), 1rem) + 1.5rem);
+    }
   }
 }
 
@@ -254,12 +260,12 @@
    with their own padding. */
 @layer base {
   header {
-    padding-top: calc(max(env(safe-area-inset-top), 0.75rem) + 1.25rem);
+    padding-top: calc(max(env(safe-area-inset-top), 0.5rem) + 0.5rem);
   }
 
   @media (max-width: 640px) {
     header {
-      padding-top: calc(max(env(safe-area-inset-top), 1rem) + 2.5rem) !important;
+      padding-top: calc(max(env(safe-area-inset-top), 1rem) + 1.75rem) !important;
     }
 
     header button[aria-label="Back"],

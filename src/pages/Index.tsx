@@ -118,7 +118,7 @@ const Index = () => {
         </div>
         <button
           onClick={() => navigate('/settings')}
-          className="mr-12 flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground hover:border-gold/30"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground hover:border-gold/30 sm:mr-0 mr-14"
           aria-label="Settings"
         >
           <Settings className="h-4 w-4" />
