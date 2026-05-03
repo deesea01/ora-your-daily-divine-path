@@ -42,7 +42,7 @@ const Welcome = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe">
+    <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe app-container">
       <SEO title="Daily Catholic Prayer App — Grow Closer to God with Ora" description="Start a daily devotion with guided Catholic prayers, the rosary, and saint-led reflections. Ora helps you grow closer to God with a personalized spiritual path." canonicalPath="/welcome" />
 
       {/* SEO content (visually hidden, indexable) */}

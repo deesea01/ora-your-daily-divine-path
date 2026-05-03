@@ -106,7 +106,7 @@ const Index = () => {
   const locale = language === 'tl' ? 'fil' : language;
 
   return (
-    <div className="min-h-screen bg-background px-6 pb-8 pt-safe">
+    <div className="min-h-screen bg-background px-6 pb-8 pt-safe app-container-wide">
       <SEO title="Ora — Daily Catholic Prayer App for Devotion, Rosary & Saints" description="Your personalized daily devotion: Catholic prayers, the rosary, the saints, Examen, and reflections to help you grow closer to God." canonicalPath="/" />
       <header className="flex items-center justify-between pb-6 pt-6 animate-fade-in">
         <div className="flex items-center gap-3">
@@ -209,7 +209,7 @@ const Index = () => {
         <div className="h-px flex-1 bg-border" />
       </div>
 
-      <section className="mb-4 animate-fade-in-delay-3">
+      <section className="mb-4 grid gap-4 md:grid-cols-2 animate-fade-in-delay-3">
         <button onClick={() => navigate('/rosary')} className="group w-full rounded-xl border border-gold/20 bg-card p-5 text-left transition-all hover:border-gold/40 hover:glow-gold active:scale-[0.98]">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gold/10">
@@ -221,9 +221,7 @@ const Index = () => {
             </div>
           </div>
         </button>
-      </section>
 
-      <section className="mb-4 animate-fade-in-delay-3">
         <button onClick={() => navigate('/prayer-library')} className="group w-full rounded-xl border border-gold/20 bg-card p-5 text-left transition-all hover:border-gold/40 hover:glow-gold active:scale-[0.98]">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gold/10">
@@ -235,9 +233,7 @@ const Index = () => {
             </div>
           </div>
         </button>
-      </section>
 
-      <section className="mb-4 animate-fade-in-delay-3">
         <button onClick={() => navigate('/journal')} className="group w-full rounded-xl border border-gold/20 bg-card p-5 text-left transition-all hover:border-gold/40 hover:glow-gold active:scale-[0.98]">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gold/10">
@@ -249,9 +245,7 @@ const Index = () => {
             </div>
           </div>
         </button>
-      </section>
 
-      <section className="mb-4 animate-fade-in-delay-3">
         <button onClick={() => navigate('/confession')} className="group w-full rounded-xl border border-gold/20 bg-card p-5 text-left transition-all hover:border-gold/40 hover:glow-gold active:scale-[0.98]">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gold/10">
@@ -263,10 +257,8 @@ const Index = () => {
             </div>
           </div>
         </button>
-      </section>
 
-      <section className="mb-4 animate-fade-in-delay-3">
-        <button onClick={() => navigate('/monk-chat')} className="group w-full rounded-xl border border-gold/20 bg-card p-5 text-left transition-all hover:border-gold/40 hover:glow-gold active:scale-[0.98]">
+        <button onClick={() => navigate('/monk-chat')} className="group w-full rounded-xl border border-gold/20 bg-card p-5 text-left transition-all hover:border-gold/40 hover:glow-gold active:scale-[0.98] md:col-span-2">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gold/10">
               <MessageCircle className="h-5 w-5 text-gold" />

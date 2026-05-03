@@ -82,7 +82,7 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background px-6 pb-8 pt-safe">
+    <div className="min-h-screen bg-background px-6 pb-8 pt-safe app-container">
       <header className="flex items-center gap-3 pb-6 pt-6">
         <button onClick={() => navigate('/')} className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-gold/30 transition-colors">
           <ArrowLeft className="h-4 w-4" />

@@ -253,6 +253,35 @@
       padding-top: calc(max(env(safe-area-inset-top), 1rem) + 1.5rem);
     }
   }
+
+  /* Cap content width on tablet/desktop so mobile-first pages don't stretch
+     edge-to-edge on large screens. Pages keep their own px padding. */
+  .app-container {
+    width: 100%;
+    max-width: 28rem; /* 448px — phone-like reading width */
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  @media (min-width: 768px) {
+    .app-container { max-width: 36rem; }
+  }
+
+  /* Wider variant for pages that benefit from a 2-col grid on desktop. */
+  .app-container-wide {
+    width: 100%;
+    max-width: 28rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  @media (min-width: 768px) {
+    .app-container-wide { max-width: 48rem; }
+  }
+
+  @media (min-width: 1024px) {
+    .app-container-wide { max-width: 64rem; }
+  }
 }
 
 /* Ensure every page-level <header> sits below the notch / status bar so the
