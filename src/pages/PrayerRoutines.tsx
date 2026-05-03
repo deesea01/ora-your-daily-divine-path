@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePrayerLibrary } from '@/hooks/usePrayerLibrary';
 import { PRAYERS, PRESET_ROUTINES, getPrayerById } from '@/lib/prayerLibrary';
 import { Input } from '@/components/ui/input';
+import SEO from '@/components/SEO';
 
 const PrayerRoutines = () => {
   const { user, loading: authLoading } = useAuth();
