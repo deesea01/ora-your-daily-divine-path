@@ -68,7 +68,10 @@ export default function WeeklyRecapStory({ recap, isPremium, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 bg-background animate-fade-in">
       {/* Progress bars */}
-      <div className="absolute left-0 right-0 top-0 z-10 flex gap-1 px-3 pt-3">
+      <div
+        className="absolute left-0 right-0 z-10 flex gap-1 px-3"
+        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
+      >
         {cards.map((_, i) => (
           <div key={i} className="h-0.5 flex-1 overflow-hidden rounded-full bg-white/15">
             <div
@@ -83,18 +86,19 @@ export default function WeeklyRecapStory({ recap, isPremium, onClose }: Props) {
 
       <button
         onClick={onClose}
-        className="absolute right-4 top-6 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white"
+        className="absolute right-3 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-black/50 text-white active:bg-black/70"
+        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 1.5rem)' }}
         aria-label="Close"
       >
-        <X className="h-4 w-4" />
+        <X className="h-5 w-5" />
       </button>
 
-      {/* Tap zones */}
-      <button onClick={prev} className="absolute bottom-0 left-0 top-12 z-[5] w-1/3" aria-label="Previous" />
-      <button onClick={next} className="absolute bottom-0 right-0 top-12 z-[5] w-1/3" aria-label="Next" />
+      {/* Tap zones — start below header so they don't block the close button */}
+      <button onClick={prev} className="absolute bottom-0 left-0 top-24 z-[5] w-1/3" aria-label="Previous" />
+      <button onClick={next} className="absolute bottom-0 right-0 top-24 z-[5] w-1/3" aria-label="Next" />
 
       {/* Card content */}
-      <div className="flex h-full flex-col items-center justify-center px-8 pt-12 text-center">
+      <div className="flex h-full flex-col items-center justify-center px-8 pb-12 pt-24 text-center">
         {locked ? (
           <div className="z-10 flex flex-col items-center gap-4 animate-fade-in">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gold/15">
