@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePrayerLibrary } from '@/hooks/usePrayerLibrary';
 import { PRAYERS, PRESET_ROUTINES, getPrayerById } from '@/lib/prayerLibrary';
 import { Input } from '@/components/ui/input';
+import SEO from '@/components/SEO';
 
 const PrayerRoutines = () => {
   const { user, loading: authLoading } = useAuth();
@@ -44,6 +45,20 @@ const PrayerRoutines = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <SEO
+        title="Catholic Prayer Routines — Build Your Daily Devotion | Ora"
+        description="Create and follow personal Catholic prayer routines. Combine the rosary, novenas, and daily devotions into a guided spiritual rhythm with Ora."
+        canonicalPath="/prayer-library/routines"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'WebApplication',
+          name: 'Ora Prayer Routines',
+          applicationCategory: 'LifestyleApplication',
+          operatingSystem: 'Web, iOS',
+          description: 'Build and follow personalized Catholic prayer routines combining the rosary, novenas, and daily devotions.',
+          offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+        }}
+      />
       <header className="flex items-center gap-3 border-b border-border px-4 py-4">
         <button onClick={() => navigate('/prayer-library')} className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground" aria-label="Back">
           <ArrowLeft className="h-4 w-4" />

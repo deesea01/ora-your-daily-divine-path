@@ -7,6 +7,7 @@ interface SEOProps {
   canonicalPath?: string;
   noindex?: boolean;
   image?: string;
+  jsonLd?: Record<string, any> | Record<string, any>[];
 }
 
 const SITE_URL = 'https://oradevotion.com';
@@ -39,7 +40,7 @@ function setLink(rel: string, href: string) {
 /**
  * Per-page SEO. Mounts client-side meta updates. Does not affect visual layout.
  */
-const SEO = ({ title, description, canonicalPath, noindex, image }: SEOProps) => {
+const SEO = ({ title, description, canonicalPath, noindex, image, jsonLd }: SEOProps) => {
   const location = useLocation();
   const path = canonicalPath ?? location.pathname;
   const fullTitle = title ?? DEFAULT_TITLE;
@@ -64,7 +65,19 @@ const SEO = ({ title, description, canonicalPath, noindex, image }: SEOProps) =>
     setMeta('name', 'twitter:title', fullTitle);
     setMeta('name', 'twitter:description', desc);
     setMeta('name', 'twitter:image', img);
-  }, [fullTitle, desc, canonical, img, noindex]);
+
+    // JSON-LD structured data
+    const SCRIPT_ID = 'seo-jsonld';
+    const existing = document.head.querySelector(`script#${SCRIPT_ID}`);
+    if (existing) existing.remove();
+    if (jsonLd) {
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.id = SCRIPT_ID;
+      script.text = JSON.stringify(jsonLd);
+      document.head.appendChild(script);
+    }
+  }, [fullTitle, desc, canonical, img, noindex, jsonLd]);
 
   return null;
 };
