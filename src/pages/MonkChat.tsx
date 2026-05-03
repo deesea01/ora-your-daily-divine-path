@@ -335,7 +335,7 @@ const MonkChat = () => {
         <SaintAvatar guideKey={guideKey} size="sm" state={avatarState as any} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1">
-            <h1 className="font-serif text-base font-medium text-foreground truncate">{guide.label}</h1>
+            <h2 className="font-serif text-base font-medium text-foreground truncate">{guide.label}</h2>
             <GuideSwitcher currentGuide={guideKey} onSelect={handleSwitchGuide} />
           </div>
           <p className="text-[10px] text-muted-foreground">
