@@ -106,7 +106,7 @@ const Index = () => {
   const locale = language === 'tl' ? 'fil' : language;
 
   return (
-    <div className="min-h-screen bg-background px-6 pb-8 pt-safe">
+    <div className="min-h-screen bg-background px-6 pb-8 pt-safe app-container-wide">
       <SEO title="Ora — Daily Catholic Prayer App for Devotion, Rosary & Saints" description="Your personalized daily devotion: Catholic prayers, the rosary, the saints, Examen, and reflections to help you grow closer to God." canonicalPath="/" />
       <header className="flex items-center justify-between pb-6 pt-6 animate-fade-in">
         <div className="flex items-center gap-3">

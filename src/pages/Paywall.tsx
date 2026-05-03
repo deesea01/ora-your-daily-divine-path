@@ -51,7 +51,7 @@ const Paywall = () => {
   const onIos = isNativeIOS();
 
   return (
-    <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe">
+    <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe app-container">
       <SEO title="Ora Premium — Daily Catholic Prayer & Devotion Plans" description="Begin a guided life of prayer, devotion, and spiritual growth. Ora Premium is $10/month or $70/year with a free trial. Cancel anytime." canonicalPath="/paywall" />
       <div className="flex-1 flex flex-col">
         <div className="pt-10 text-center">
