@@ -259,11 +259,20 @@
 
   @media (max-width: 640px) {
     header {
-      padding-top: calc(max(env(safe-area-inset-top), 1rem) + 2rem) !important;
+      padding-top: calc(max(env(safe-area-inset-top), 1rem) + 2.5rem) !important;
     }
 
     header button[aria-label="Back"],
-    header button[aria-label="Settings"] {
+    header button[aria-label="Settings"],
+    header button[aria-label="Close"],
+    header button[aria-label="Exit"] {
+      min-width: 48px;
+      min-height: 48px;
+    }
+
+    /* Any close/exit button anywhere — give it a generous tap target. */
+    button[aria-label="Close"],
+    button[aria-label="Exit"] {
       min-width: 44px;
       min-height: 44px;
     }
