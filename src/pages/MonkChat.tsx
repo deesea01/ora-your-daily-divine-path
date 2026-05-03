@@ -310,7 +310,21 @@ const MonkChat = () => {
 
   return (
     <div className="flex h-screen flex-col bg-background">
-      <SEO title="Talk with a Catholic Saint — Daily Prayer & Reflection | Ora" description="Have a sacred conversation with a Catholic saint companion for daily devotion, prayer, scripture, and spiritual guidance. Grow closer to God with Ora." canonicalPath="/monk-chat" />
+      <SEO
+        title="Talk with a Catholic Saint — Daily Prayer & Reflection | Ora"
+        description="Have a sacred conversation with a Catholic saint companion for daily devotion, prayer, scripture, and spiritual guidance. Grow closer to God with Ora."
+        canonicalPath="/monk-chat"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'WebApplication',
+          name: 'Ora — Talk with a Saint',
+          applicationCategory: 'LifestyleApplication',
+          operatingSystem: 'Web, iOS',
+          description: 'Sacred AI conversations with Catholic saint companions for prayer, reflection, and spiritual guidance.',
+          offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+        }}
+      />
+      <h1 className="sr-only">Talk with a Catholic Saint Companion</h1>
       <header className="flex items-center gap-3 border-b border-border px-4 py-3">
         <button
           onClick={() => navigate('/')}
