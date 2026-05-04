@@ -236,17 +236,23 @@ const MonkChat = () => {
     setInput('');
     setIsStreaming(true);
 
-    supabase.from('chat_messages').insert({
-      user_id: user.id,
-      role: 'user',
-      content: `${userMsg.content} [guide:${guideKey}]`,
-    });
-    // Log saint interaction for the Spiritual Memory Engine
-    supabase.from('saint_interactions').insert({
-      user_id: user.id,
-      saint_key: guideKey,
-      interaction_type: 'chat',
-    });
+    // Persist the user message + saint interaction (await so the request actually fires)
+    try {
+      await Promise.all([
+        supabase.from('chat_messages').insert({
+          user_id: user.id,
+          role: 'user',
+          content: `${userMsg.content} [guide:${guideKey}]`,
+        }),
+        supabase.from('saint_interactions').insert({
+          user_id: user.id,
+          saint_key: guideKey,
+          interaction_type: 'chat',
+        }),
+      ]);
+    } catch (logErr) {
+      console.error('Failed to log chat/saint interaction:', logErr);
+    }
 
     let assistantContent = '';
     const upsert = (chunk: string) => {
@@ -271,14 +277,18 @@ const MonkChat = () => {
           mood,
         } : { language, mood },
         onDelta: upsert,
-        onDone: () => {
+        onDone: async () => {
           setIsStreaming(false);
           if (assistantContent) {
-            supabase.from('chat_messages').insert({
-              user_id: user.id,
-              role: 'assistant',
-              content: `${assistantContent} [guide:${guideKey}]`,
-            });
+            try {
+              await supabase.from('chat_messages').insert({
+                user_id: user.id,
+                role: 'assistant',
+                content: `${assistantContent} [guide:${guideKey}]`,
+              });
+            } catch (logErr) {
+              console.error('Failed to log assistant message:', logErr);
+            }
             voice.play(assistantContent, mood);
           }
           refreshChatCount();
@@ -288,11 +298,15 @@ const MonkChat = () => {
       setIsStreaming(false);
       const fallback = 'Peace be with you. Take a moment to pray quietly and reflect.';
       upsert(fallback);
-      supabase.from('chat_messages').insert({
-        user_id: user.id,
-        role: 'assistant',
-        content: `${fallback} [guide:${guideKey}]`,
-      });
+      try {
+        await supabase.from('chat_messages').insert({
+          user_id: user.id,
+          role: 'assistant',
+          content: `${fallback} [guide:${guideKey}]`,
+        });
+      } catch (logErr) {
+        console.error('Failed to log fallback message:', logErr);
+      }
       console.error('AI chat error:', e);
       notifyAdminError('monk-chat', e?.message || String(e), user.id, { guide: guideKey });
       toast.error('Spiritual guidance is temporarily unavailable. Please try again later.');

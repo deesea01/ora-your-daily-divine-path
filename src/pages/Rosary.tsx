@@ -187,6 +187,31 @@ const Rosary = () => {
     if (stepIndex > 0) setStepIndex((i) => i - 1);
   };
 
+  const finishRosary = async () => {
+    stop();
+    if (user) {
+      const today = new Date().toISOString().split('T')[0];
+      // Only log one rosary per day
+      const { data: existing } = await supabase
+        .from('prayer_completions')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('prayer_date', today)
+        .eq('prayer_type', 'rosary')
+        .maybeSingle();
+      if (!existing) {
+        const { error } = await supabase.from('prayer_completions').insert({
+          user_id: user.id,
+          prayer_type: 'rosary',
+          prayer_date: today,
+          themes: mysterySet ? [mysterySet] : [],
+        });
+        if (error) console.error('Failed to log rosary completion:', error);
+      }
+    }
+    navigate('/');
+  };
+
   if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -407,7 +432,7 @@ const Rosary = () => {
           <ChevronLeft className="h-5 w-5" />
         </button>
         <button
-          onClick={isLast ? () => navigate('/') : goNext}
+          onClick={isLast ? finishRosary : goNext}
           className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-gold font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98]"
         >
           <span>{isLast ? 'Finish' : 'Continue'}</span>
