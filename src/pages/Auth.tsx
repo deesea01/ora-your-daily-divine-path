@@ -45,7 +45,14 @@ const Auth = () => {
     );
   }
 
-  if (user) return <Navigate to="/" replace />;
+  if (user) {
+    const redirectParam = searchParams.get('redirect');
+    // Only honor relative paths to prevent open-redirect.
+    const safeRedirect = redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//')
+      ? redirectParam
+      : '/';
+    return <Navigate to={safeRedirect} replace />;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
