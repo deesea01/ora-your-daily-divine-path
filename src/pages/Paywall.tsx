@@ -26,20 +26,24 @@ const Paywall = () => {
   const { openCheckout, loading } = usePaddleCheckout();
   const [plan, setPlan] = useState<'intro' | 'monthly' | 'yearly'>('intro');
   const [reminderOn, setReminderOn] = useState(true);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const autoStartedRef = useRef(false);
 
-  const handleStartTrial = async () => {
+  const handleStartTrial = async (autoPlan?: 'intro' | 'monthly' | 'yearly') => {
     if (!user) {
-      navigate('/auth');
+      // Send unauthenticated users to /auth and bring them back here to auto-open checkout.
+      navigate(`/auth?redirect=${encodeURIComponent('/paywall?autoStart=1')}`);
       return;
     }
-    const priceId = plan === 'yearly' ? 'ora_premium_yearly' : 'ora_premium_monthly';
+    const activePlan = autoPlan ?? plan;
+    const priceId = activePlan === 'yearly' ? 'ora_premium_yearly' : 'ora_premium_monthly';
     // Intro discount is restricted to the monthly price only — never attach it on yearly.
-    const discountCode = plan === 'intro' && priceId === 'ora_premium_monthly' ? INTRO_DISCOUNT_CODE : undefined;
+    const discountCode = activePlan === 'intro' && priceId === 'ora_premium_monthly' ? INTRO_DISCOUNT_CODE : undefined;
     try {
       await openCheckout({
         priceId,
         customerEmail: user.email,
-        customData: { userId: user.id, reminderOn: String(reminderOn), plan },
+        customData: { userId: user.id, reminderOn: String(reminderOn), plan: activePlan },
         successUrl: `${window.location.origin}/checkout/success`,
         ...(discountCode ? { discountCode } : {}),
       });
@@ -47,6 +51,20 @@ const Paywall = () => {
       console.error('Checkout failed', e);
     }
   };
+
+  // If the user just signed in and we asked to auto-start checkout, open it once.
+  useEffect(() => {
+    if (autoStartedRef.current) return;
+    if (searchParams.get('autoStart') !== '1') return;
+    if (!user || onIos) return;
+    autoStartedRef.current = true;
+    // Clear the flag from the URL so refreshes don't re-trigger.
+    const next = new URLSearchParams(searchParams);
+    next.delete('autoStart');
+    setSearchParams(next, { replace: true });
+    handleStartTrial();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const onIos = isNativeIOS();
 
