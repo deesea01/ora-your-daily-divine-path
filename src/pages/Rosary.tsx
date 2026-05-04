@@ -432,7 +432,7 @@ const Rosary = () => {
           <ChevronLeft className="h-5 w-5" />
         </button>
         <button
-          onClick={isLast ? () => navigate('/') : goNext}
+          onClick={isLast ? finishRosary : goNext}
           className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-gold font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98]"
         >
           <span>{isLast ? 'Finish' : 'Continue'}</span>
