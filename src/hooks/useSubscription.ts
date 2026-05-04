@@ -25,12 +25,21 @@ export function useSubscription() {
       setLoading(false);
       return;
     }
-    const { data } = await supabase
+    setLoading(true);
+    const { data, error } = await supabase
       .from("subscriptions")
       .select("status, product_id, price_id, current_period_end, cancel_at_period_end, environment")
       .eq("user_id", user.id)
       .eq("environment", env)
+      .order("created_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
+    if (error) {
+      console.error("[useSubscription] fetch error", error);
+      setSubscription(null);
+      setLoading(false);
+      return;
+    }
     setSubscription(data as Subscription | null);
     setLoading(false);
   };
@@ -56,8 +65,10 @@ export function useSubscription() {
 
   const isActive =
     !!subscription &&
-    ["active", "trialing", "past_due"].includes(subscription.status) &&
-    (!subscription.current_period_end || new Date(subscription.current_period_end) > new Date());
+    ["active", "trialing", "past_due"].includes(subscription.status) ||
+    subscription?.status === "canceled" && !!subscription.current_period_end
+      ? !!subscription && (!subscription.current_period_end || new Date(subscription.current_period_end) > new Date())
+      : false;
 
   const isPastDue = subscription?.status === "past_due";
 
