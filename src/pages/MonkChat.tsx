@@ -236,17 +236,23 @@ const MonkChat = () => {
     setInput('');
     setIsStreaming(true);
 
-    supabase.from('chat_messages').insert({
-      user_id: user.id,
-      role: 'user',
-      content: `${userMsg.content} [guide:${guideKey}]`,
-    });
-    // Log saint interaction for the Spiritual Memory Engine
-    supabase.from('saint_interactions').insert({
-      user_id: user.id,
-      saint_key: guideKey,
-      interaction_type: 'chat',
-    });
+    // Persist the user message + saint interaction (await so the request actually fires)
+    try {
+      await Promise.all([
+        supabase.from('chat_messages').insert({
+          user_id: user.id,
+          role: 'user',
+          content: `${userMsg.content} [guide:${guideKey}]`,
+        }),
+        supabase.from('saint_interactions').insert({
+          user_id: user.id,
+          saint_key: guideKey,
+          interaction_type: 'chat',
+        }),
+      ]);
+    } catch (logErr) {
+      console.error('Failed to log chat/saint interaction:', logErr);
+    }
 
     let assistantContent = '';
     const upsert = (chunk: string) => {
