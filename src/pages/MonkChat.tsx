@@ -298,11 +298,15 @@ const MonkChat = () => {
       setIsStreaming(false);
       const fallback = 'Peace be with you. Take a moment to pray quietly and reflect.';
       upsert(fallback);
-      supabase.from('chat_messages').insert({
-        user_id: user.id,
-        role: 'assistant',
-        content: `${fallback} [guide:${guideKey}]`,
-      });
+      try {
+        await supabase.from('chat_messages').insert({
+          user_id: user.id,
+          role: 'assistant',
+          content: `${fallback} [guide:${guideKey}]`,
+        });
+      } catch (logErr) {
+        console.error('Failed to log fallback message:', logErr);
+      }
       console.error('AI chat error:', e);
       notifyAdminError('monk-chat', e?.message || String(e), user.id, { guide: guideKey });
       toast.error('Spiritual guidance is temporarily unavailable. Please try again later.');
