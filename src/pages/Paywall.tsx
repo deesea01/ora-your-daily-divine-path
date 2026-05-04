@@ -52,6 +52,8 @@ const Paywall = () => {
     }
   };
 
+  const onIos = isNativeIOS();
+
   // If the user just signed in and we asked to auto-start checkout, open it once.
   useEffect(() => {
     if (autoStartedRef.current) return;
@@ -64,9 +66,7 @@ const Paywall = () => {
     setSearchParams(next, { replace: true });
     handleStartTrial();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
-
-  const onIos = isNativeIOS();
+  }, [user, onIos]);
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe app-container">
