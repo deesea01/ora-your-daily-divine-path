@@ -63,12 +63,12 @@ export function useSubscription() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
+  const hasActiveStatus = !!subscription && ["active", "trialing", "past_due"].includes(subscription.status);
+  const hasGracePeriod = subscription?.status === "canceled" && !!subscription.current_period_end;
   const isActive =
     !!subscription &&
-    ["active", "trialing", "past_due"].includes(subscription.status) ||
-    subscription?.status === "canceled" && !!subscription.current_period_end
-      ? !!subscription && (!subscription.current_period_end || new Date(subscription.current_period_end) > new Date())
-      : false;
+    (hasActiveStatus || hasGracePeriod) &&
+    (!subscription.current_period_end || new Date(subscription.current_period_end) > new Date());
 
   const isPastDue = subscription?.status === "past_due";
 
