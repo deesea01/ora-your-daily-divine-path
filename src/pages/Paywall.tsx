@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Check, Loader2, Shield, Sparkles, BookOpen, BarChart3, Users, Heart, Compass, Bell } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useEntitlement } from '@/hooks/useEntitlement';
 import { usePaddleCheckout } from '@/hooks/usePaddleCheckout';
 import { MissionNote } from '@/components/MissionNote';
 import SEO from '@/components/SEO';
@@ -22,12 +23,15 @@ const INTRO_DISCOUNT_CODE = 'ORAFIRSTMONTH';
 
 const Paywall = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
+  const { isPremium, loading: entitlementLoading } = useEntitlement();
   const { openCheckout, loading } = usePaddleCheckout();
   const [plan, setPlan] = useState<'intro' | 'monthly' | 'yearly'>('intro');
   const [reminderOn, setReminderOn] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
   const autoStartedRef = useRef(false);
+  const returnTo = (location.state as { from?: string } | null)?.from;
 
   const handleStartTrial = async (autoPlan?: 'intro' | 'monthly' | 'yearly') => {
     if (!user) {
@@ -53,6 +57,11 @@ const Paywall = () => {
   };
 
   const onIos = isNativeIOS();
+
+  useEffect(() => {
+    if (!user || entitlementLoading || !isPremium) return;
+    navigate(returnTo && returnTo !== '/paywall' ? returnTo : '/', { replace: true });
+  }, [entitlementLoading, isPremium, navigate, returnTo, user]);
 
   // If the user just signed in and we asked to auto-start checkout, open it once.
   useEffect(() => {
