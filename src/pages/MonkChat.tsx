@@ -277,14 +277,18 @@ const MonkChat = () => {
           mood,
         } : { language, mood },
         onDelta: upsert,
-        onDone: () => {
+        onDone: async () => {
           setIsStreaming(false);
           if (assistantContent) {
-            supabase.from('chat_messages').insert({
-              user_id: user.id,
-              role: 'assistant',
-              content: `${assistantContent} [guide:${guideKey}]`,
-            });
+            try {
+              await supabase.from('chat_messages').insert({
+                user_id: user.id,
+                role: 'assistant',
+                content: `${assistantContent} [guide:${guideKey}]`,
+              });
+            } catch (logErr) {
+              console.error('Failed to log assistant message:', logErr);
+            }
             voice.play(assistantContent, mood);
           }
           refreshChatCount();
