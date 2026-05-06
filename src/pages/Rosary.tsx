@@ -226,6 +226,26 @@ const Rosary = () => {
     const suggested = suggestedSet();
     return (
       <div className="flex min-h-screen flex-col bg-background">
+        <SEO
+          title="Guided Rosary App — Pray the Catholic Rosary Daily | Ora"
+          description="Pray the Catholic rosary with step-by-step beads, all four mysteries, audio guidance, and saint-led reflections. A daily devotion that grows your prayer life."
+          canonicalPath="/rosary"
+          jsonLd={{
+            '@context': 'https://schema.org',
+            '@type': 'HowTo',
+            name: 'How to Pray the Catholic Rosary',
+            description: 'Step-by-step guided rosary with all four sets of mysteries, audio narration, and saint-led reflections.',
+            totalTime: 'PT20M',
+            step: [
+              { '@type': 'HowToStep', name: 'Sign of the Cross & Apostles\' Creed' },
+              { '@type': 'HowToStep', name: 'Our Father' },
+              { '@type': 'HowToStep', name: 'Three Hail Marys' },
+              { '@type': 'HowToStep', name: 'Glory Be' },
+              { '@type': 'HowToStep', name: 'Announce the Mystery and pray each decade' },
+              { '@type': 'HowToStep', name: 'Hail, Holy Queen and closing prayers' },
+            ],
+          }}
+        />
         <header className="flex items-center gap-3 border-b border-border px-4 py-4">
           <button
             onClick={() => navigate('/')}
@@ -373,7 +393,27 @@ const Rosary = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <SEO title="Guided Rosary App — Pray the Catholic Rosary Daily | Ora" description="Pray the Catholic rosary with step-by-step beads, all four mysteries, audio guidance, and saint-led reflections. A daily devotion that grows your prayer life." canonicalPath="/rosary" />
+      <SEO
+        title="Guided Rosary App — Pray the Catholic Rosary Daily | Ora"
+        description="Pray the Catholic rosary with step-by-step beads, all four mysteries, audio guidance, and saint-led reflections. A daily devotion that grows your prayer life."
+        canonicalPath="/rosary"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'HowTo',
+          name: 'How to Pray the Catholic Rosary',
+          description: 'Step-by-step guided rosary with all four sets of mysteries, audio narration, and saint-led reflections.',
+          totalTime: 'PT20M',
+          step: [
+            { '@type': 'HowToStep', name: 'Sign of the Cross & Apostles\' Creed' },
+            { '@type': 'HowToStep', name: 'Our Father' },
+            { '@type': 'HowToStep', name: 'Three Hail Marys' },
+            { '@type': 'HowToStep', name: 'Glory Be' },
+            { '@type': 'HowToStep', name: 'Announce the Mystery and pray each decade' },
+            { '@type': 'HowToStep', name: 'Hail, Holy Queen and closing prayers' },
+          ],
+        }}
+      />
+      <h1 className="sr-only">Guided Holy Rosary — {mysteries.label} Mysteries</h1>
       {/* Header */}
       <header className="sticky top-0 z-10 border-b border-border bg-background/80 px-4 py-3 backdrop-blur-md">
         <div className="flex items-center justify-between">
