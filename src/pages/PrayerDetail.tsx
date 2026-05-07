@@ -16,6 +16,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { notifyAdminError } from "@/lib/notifyAdmin";
 import { SacredPause } from "@/components/SacredPause";
+import { toast } from "sonner";
 
 type Slot = "morning" | "midday" | "night";
 
