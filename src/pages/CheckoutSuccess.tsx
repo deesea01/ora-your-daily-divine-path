@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle2 } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { MissionNote } from '@/components/MissionNote';
+import SEO from '@/components/SEO';
 
 const CheckoutSuccess = () => {
   const navigate = useNavigate();
