@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { localDateStr } from '@/lib/utils';
 
 export type ReminderSlot = 'morning' | 'midday' | 'night';
 
