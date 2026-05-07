@@ -207,7 +207,7 @@ const PrayerDetail = () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) {
       setMarking(false);
-      toast({ title: "Couldn't save prayer", description: "Please sign in again and retry.", variant: "destructive" });
+      toast.error("Couldn't save prayer", { description: "Please sign in again and retry." });
       return;
     }
     const { error: insErr } = await supabase.from("prayer_completions").insert({
@@ -222,7 +222,7 @@ const PrayerDetail = () => {
     if (insErr) {
       console.error("prayer_completions insert failed", insErr);
       notifyAdminError("prayer_completions.insert", insErr.message, session.user.id, { slot });
-      toast({ title: "Couldn't save prayer", description: insErr.message, variant: "destructive" });
+      toast.error("Couldn't save prayer", { description: insErr.message });
     } else {
       setCompleted(true);
     }
