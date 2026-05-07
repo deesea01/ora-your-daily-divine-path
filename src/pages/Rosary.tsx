@@ -9,6 +9,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { notifyAdminError } from '@/lib/notifyAdmin';
 import { VoiceUnavailableNote } from '@/components/VoiceUnavailableNote';
 import SEO from '@/components/SEO';
+import { localDateStr } from '@/lib/utils';
 
 const MYSTERIES: Record<string, { label: string; names: string[] }> = {
   joyful: {
