@@ -87,6 +87,18 @@ const Auth = () => {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-6 bg-background">
+      <SEO
+        title={isSignUp ? 'Create your Ora account — Daily Catholic Prayer' : 'Sign in to Ora — Daily Catholic Prayer'}
+        description="Sign in or create your free Ora account to begin a guided daily Catholic prayer life with the rosary, saints, and personalized devotion."
+        canonicalPath="/auth"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'WebPage',
+          name: isSignUp ? 'Create your Ora account' : 'Sign in to Ora',
+          url: 'https://oradevotion.com/auth',
+          publisher: { '@type': 'Organization', name: 'Ora Devotion LLC' },
+        }}
+      />
       <div className="w-full max-w-sm animate-fade-in">
         {/* Language picker - top right */}
         <div className="flex justify-end mb-4">
@@ -108,6 +120,9 @@ const Auth = () => {
           <div className="inline-flex items-center justify-center w-44 h-44 mb-1">
             <img src={logoImg} alt="Ora logo" className="w-44 h-44 object-contain" />
           </div>
+          <h1 className="font-serif text-2xl text-foreground mb-1">
+            {isForgotPassword ? t.resetPassword : isSignUp ? t.createAccount : t.signIn}
+          </h1>
           <p className="text-sm text-muted-foreground">{t.authSubtitle}</p>
         </div>
 
