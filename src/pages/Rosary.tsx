@@ -191,7 +191,7 @@ const Rosary = () => {
   const finishRosary = async () => {
     stop();
     if (user) {
-      const today = new Date().toISOString().split('T')[0];
+      const today = localDateStr();
       // Only log one rosary per day
       const { data: existing } = await supabase
         .from('prayer_completions')
