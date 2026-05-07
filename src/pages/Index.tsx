@@ -9,6 +9,7 @@ import { SPIRITUAL_GUIDES, SpiritualGuideKey } from '@/lib/guides';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useWeeklyRecaps } from '@/hooks/useWeeklyRecaps';
 import { useEntitlement } from '@/hooks/useEntitlement';
+import { localDateStr } from '@/lib/utils';
 
 import PrayerCard from '@/components/PrayerCard';
 import SEO from '@/components/SEO';
