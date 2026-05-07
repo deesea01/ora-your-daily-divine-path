@@ -9,6 +9,7 @@ import { SPIRITUAL_GUIDES, SpiritualGuideKey } from '@/lib/guides';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useWeeklyRecaps } from '@/hooks/useWeeklyRecaps';
 import { useEntitlement } from '@/hooks/useEntitlement';
+import { localDateStr } from '@/lib/utils';
 
 import PrayerCard from '@/components/PrayerCard';
 import SEO from '@/components/SEO';
@@ -52,7 +53,7 @@ const Index = () => {
 
   useEffect(() => {
     if (!user) return;
-    const today = new Date().toISOString().split('T')[0];
+    const today = localDateStr();
     supabase
       .from('prayer_completions')
       .select('prayer_type')

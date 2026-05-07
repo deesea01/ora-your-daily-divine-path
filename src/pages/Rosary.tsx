@@ -9,6 +9,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { notifyAdminError } from '@/lib/notifyAdmin';
 import { VoiceUnavailableNote } from '@/components/VoiceUnavailableNote';
 import SEO from '@/components/SEO';
+import { localDateStr } from '@/lib/utils';
 
 const MYSTERIES: Record<string, { label: string; names: string[] }> = {
   joyful: {
@@ -190,7 +191,7 @@ const Rosary = () => {
   const finishRosary = async () => {
     stop();
     if (user) {
-      const today = new Date().toISOString().split('T')[0];
+      const today = localDateStr();
       // Only log one rosary per day
       const { data: existing } = await supabase
         .from('prayer_completions')

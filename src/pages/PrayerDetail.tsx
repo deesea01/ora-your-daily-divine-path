@@ -17,6 +17,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { notifyAdminError } from "@/lib/notifyAdmin";
 import { SacredPause } from "@/components/SacredPause";
 import { toast } from "sonner";
+import { localDateStr } from "@/lib/utils";
 
 type Slot = "morning" | "midday" | "night";
 
@@ -36,7 +37,7 @@ interface Devotion {
   next_step: null | { kind: string; label: string; reason: string };
 }
 
-const todayStr = () => new Date().toISOString().split("T")[0];
+const todayStr = () => localDateStr();
 const cacheKey = (uid: string, slot: Slot) => `ora:devotion:${uid}:${slot}:${todayStr()}`;
 
 interface Step {

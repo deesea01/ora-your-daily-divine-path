@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useConfession } from '@/hooks/useConfession';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { localDateStr } from '@/lib/utils';
 
 const MOODS = [
   { key: 'peaceful', emoji: '☮️', label: 'Peaceful' },
@@ -19,7 +20,7 @@ const LogConfession = () => {
   const navigate = useNavigate();
   const { logConfession, loading } = useConfession();
 
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(localDateStr());
   const [parish, setParish] = useState('');
   const [priest, setPriest] = useState('');
   const [reflection, setReflection] = useState('');

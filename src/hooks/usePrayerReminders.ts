@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { localDateStr } from '@/lib/utils';
 
 export type ReminderSlot = 'morning' | 'midday' | 'night';
 
@@ -28,7 +29,7 @@ const FIRED_KEY = 'ora:reminders:fired'; // { [slot]: 'YYYY-MM-DD' }
 const TICK_MS = 30_000; // poll twice a minute — light, accurate enough
 const WINDOW_MIN = 30; // fire if we enter the window within 30 minutes of target
 
-const todayStr = () => new Date().toISOString().split('T')[0];
+const todayStr = () => localDateStr();
 
 /* ------------------------------- preferences ------------------------------ */
 
