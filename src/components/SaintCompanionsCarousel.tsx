@@ -1,7 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import { Lock, Sparkles } from "lucide-react";
+import { Lock, Sparkles, Check } from "lucide-react";
+import { toast } from "sonner";
 import { SPIRITUAL_GUIDES, SpiritualGuideKey } from "@/lib/guides";
 import { useEntitlement, FREE_GUIDE_KEY } from "@/hooks/useEntitlement";
+import { useUserProfile } from "@/hooks/useUserProfile";
 
 const ORDER: SpiritualGuideKey[] = [
   "st_padre_pio",
@@ -27,6 +29,24 @@ const SHORT: Record<string, string> = {
 export function SaintCompanionsCarousel() {
   const navigate = useNavigate();
   const { isPremium } = useEntitlement();
+  const { profile, setGuide } = useUserProfile();
+  const currentGuide = profile?.spiritual_guide as SpiritualGuideKey | undefined;
+
+  const handleSelect = async (key: SpiritualGuideKey, locked: boolean) => {
+    if (locked) {
+      navigate("/paywall");
+      return;
+    }
+    if (currentGuide !== key) {
+      const res = await setGuide(key);
+      if (res?.error) {
+        toast.error("Couldn't set saint", { description: res.error.message });
+        return;
+      }
+      toast.success(`${SPIRITUAL_GUIDES[key].label} is now your guide`);
+    }
+    navigate("/monk-chat");
+  };
 
   return (
     <section className="mb-8 animate-fade-in-delay-3">
@@ -36,7 +56,7 @@ export function SaintCompanionsCarousel() {
             {isPremium ? "Your Saint Companions" : "Unlock Saint Companions"}
           </h2>
           <p className="text-xs text-muted-foreground">
-            {isPremium ? "Pray with the saints" : "Voices of the saints, ready to walk with you"}
+            {isPremium ? "Tap a saint to walk with them" : "Voices of the saints, ready to walk with you"}
           </p>
         </div>
         <button
@@ -52,15 +72,18 @@ export function SaintCompanionsCarousel() {
           {ORDER.map((key) => {
             const g = SPIRITUAL_GUIDES[key];
             const locked = !isPremium && key !== FREE_GUIDE_KEY;
+            const isCurrent = currentGuide === key;
             return (
               <button
                 key={key}
-                onClick={() => {
-                  if (locked) navigate("/paywall");
-                  else navigate("/monk-chat");
-                }}
+                onClick={() => handleSelect(key, locked)}
+                aria-label={isCurrent ? `${g.label} — current guide` : `Choose ${g.label} as your guide`}
                 className={`group relative w-[148px] shrink-0 snap-start overflow-hidden rounded-2xl border text-left transition-all active:scale-[0.97] ${
-                  locked ? "border-gold/25 bg-card hover:border-gold/50" : "border-gold/40 bg-card hover:border-gold"
+                  isCurrent
+                    ? "border-gold ring-2 ring-gold/40 bg-card"
+                    : locked
+                    ? "border-gold/25 bg-card hover:border-gold/50"
+                    : "border-gold/40 bg-card hover:border-gold"
                 }`}
               >
                 <div className="relative aspect-[3/4] w-full overflow-hidden">
@@ -85,7 +108,12 @@ export function SaintCompanionsCarousel() {
                       </div>
                     </>
                   )}
-                  {!locked && (
+                  {!locked && isCurrent && (
+                    <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-gold px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-primary-foreground">
+                      <Check className="h-2.5 w-2.5" /> Current
+                    </div>
+                  )}
+                  {!locked && !isCurrent && (
                     <div className="absolute right-2 top-2 rounded-full bg-background/70 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider text-gold backdrop-blur-sm">
                       Free
                     </div>
