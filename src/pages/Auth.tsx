@@ -5,6 +5,7 @@ import { Navigate, useSearchParams, Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
 import { lovable } from '@/integrations/lovable/index';
+import SEO from '@/components/SEO';
 
 const Auth = () => {
   const { user, loading, signIn, signUp, resetPasswordForEmail } = useAuth();
