@@ -17,6 +17,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 import { notifyAdminError } from "@/lib/notifyAdmin";
 import { SacredPause } from "@/components/SacredPause";
 import { toast } from "sonner";
+import { localDateStr } from "@/lib/utils";
 
 type Slot = "morning" | "midday" | "night";
 
