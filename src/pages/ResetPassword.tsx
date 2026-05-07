@@ -3,6 +3,7 @@ import logoImg from '@/assets/logo.png';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import SEO from '@/components/SEO';
 
 const ResetPassword = () => {
   const { updatePassword } = useAuth();
