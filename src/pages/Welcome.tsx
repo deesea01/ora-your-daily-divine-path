@@ -43,11 +43,31 @@ const Welcome = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe app-container">
-      <SEO title="Daily Catholic Prayer App — Grow Closer to God with Ora" description="Start a daily devotion with guided Catholic prayers, the rosary, and saint-led reflections. Ora helps you grow closer to God with a personalized spiritual path." canonicalPath="/welcome" />
+      <SEO
+        title="Daily Catholic Prayer App — Grow Closer to God with Ora"
+        description="Start a daily devotion with guided Catholic prayers, the rosary, and saint-led reflections. Ora helps you grow closer to God with a personalized spiritual path."
+        canonicalPath="/welcome"
+        jsonLd={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: 'Ora Devotion',
+            url: 'https://oradevotion.com',
+            logo: 'https://oradevotion.com/icon-512.png',
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'MobileApplication',
+            name: 'Ora — Daily Catholic Prayer',
+            applicationCategory: 'LifestyleApplication',
+            operatingSystem: 'iOS, Android, Web',
+            offers: { '@type': 'Offer', price: '10.00', priceCurrency: 'USD' },
+          },
+        ]}
+      />
 
       {/* SEO content (visually hidden, indexable) */}
       <section className="sr-only" aria-hidden="true">
-        <h1>Ora — Daily Catholic Prayer & Devotion App</h1>
         <h2>Daily devotion, the rosary, and the Catholic saints</h2>
         <p>
           Ora is a daily Catholic prayer app that helps you grow closer to God through guided
