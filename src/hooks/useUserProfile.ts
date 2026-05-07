@@ -88,7 +88,7 @@ export function useUserProfile() {
 
     if (!error) {
       setProfile((prev) => ({
-        ...(prev || { seeking: [], experience_level: 'beginner', onboarding_completed: true, spiritual_guide: 'monk', preferred_language: 'en', daily_prayer_goal: 3, display_name: null, terms_accepted_at: null }),
+        ...(prev || { seeking: [], experience_level: 'beginner', onboarding_completed: true, spiritual_guide: 'monk', preferred_language: 'en', daily_prayer_goal: 3, display_name: null, terms_accepted_at: null, timezone: detectTimezone() }),
         seeking,
         experience_level: experienceLevel,
         onboarding_completed: true,
