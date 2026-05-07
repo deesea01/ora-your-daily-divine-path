@@ -11,6 +11,15 @@ export interface UserProfile {
   daily_prayer_goal: number;
   display_name: string | null;
   terms_accepted_at: string | null;
+  timezone: string;
+}
+
+function detectTimezone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  } catch {
+    return 'UTC';
+  }
 }
 
 export function useUserProfile() {
