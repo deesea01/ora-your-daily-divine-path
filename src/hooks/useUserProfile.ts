@@ -11,6 +11,15 @@ export interface UserProfile {
   daily_prayer_goal: number;
   display_name: string | null;
   terms_accepted_at: string | null;
+  timezone: string;
+}
+
+function detectTimezone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  } catch {
+    return 'UTC';
+  }
 }
 
 export function useUserProfile() {
@@ -30,16 +39,28 @@ export function useUserProfile() {
     setLoading(true);
     supabase
       .from('user_profiles')
-      .select('seeking, experience_level, onboarding_completed, spiritual_guide, preferred_language, daily_prayer_goal, display_name, terms_accepted_at')
+      .select('seeking, experience_level, onboarding_completed, spiritual_guide, preferred_language, daily_prayer_goal, display_name, terms_accepted_at, timezone')
       .eq('user_id', user.id)
       .maybeSingle()
       .then(({ data, error }) => {
         if (cancelled) return;
         if (error) {
-          // On error, keep previous profile (don't wipe to null) to avoid false onboarding redirect
           console.error('[useUserProfile] fetch error', error);
         } else {
           setProfile(data as UserProfile | null);
+          // Auto-sync detected timezone if missing or stale
+          const detected = detectTimezone();
+          if (data && (!data.timezone || data.timezone === 'UTC' || data.timezone !== detected)) {
+            supabase
+              .from('user_profiles')
+              .update({ timezone: detected, updated_at: new Date().toISOString() })
+              .eq('user_id', user.id)
+              .then(({ error: tzErr }) => {
+                if (!tzErr && !cancelled) {
+                  setProfile((prev) => (prev ? { ...prev, timezone: detected } : prev));
+                }
+              });
+          }
         }
         setLoading(false);
       });
@@ -54,6 +75,7 @@ export function useUserProfile() {
       seeking,
       experience_level: experienceLevel,
       onboarding_completed: true,
+      timezone: detectTimezone(),
       updated_at: new Date().toISOString(),
     };
     if (dailyGoal !== undefined) payload.daily_prayer_goal = dailyGoal;
@@ -66,7 +88,7 @@ export function useUserProfile() {
 
     if (!error) {
       setProfile((prev) => ({
-        ...(prev || { seeking: [], experience_level: 'beginner', onboarding_completed: true, spiritual_guide: 'monk', preferred_language: 'en', daily_prayer_goal: 3, display_name: null, terms_accepted_at: null }),
+        ...(prev || { seeking: [], experience_level: 'beginner', onboarding_completed: true, spiritual_guide: 'monk', preferred_language: 'en', daily_prayer_goal: 3, display_name: null, terms_accepted_at: null, timezone: detectTimezone() }),
         seeking,
         experience_level: experienceLevel,
         onboarding_completed: true,

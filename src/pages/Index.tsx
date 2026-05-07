@@ -148,6 +148,11 @@ const Index = () => {
                 {todayCompleted}/{dailyGoal}
               </button>
               <p className="text-xs text-muted-foreground">{t.today}</p>
+              {profile?.timezone && (
+                <p className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground/70">
+                  {profile.timezone.replace(/_/g, ' ')}
+                </p>
+              )}
             </div>
           </div>
           <div className="mt-4 flex gap-1.5">
