@@ -20,7 +20,7 @@ const LogConfession = () => {
   const navigate = useNavigate();
   const { logConfession, loading } = useConfession();
 
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(localDateStr());
   const [parish, setParish] = useState('');
   const [priest, setPriest] = useState('');
   const [reflection, setReflection] = useState('');
