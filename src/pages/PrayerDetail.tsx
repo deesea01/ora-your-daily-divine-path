@@ -16,6 +16,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { notifyAdminError } from "@/lib/notifyAdmin";
 import { SacredPause } from "@/components/SacredPause";
+import { toast } from "sonner";
 
 type Slot = "morning" | "midday" | "night";
 
@@ -202,8 +203,15 @@ const PrayerDetail = () => {
     if (!user || marking) return;
     setMarking(true);
     const trimmed = reflection.trim().slice(0, 500);
+    // Ensure auth session is fully hydrated before inserting (mobile Safari race)
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      setMarking(false);
+      toast.error("Couldn't save prayer", { description: "Please sign in again and retry." });
+      return;
+    }
     const { error: insErr } = await supabase.from("prayer_completions").insert({
-      user_id: user.id,
+      user_id: session.user.id,
       prayer_date: todayStr(),
       prayer_type: slot,
       saint_key: devotion?.saint?.key ?? null,
@@ -211,7 +219,13 @@ const PrayerDetail = () => {
       scripture_ref: devotion?.scripture?.ref ?? null,
       reflection: trimmed || null,
     });
-    if (!insErr) setCompleted(true);
+    if (insErr) {
+      console.error("prayer_completions insert failed", insErr);
+      notifyAdminError("prayer_completions.insert", insErr.message, session.user.id, { slot });
+      toast.error("Couldn't save prayer", { description: insErr.message });
+    } else {
+      setCompleted(true);
+    }
     setMarking(false);
   };
 
