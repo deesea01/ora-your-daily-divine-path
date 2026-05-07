@@ -42,7 +42,8 @@ export const AuthNav = () => {
   return (
     <div
       data-testid="auth-nav"
-      className="fixed top-3 right-3 z-50 flex items-center gap-2"
+      className="fixed right-3 z-50 flex items-center gap-2"
+      style={{ top: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}
     >
       {!user ? (
         <>
