@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Loader2, Check, AlertCircle } from "lucide-react";
+import SEO from "@/components/SEO";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
@@ -47,10 +48,23 @@ export default function Unsubscribe() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-6">
+      <SEO
+        title="Unsubscribe from Ora emails"
+        description="Manage your Ora email preferences and unsubscribe from non-essential messages."
+        canonicalPath="/unsubscribe"
+        noindex
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'WebPage',
+          name: 'Unsubscribe',
+          url: 'https://oradevotion.com/unsubscribe',
+          publisher: { '@type': 'Organization', name: 'Ora Devotion LLC' },
+        }}
+      />
       <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 text-center">
+        <h1 className="font-serif text-xl text-foreground mb-2">Unsubscribe from Ora emails</h1>
         {state === "loading" && (<><Loader2 className="mx-auto h-6 w-6 animate-spin text-gold" /><p className="mt-3 text-sm text-muted-foreground">Verifying…</p></>)}
         {state === "valid" && (<>
-          <h1 className="font-serif text-xl text-foreground mb-2">Unsubscribe from Ora emails?</h1>
           <p className="text-sm text-muted-foreground mb-4">You'll stop receiving non-essential messages from us.</p>
           <button onClick={confirm} className="w-full rounded-lg bg-gold py-3 text-sm font-medium text-primary-foreground">Confirm unsubscribe</button>
         </>)}

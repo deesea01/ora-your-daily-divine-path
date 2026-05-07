@@ -3,6 +3,7 @@ import logoImg from '@/assets/logo.png';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import SEO from '@/components/SEO';
 
 const ResetPassword = () => {
   const { updatePassword } = useAuth();
@@ -50,6 +51,19 @@ const ResetPassword = () => {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-6 bg-background">
+      <SEO
+        title="Reset your Ora password"
+        description="Reset the password for your Ora Catholic prayer account."
+        canonicalPath="/reset-password"
+        noindex
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'WebPage',
+          name: 'Reset Password',
+          url: 'https://oradevotion.com/reset-password',
+          publisher: { '@type': 'Organization', name: 'Ora Devotion LLC' },
+        }}
+      />
       <div className="w-full max-w-sm animate-fade-in">
         <div className="mb-12 text-center">
           <div className="inline-flex items-center justify-center w-44 h-44 mb-4">
