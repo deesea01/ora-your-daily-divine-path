@@ -21,6 +21,19 @@ const CheckoutSuccess = () => {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
+      <SEO
+        title="Welcome to Ora — Trial started"
+        description="Your Ora Premium trial has started. Begin your daily Catholic prayer journey."
+        canonicalPath="/checkout/success"
+        noindex
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'WebPage',
+          name: 'Checkout Success',
+          url: 'https://oradevotion.com/checkout/success',
+          publisher: { '@type': 'Organization', name: 'Ora Devotion LLC' },
+        }}
+      />
       <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gold/10">
         <CheckCircle2 className="h-9 w-9 text-gold" />
       </div>
