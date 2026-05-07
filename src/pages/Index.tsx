@@ -52,7 +52,7 @@ const Index = () => {
 
   useEffect(() => {
     if (!user) return;
-    const today = new Date().toISOString().split('T')[0];
+    const today = localDateStr();
     supabase
       .from('prayer_completions')
       .select('prayer_type')
