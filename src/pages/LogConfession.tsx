@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useConfession } from '@/hooks/useConfession';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { localDateStr } from '@/lib/utils';
 
 const MOODS = [
   { key: 'peaceful', emoji: '☮️', label: 'Peaceful' },
