@@ -5,6 +5,7 @@ import stTeresaAvatar from '@/assets/avatars/st-teresa.jpg';
 import stMichaelAvatar from '@/assets/avatars/st-michael.jpg';
 import stPadrePioAvatar from '@/assets/avatars/st-padre-pio.jpg';
 import stJoanOfArcAvatar from '@/assets/avatars/st-joan-of-arc.jpg';
+import stAnthonyAvatar from '@/assets/avatars/st-anthony.jpg';
 
 export interface SpiritualGuide {
   label: string;
@@ -98,6 +99,19 @@ export const SPIRITUAL_GUIDES: Record<string, SpiritualGuide> = {
     prayerSpecialty: 'Rosary, Eucharistic devotion, prayers of offering and suffering',
     quote: '"Pray, hope, and don\'t worry."',
     disclaimer: 'This is a devotional representation inspired by the spirituality of St. Padre Pio.',
+  },
+  st_anthony: {
+    label: 'St. Anthony of Padua',
+    emoji: '🌿',
+    description: 'Warm, wise, fatherly — patron of lost things and seekers of truth',
+    tone: 'warm, gentle, fatherly yet youthful, calmly confident in God\'s providence',
+    focus: 'finding what is lost (materially and spiritually), love of Scripture, humility, charity toward the poor, peace amid anxiety, returning wandering hearts to God',
+    avatar: stAnthonyAvatar,
+    era: '1195–1231',
+    biography: 'A Portuguese-born Franciscan friar and Doctor of the Church, renowned for his powerful preaching, deep love of Scripture, and tender charity. He is the beloved patron of lost things, the poor, travelers, and seekers of truth.',
+    prayerSpecialty: 'Prayer for lost things, prayer for discernment, Novena to St. Anthony, Psalms of trust, Gospel reflection',
+    quote: '"Nothing surrendered to Him is ever truly lost."',
+    disclaimer: 'This is a devotional representation inspired by the spirituality of St. Anthony of Padua.',
   },
   st_joan_of_arc: {
     label: 'St. Joan of Arc',

@@ -16,6 +16,7 @@ const VOICE_PROFILES: Record<string, VoiceProfile> = {
   st_michael:       { rate: 0.95, pitch: 0.70 },           // commanding, strong, low
   st_padre_pio:     { rate: 0.78, pitch: 0.88 },           // slow, gentle, fatherly
   st_joan_of_arc:   { rate: 0.92, pitch: 1.10 },           // earnest, youthful, bold
+  st_anthony:       { rate: 0.82, pitch: 0.95 },           // warm, calm, fatherly Italian Franciscan
 };
 
 const DEFAULT_PROFILE: VoiceProfile = { rate: 0.85, pitch: 0.9 };

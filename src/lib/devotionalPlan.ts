@@ -44,10 +44,13 @@ const SAINTS: Record<string, { name: string; specialty: string[] }> = {
   st_michael: { name: 'St. Michael the Archangel', specialty: ['overcoming_temptation', 'anger', 'burnout', 'protection'] },
   st_padre_pio: { name: 'St. Padre Pio', specialty: ['grief', 'healing', 'loneliness', 'suffering'] },
   st_joan_of_arc: { name: 'St. Joan of Arc', specialty: ['purpose', 'vocation', 'discernment', 'family'] },
+  st_anthony: { name: 'St. Anthony of Padua', specialty: ['lost', 'searching', 'confusion', 'restoration', 'charity', 'wisdom'] },
 };
 
 function pickSaint(goals: string[], burdens: string[]): { key: string; name: string; reason: string } {
   const tags = [...goals, ...burdens];
+  if (burdens.includes('lost') || burdens.includes('searching') || burdens.includes('confusion') || goals.includes('restoration') || goals.includes('clarity'))
+    return { key: 'st_anthony', name: SAINTS.st_anthony.name, reason: 'A gentle friar who helps wandering hearts find what is lost — and the One who restores it.' };
   if (burdens.includes('anxiety') || goals.includes('peace'))
     return { key: 'st_francis', name: SAINTS.st_francis.name, reason: 'A companion of peace, simplicity, and trust in God through creation.' };
   if (burdens.includes('lust') || burdens.includes('forgiveness') || goals.includes('return_to_faith'))

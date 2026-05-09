@@ -22,6 +22,7 @@ const SAINT_LABEL: Record<string, string> = {
   st_michael: "St. Michael the Archangel",
   st_padre_pio: "St. Padre Pio",
   st_joan_of_arc: "St. Joan of Arc",
+  st_anthony: "St. Anthony of Padua",
 };
 
 function daysSince(date: string | null): number | null {
