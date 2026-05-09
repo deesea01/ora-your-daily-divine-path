@@ -27,6 +27,7 @@ const VOICE_MAP: Record<string, VoiceProfile> = {
   st_teresa:         { voice_id: "EXAVITQu4vr4xnSDxMaL", stability: 0.60, similarity_boost: 0.85, style: 0.30, use_speaker_boost: true },  // Sarah
   st_padre_pio:      { voice_id: "pqHfZKP75CvOlQylNhV4", stability: 0.80, similarity_boost: 0.75, style: 0.15, use_speaker_boost: true },  // Bill
   st_michael:        { voice_id: "bIHbv24MWmeRgasZH58o", stability: 0.90, similarity_boost: 0.80, style: 0.50, use_speaker_boost: true },  // Will
+  st_anthony:        { voice_id: "ErXwobaYiN019PkySvjV", stability: 0.78, similarity_boost: 0.85, style: 0.20, use_speaker_boost: true },  // Antoni — warm fatherly Franciscan
 };
 
 // Slight mood adjustments — confession = softer/slower; prayer = more reverent; reflection = neutral

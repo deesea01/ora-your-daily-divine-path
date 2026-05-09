@@ -7,6 +7,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 
 const ORDER: SpiritualGuideKey[] = [
   "st_padre_pio",
+  "st_anthony",
   "st_augustine",
   "st_teresa",
   "st_francis",
@@ -18,6 +19,7 @@ const ORDER: SpiritualGuideKey[] = [
 const SHORT: Record<string, string> = {
   monk: "Daily rhythm & stillness",
   st_padre_pio: "Spiritual strength",
+  st_anthony: "Finding what is lost",
   st_augustine: "Purpose & restless heart",
   st_teresa: "Deep prayer life",
   st_francis: "Joy & simplicity",

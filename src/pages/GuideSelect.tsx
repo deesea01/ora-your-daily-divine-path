@@ -38,6 +38,10 @@ const GUIDE_PREVIEWS: Record<string, { question: string; answer: string }> = {
     question: "I feel anxious about the future.",
     answer: "Do not be afraid. God has called you, and He does not abandon those He calls. Even when the path is dark and the voices of doubt are loud, trust that He who began this work in you will see it through. Be brave — He is with you.",
   },
+  st_anthony: {
+    question: "I feel anxious about the future.",
+    answer: "My dear friend, do not be troubled by what feels lost. The Lord sees every wandering heart, every misplaced hope, every quiet longing. Bring your anxiety gently before Christ — nothing surrendered to Him is ever truly lost. Let us seek together what God desires to restore.",
+  },
 };
 
 const GuideSelect = () => {
