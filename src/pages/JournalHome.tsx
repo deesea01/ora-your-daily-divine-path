@@ -26,6 +26,7 @@ const JournalHome = () => {
   const [content, setContent] = useState('');
   const [mood, setMood] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [savedVerse, setSavedVerse] = useState<ScriptureVerse | null>(null);
 
   if (authLoading || loading || entLoading) {
     return (
