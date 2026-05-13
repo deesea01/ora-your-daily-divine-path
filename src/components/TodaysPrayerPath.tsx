@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sun, CloudSun, Moon, Check, ChevronRight, Sparkles } from 'lucide-react';
+import { Sun, CloudSun, Moon, Check, ChevronRight, Sparkles, BookOpen } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { DevotionalPlan, PlanPrayer } from '@/lib/devotionalPlan';
+import { getVerseForMood, type ScriptureVerse } from '@/lib/scriptureByMood';
 
 type Slot = 'morning' | 'midday' | 'night';
 
