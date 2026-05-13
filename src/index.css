@@ -223,6 +223,44 @@
   100% { transform: translateX(100%); }
 }
 
+/* Reverent ambience keyframes */
+@keyframes flame-flicker {
+  0%, 100% { transform: translate(-50%, 0) scale(1); opacity: 0.92; }
+  18%      { transform: translate(-50%, -1px) scale(1.04, 0.97); opacity: 1; }
+  37%      { transform: translate(-49%, 1px) scale(0.96, 1.05); opacity: 0.86; }
+  55%      { transform: translate(-51%, -2px) scale(1.05, 0.95); opacity: 0.96; }
+  74%      { transform: translate(-50%, 0) scale(0.98, 1.03); opacity: 0.9; }
+}
+
+@keyframes flame-glow {
+  0%, 100% { opacity: 0.55; transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 0.85; transform: translate(-50%, -50%) scale(1.08); }
+}
+
+@keyframes incense-rise {
+  0%   { transform: translate(-50%, 0) scale(1, 1); opacity: 0; }
+  20%  { opacity: 0.06; }
+  100% { transform: translate(-50%, -260px) scale(1.6, 1.2); opacity: 0; }
+}
+
+@keyframes saint-reveal {
+  0%   { opacity: 0; transform: scale(0.96); filter: blur(4px); }
+  100% { opacity: 1; transform: scale(1);    filter: blur(0); }
+}
+
+@keyframes halo-pulse-soft {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50%      { opacity: 0.6;  transform: scale(1.04); }
+}
+
+.animate-saint-reveal {
+  animation: saint-reveal 0.9s var(--transition-elegant) both;
+}
+
+.animate-halo-soft {
+  animation: halo-pulse-soft 4s ease-in-out infinite;
+}
+
 .bg-gradient-radial {
   background: radial-gradient(circle, var(--tw-gradient-from), var(--tw-gradient-to));
 }
