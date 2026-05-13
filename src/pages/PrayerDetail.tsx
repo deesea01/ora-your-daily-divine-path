@@ -446,6 +446,27 @@ function Prose({ text, serif }: { text: string; serif?: boolean }) {
   );
 }
 
+function ScriptureBlock({ ref, text, multiline }: { ref: string; text: string; multiline?: boolean }) {
+  const lines = multiline
+    ? text.split(/\n+/).map((l) => l.trim()).filter(Boolean)
+    : [text.trim()];
+  return (
+    <div className="space-y-3">
+      {lines.map((l, i) => (
+        <p
+          key={i}
+          className="font-serif text-xl leading-relaxed text-foreground"
+        >
+          {multiline ? l : `“${l}”`}
+        </p>
+      ))}
+      {ref && (
+        <p className="text-[11px] uppercase tracking-[0.22em] text-gold/80">{ref}</p>
+      )}
+    </div>
+  );
+}
+
 function NextStepCard({
   step,
   navigate,
