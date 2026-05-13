@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { DevotionalPlan, PlanPrayer } from '@/lib/devotionalPlan';
 import { getVerseForMood, type ScriptureVerse } from '@/lib/scriptureByMood';
+import { VerseActions } from '@/components/VerseActions';
 
 type Slot = 'morning' | 'midday' | 'night';
 
