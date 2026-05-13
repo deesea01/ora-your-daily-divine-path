@@ -27,21 +27,26 @@ const SLOT_META: Record<Slot, { title: string; subtitle: string; Icon: typeof Su
   night: { title: "Night Prayer", subtitle: "Rest in His peace", Icon: Moon },
 };
 
+interface RefText { ref: string; text: string }
 interface Devotion {
   opening: string;
-  prayer: string;
-  scripture: { ref: string; text: string };
+  antiphon?: RefText;
+  psalm?: RefText;
+  scripture: RefText;
+  reflection?: string;
+  intercession?: string;
   saint: null | { key: string; name: string; intercession: string };
+  prayer: string;
   blessing: string;
   themes: string[];
   next_step: null | { kind: string; label: string; reason: string };
 }
 
 const todayStr = () => localDateStr();
-const cacheKey = (uid: string, slot: Slot) => `ora:devotion:${uid}:${slot}:${todayStr()}`;
+const cacheKey = (uid: string, slot: Slot) => `ora:devotion:v2:${uid}:${slot}:${todayStr()}`;
 
 interface Step {
-  key: "opening" | "prayer" | "scripture" | "saint" | "blessing";
+  key: "opening" | "antiphon" | "psalm" | "scripture" | "reflection" | "intercession" | "saint" | "prayer" | "blessing";
   label: string;
   content: JSX.Element;
 }
@@ -154,26 +159,48 @@ const PrayerDetail = () => {
         label: slot === "night" ? "Examen" : slot === "midday" ? "Angelus" : "Opening",
         content: <Prose text={devotion.opening} />,
       },
-      {
-        key: "prayer",
-        label: "Prayer",
-        content: <Prose text={devotion.prayer} serif />,
-      },
-      {
+    ];
+
+    if (devotion.antiphon?.text) {
+      list.push({
+        key: "antiphon",
+        label: "Antiphon",
+        content: <ScriptureBlock ref={devotion.antiphon.ref} text={devotion.antiphon.text} />,
+      });
+    }
+
+    if (devotion.psalm?.text) {
+      list.push({
+        key: "psalm",
+        label: "Psalm",
+        content: <ScriptureBlock ref={devotion.psalm.ref} text={devotion.psalm.text} multiline />,
+      });
+    }
+
+    if (devotion.scripture?.text) {
+      list.push({
         key: "scripture",
         label: "Scripture",
-        content: (
-          <div className="space-y-3">
-            <p className="font-serif text-xl leading-relaxed text-foreground">
-              "{devotion.scripture.text}"
-            </p>
-            <p className="text-[11px] uppercase tracking-[0.22em] text-gold/80">
-              {devotion.scripture.ref}
-            </p>
-          </div>
-        ),
-      },
-    ];
+        content: <ScriptureBlock ref={devotion.scripture.ref} text={devotion.scripture.text} />,
+      });
+    }
+
+    if (devotion.reflection) {
+      list.push({
+        key: "reflection",
+        label: "Reflection",
+        content: <Prose text={devotion.reflection} />,
+      });
+    }
+
+    if (devotion.intercession) {
+      list.push({
+        key: "intercession",
+        label: "Intercession",
+        content: <Prose text={devotion.intercession} serif />,
+      });
+    }
+
     if (devotion.saint) {
       list.push({
         key: "saint",
@@ -190,6 +217,13 @@ const PrayerDetail = () => {
         ),
       });
     }
+
+    list.push({
+      key: "prayer",
+      label: "Prayer",
+      content: <Prose text={devotion.prayer} serif />,
+    });
+
     list.push({
       key: "blessing",
       label: "Blessing",
@@ -197,6 +231,7 @@ const PrayerDetail = () => {
         <p className="font-serif text-2xl leading-relaxed text-foreground">{devotion.blessing}</p>
       ),
     });
+
     return list;
   }, [devotion, slot]);
 
@@ -407,6 +442,27 @@ function Prose({ text, serif }: { text: string; serif?: boolean }) {
           {l}
         </p>
       ))}
+    </div>
+  );
+}
+
+function ScriptureBlock({ ref, text, multiline }: { ref: string; text: string; multiline?: boolean }) {
+  const lines = multiline
+    ? text.split(/\n+/).map((l) => l.trim()).filter(Boolean)
+    : [text.trim()];
+  return (
+    <div className="space-y-3">
+      {lines.map((l, i) => (
+        <p
+          key={i}
+          className="font-serif text-xl leading-relaxed text-foreground"
+        >
+          {multiline ? l : `“${l}”`}
+        </p>
+      ))}
+      {ref && (
+        <p className="text-[11px] uppercase tracking-[0.22em] text-gold/80">{ref}</p>
+      )}
     </div>
   );
 }

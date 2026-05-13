@@ -15,37 +15,53 @@ const GUIDE_VOICE: Record<string, { label: string; style: string }> = {
   st_thomas_aquinas: { label: "St. Thomas Aquinas", style: "Clear, logical, structured. Explain faith simply but intelligently." },
   st_teresa: { label: "St. Teresa of Ávila", style: "Warm, personal, contemplative. Guide inward to mental prayer and stillness." },
   st_michael: { label: "St. Michael the Archangel", style: "Strong, direct, courageous. Frame trials as battles of trust to be won." },
+  st_anthony: { label: "St. Anthony of Padua", style: "Wise, restorative, peaceful. Help find what is lost and return wandering hearts to God." },
 };
 
 function voiceFor(key?: string) {
   return GUIDE_VOICE[key ?? "st_francis"] ?? GUIDE_VOICE.st_francis;
 }
 
-function systemPrompt(slot: Slot, guideKey: string | undefined, recent: {
-  saints: string[]; themes: string[]; lastCompleted: string[];
-}) {
+interface RecentCtx {
+  saints: string[];
+  themes: string[];
+  lastCompleted: string[];
+  recentMood?: string | null;
+  openIntentions?: string[];
+  recentReflectionSnippet?: string | null;
+}
+
+function systemPrompt(slot: Slot, guideKey: string | undefined, recent: RecentCtx) {
   const v = voiceFor(guideKey);
+
   const sharedShape = `
 Return ONLY a single JSON object with this exact shape, no prose, no markdown fences:
 {
-  "opening": string,         // 1-2 sentences. Brief, intimate, sacred. No headings.
-  "prayer": string,          // 4-8 short lines forming ONE flowing personalized prayer. Plain text, line breaks ok.
-  "scripture": { "ref": string, "text": string }, // one short verse, faithfully quoted (RSV-style ok)
-  "saint": null | { "key": string, "name": string, "intercession": string }, // include ONLY when meaningful for this person today; otherwise null
-  "blessing": string,        // 1 short sentence closing blessing
-  "themes": string[],        // 2-4 lowercase keywords this devotion touches (e.g. ["surrender","gratitude"])
+  "opening": string,                                 // 2-3 sentences. Intimate, sacred. Sets the heart before God. No headings.
+  "antiphon": { "ref": string, "text": string },     // ONE short Psalm or Scripture line that frames this hour (the "antiphon"). Faithfully quoted (RSV-style ok).
+  "psalm": { "ref": string, "text": string },        // A SHORT psalm passage — 3-5 verses, formatted with line breaks. Choose what fits the hour and recent context.
+  "scripture": { "ref": string, "text": string },    // ONE Gospel or NT verse for reflection (different book than the antiphon if possible).
+  "reflection": string,                              // 2-4 sentences gently unpacking the scripture for THIS person today.
+  "intercession": string,                            // 2-3 short petitions, line-broken. Weave in the user's open intentions if any, but never quote them verbatim.
+  "saint": null | { "key": string, "name": string, "intercession": string }, // Include ONLY when meaningful; otherwise null.
+  "prayer": string,                                  // 4-8 short lines forming ONE flowing personalized prayer. Plain text, line breaks ok.
+  "blessing": string,                                // 1 short sentence closing blessing.
+  "themes": string[],                                // 2-4 lowercase keywords this devotion touches (e.g. ["surrender","gratitude"]).
   "next_step": null | { "kind": "confession"|"rosary"|"novena"|"scripture"|"saint", "label": string, "reason": string }
 }
 Voice: ${v.label}. ${v.style}
-Tone rules: gentle, never guilt-inducing or manipulative. Concise and reverent.
+Tone rules: gentle, reverent, never guilt-inducing or manipulative. Catholic and orthodox. Concise.
+Personalization rules:
+- Use the recent context lightly. Never quote the user's words back. Never name their intentions explicitly.
+- If a recurring mood like "anxious" or "lonely" is present, choose a Psalm and reflection that meets that mood with hope.
 "saint" guidance: include only if today's liturgical sense, the user's recent themes, or the chosen guide makes a saint feel naturally present. Otherwise return null.
 "next_step" guidance: include only when truly fitting (e.g. a recurring struggle suggests Confession, repeated marian themes suggest the Rosary). Otherwise null.
 `;
 
   const slotIntent: Record<Slot, string> = {
-    morning: `Lead a MORNING PRAYER. The "opening" is a brief reflection placing the day before God. The "prayer" is one personalized morning offering.`,
-    midday: `Lead the MIDDAY ANGELUS. The "opening" guides the traditional Angelus in 3 short call-and-response style lines (concise, not a full text). The "prayer" is a brief reflection on surrender, vocation, or gratitude woven into a single closing prayer.`,
-    night: `Lead NIGHT PRAYER (Compline). The "opening" is a brief Examen with at most 3 short reflection prompts (one line each). The "prayer" is a personalized Compline-style prayer or short Psalm fragment for rest.`,
+    morning: `Lead a MORNING PRAYER (Lauds tradition). The "opening" places the day before God in trust. The "antiphon" is a morning psalm verse (e.g. Ps 5:3, 63:1, 90:14, 143:8). The "psalm" is a short morning psalm passage praising God at daybreak. The "intercession" lifts up the day's people, work, and unspoken needs. The "prayer" is one personalized morning offering.`,
+    midday: `Lead the MIDDAY ANGELUS. The "opening" walks the user through the traditional Angelus in 3 short call-and-response style lines: "The Angel of the Lord declared unto Mary…", "Behold the handmaid of the Lord…", "And the Word was made flesh…" (concise, not full Hail Marys). The "antiphon" is a Marian or noon-hour verse (e.g. Lk 1:38, Ps 113:3). The "psalm" is a short midday psalm. The "intercession" asks for grace to surrender the rest of the day. The "prayer" is one brief reflection on incarnation, vocation, or surrender.`,
+    night: `Lead NIGHT PRAYER (Compline). The "opening" begins with a brief Examen — at most 3 short reflection prompts (one line each: gratitude, awareness, contrition). The "antiphon" is a night verse (e.g. Ps 4:8, 31:5, 91:1). The "psalm" is a short Compline psalm fragment for rest and trust. The "intercession" asks protection for self, loved ones, and those who suffer. The "prayer" is a personalized Compline-style prayer for surrender and rest.`,
   };
 
   const personalization = `
@@ -53,6 +69,9 @@ Recent context (use lightly to personalize, never quote back verbatim):
 - Recent saints prayed with: ${recent.saints.length ? recent.saints.join(", ") : "none yet"}
 - Recurring themes: ${recent.themes.length ? recent.themes.join(", ") : "none yet"}
 - Last 3 prayer slots completed: ${recent.lastCompleted.length ? recent.lastCompleted.join(", ") : "none yet"}
+- Most recent journal mood: ${recent.recentMood ?? "unknown"}
+- Number of open prayer intentions on the user's heart: ${recent.openIntentions?.length ?? 0}
+- Brief gist of their last reflection (DO NOT QUOTE): ${recent.recentReflectionSnippet ?? "none"}
 `;
 
   return `${slotIntent[slot]}\n${personalization}\n${sharedShape}`;
@@ -60,10 +79,8 @@ Recent context (use lightly to personalize, never quote back verbatim):
 
 function safeParseJson(s: string): any | null {
   if (!s) return null;
-  // Strip code fences if the model added any.
   const cleaned = s.trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "");
   try { return JSON.parse(cleaned); } catch {}
-  // Try to extract the first {...} block.
   const m = cleaned.match(/\{[\s\S]*\}/);
   if (m) { try { return JSON.parse(m[0]); } catch {} }
   return null;
@@ -103,9 +120,8 @@ serve(async (req) => {
     const preferences = body?.preferences ?? {};
     const guideKey: string | undefined = preferences.spiritual_guide;
 
-    // Pull a small slice of personalization context (last 14 days).
     const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-    const [{ data: recentRows }, { data: saintRows }] = await Promise.all([
+    const [{ data: recentRows }, { data: saintRows }, { data: latestJournal }, { data: openInts }] = await Promise.all([
       supabase
         .from("prayer_completions")
         .select("prayer_type, saint_key, themes, prayer_date")
@@ -119,6 +135,20 @@ serve(async (req) => {
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(10),
+      supabase
+        .from("journal_entries")
+        .select("mood, content, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from("intentions")
+        .select("text, category")
+        .eq("user_id", user.id)
+        .eq("answered", false)
+        .order("created_at", { ascending: false })
+        .limit(5),
     ]);
 
     const themeCounts = new Map<string, number>();
@@ -136,10 +166,19 @@ serve(async (req) => {
     }
     const topThemes = [...themeCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([t]) => t);
 
+    const recentMood = (latestJournal as any)?.mood ?? null;
+    const recentReflectionSnippet = (latestJournal as any)?.content
+      ? String((latestJournal as any).content).slice(0, 160).replace(/\s+/g, " ")
+      : null;
+    const openIntentions = (openInts ?? []).map((i: any) => String(i.category ?? "intention"));
+
     const prompt = systemPrompt(slot, guideKey, {
       saints: [...saintsRecent].slice(0, 5),
       themes: topThemes,
       lastCompleted,
+      recentMood,
+      openIntentions,
+      recentReflectionSnippet,
     });
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -181,13 +220,19 @@ serve(async (req) => {
       });
     }
 
-    // Light validation / defaults so the client never crashes.
+    const refText = (v: any) =>
+      v && typeof v === "object"
+        ? { ref: String(v.ref ?? ""), text: String(v.text ?? "") }
+        : { ref: "", text: "" };
+
     const out = {
       opening: String(parsed.opening ?? ""),
+      antiphon: refText(parsed.antiphon),
+      psalm: refText(parsed.psalm),
+      scripture: refText(parsed.scripture),
+      reflection: String(parsed.reflection ?? ""),
+      intercession: String(parsed.intercession ?? ""),
       prayer: String(parsed.prayer ?? ""),
-      scripture: parsed.scripture && typeof parsed.scripture === "object"
-        ? { ref: String(parsed.scripture.ref ?? ""), text: String(parsed.scripture.text ?? "") }
-        : { ref: "", text: "" },
       saint: parsed.saint && typeof parsed.saint === "object"
         ? {
             key: String(parsed.saint.key ?? ""),
