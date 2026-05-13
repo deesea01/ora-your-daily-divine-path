@@ -62,12 +62,14 @@ const JournalHome = () => {
 
 
   const handleSubmit = async () => {
-    const result = await saveEntry(content, mood || undefined, selectedTags);
+    const chosenMood = mood;
+    const result = await saveEntry(content, chosenMood || undefined, selectedTags);
     if (!result?.error) {
       setContent('');
-      setMood('');
       setSelectedTags([]);
-      setShowWrite(false);
+      // Reveal a mood-matched verse in place of the form, then close on dismiss.
+      setSavedVerse(getVerseForMood(chosenMood || 'neutral'));
+      setMood('');
     }
   };
 
