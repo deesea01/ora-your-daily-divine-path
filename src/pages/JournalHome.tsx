@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Sparkles, BookOpen, Loader2, Trash2, ChevronDown, Lock } from 'lucide-react';
+import { ArrowLeft, Plus, Sparkles, BookOpen, Loader2, Trash2, ChevronDown, Lock, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useJournal } from '@/hooks/useJournal';
 import { useEntitlement } from '@/hooks/useEntitlement';
 import { humanizeLabel } from '@/lib/utils';
+import { getVerseForMood, type ScriptureVerse } from '@/lib/scriptureByMood';
 
 const MOOD_OPTIONS = [
   { value: 'peaceful', label: '🕊️ Peaceful' },
