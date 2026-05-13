@@ -143,6 +143,9 @@ export function TodaysPrayerPath({ completions, tickMs = 60_000 }: Props) {
           &ldquo;{verse.text}&rdquo;
         </p>
         <p className="mt-3 text-[11px] uppercase tracking-[0.18em] text-gold/70">{verse.ref}</p>
+        <div className="mt-4">
+          <VerseActions verse={verse} size="sm" />
+        </div>
       </div>
 
       <div className="space-y-3">
