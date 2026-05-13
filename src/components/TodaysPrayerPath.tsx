@@ -132,6 +132,18 @@ export function TodaysPrayerPath({ completions, tickMs = 60_000 }: Props) {
         {now.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric', timeZone: userTz })}
       </p>
 
+      {/* Mood-matched daily Scripture */}
+      <div className="mb-6 surface-gold rounded-2xl p-5 animate-fade-in relative overflow-hidden">
+        <div className="flex items-center gap-2 mb-2">
+          <BookOpen className="h-3.5 w-3.5 text-gold" />
+          <p className="text-[10px] uppercase tracking-[0.28em] text-gold/80">A Word for Today</p>
+        </div>
+        <p className="font-serif text-base text-foreground/90 leading-relaxed">
+          &ldquo;{verse.text}&rdquo;
+        </p>
+        <p className="mt-3 text-[11px] uppercase tracking-[0.18em] text-gold/70">{verse.ref}</p>
+      </div>
+
       <div className="space-y-3">
         {SLOTS.map((cfg, i) => {
           const isActive = cfg.slot === active;
