@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sun, CloudSun, Moon, Check, ChevronRight, Sparkles } from 'lucide-react';
+import { Sun, CloudSun, Moon, Check, ChevronRight, Sparkles, BookOpen } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { DevotionalPlan, PlanPrayer } from '@/lib/devotionalPlan';
+import { getVerseForMood, type ScriptureVerse } from '@/lib/scriptureByMood';
 
 type Slot = 'morning' | 'midday' | 'night';
 
@@ -72,6 +73,7 @@ export function TodaysPrayerPath({ completions, tickMs = 60_000 }: Props) {
   const { t, language } = useLanguage();
   const [plan, setPlan] = useState<DevotionalPlan | null>(null);
   const [now, setNow] = useState<Date>(new Date());
+  const [verse, setVerse] = useState<ScriptureVerse>(() => getVerseForMood('neutral'));
 
   // Live clock — re-pick active slot when the boundary is crossed.
   useEffect(() => {
@@ -95,6 +97,22 @@ export function TodaysPrayerPath({ completions, tickMs = 60_000 }: Props) {
       });
   }, [user]);
 
+  // Mood-matched Scripture: pull the latest journal mood and choose a verse.
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from('journal_entries')
+      .select('mood')
+      .eq('user_id', user.id)
+      .not('mood', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        setVerse(getVerseForMood((data as any)?.mood ?? 'neutral'));
+      });
+  }, [user]);
+
   const active = useMemo(() => getActiveSlot(now), [now]);
   const buckets = useMemo(() => bucketPlanPrayers(plan, active), [plan, active]);
   const locale = language === 'tl' ? 'fil' : language;
@@ -113,6 +131,18 @@ export function TodaysPrayerPath({ completions, tickMs = 60_000 }: Props) {
       <p className="mb-5 text-sm text-muted-foreground animate-fade-in">
         {now.toLocaleDateString(locale, { weekday: 'long', month: 'long', day: 'numeric', timeZone: userTz })}
       </p>
+
+      {/* Mood-matched daily Scripture */}
+      <div className="mb-6 surface-gold rounded-2xl p-5 animate-fade-in relative overflow-hidden">
+        <div className="flex items-center gap-2 mb-2">
+          <BookOpen className="h-3.5 w-3.5 text-gold" />
+          <p className="text-[10px] uppercase tracking-[0.28em] text-gold/80">A Word for Today</p>
+        </div>
+        <p className="font-serif text-base text-foreground/90 leading-relaxed">
+          &ldquo;{verse.text}&rdquo;
+        </p>
+        <p className="mt-3 text-[11px] uppercase tracking-[0.18em] text-gold/70">{verse.ref}</p>
+      </div>
 
       <div className="space-y-3">
         {SLOTS.map((cfg, i) => {

@@ -9,6 +9,8 @@ interface SaintAvatarProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showName?: boolean;
   showQuote?: boolean;
+  /** When true, plays a gentle reverent reveal (scale + halo fade-in). */
+  reverent?: boolean;
   className?: string;
 }
 
@@ -33,20 +35,32 @@ export function SaintAvatar({
   size = 'md',
   showName = false,
   showQuote = false,
+  reverent = false,
   className,
 }: SaintAvatarProps) {
   const guide = SPIRITUAL_GUIDES[guideKey] || SPIRITUAL_GUIDES.monk;
 
   return (
     <div className={cn('flex flex-col items-center gap-2', className)}>
-      <div className="relative">
+      <div className={cn('relative', reverent && 'animate-saint-reveal')}>
+        {/* Soft golden halo (reverent mode) */}
+        {reverent && (
+          <div
+            className="pointer-events-none absolute -inset-4 rounded-full blur-2xl animate-halo-soft"
+            style={{
+              background:
+                'radial-gradient(closest-side, hsl(var(--gold) / 0.45), hsl(var(--gold) / 0.10) 60%, transparent 80%)',
+            }}
+            aria-hidden
+          />
+        )}
         <div
           className={cn(
-            'rounded-full overflow-hidden border-2 border-gold/40 transition-shadow duration-700',
+            'relative rounded-full overflow-hidden border-2 border-gold/40 transition-shadow duration-700',
             sizeMap[size],
             glowMap[state],
-            state === 'idle' && 'animate-[avatar-breathe_4s_ease-in-out_infinite]',
-            state === 'speaking' && 'animate-[avatar-pulse_1.5s_ease-in-out_infinite]',
+            !reverent && state === 'idle' && 'animate-[avatar-breathe_4s_ease-in-out_infinite]',
+            !reverent && state === 'speaking' && 'animate-[avatar-pulse_1.5s_ease-in-out_infinite]',
             state === 'reflecting' && 'opacity-90',
           )}
         >
@@ -59,14 +73,16 @@ export function SaintAvatar({
             height={512}
           />
         </div>
-        {/* Halo glow overlay */}
-        <div
-          className={cn(
-            'pointer-events-none absolute -inset-1 rounded-full',
-            'bg-gradient-radial from-gold/10 to-transparent opacity-60',
-            state === 'speaking' && 'opacity-100',
-          )}
-        />
+        {/* Halo glow overlay (non-reverent baseline) */}
+        {!reverent && (
+          <div
+            className={cn(
+              'pointer-events-none absolute -inset-1 rounded-full',
+              'bg-gradient-radial from-gold/10 to-transparent opacity-60',
+              state === 'speaking' && 'opacity-100',
+            )}
+          />
+        )}
       </div>
 
       {showName && (

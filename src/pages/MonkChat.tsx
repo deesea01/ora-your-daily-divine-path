@@ -381,7 +381,7 @@ const MonkChat = () => {
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
         {showSuggestions && (
           <div className="flex flex-col items-center justify-center h-full gap-6 animate-fade-in">
-            <SaintAvatar guideKey={guideKey} size="xl" state="idle" showName showQuote />
+            <SaintAvatar guideKey={guideKey} size="xl" state="idle" showName showQuote reverent />
             <div className="text-center mt-2">
               <h2 className="font-serif text-lg text-foreground">{t.helpYouToday}</h2>
               <p className="text-xs text-muted-foreground mt-1">{t.askAnything}</p>

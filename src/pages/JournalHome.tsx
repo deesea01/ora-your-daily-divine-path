@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { ArrowLeft, Plus, Sparkles, BookOpen, Loader2, Trash2, ChevronDown, Lock } from 'lucide-react';
+import { ArrowLeft, Plus, Sparkles, BookOpen, Loader2, Trash2, ChevronDown, Lock, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useJournal } from '@/hooks/useJournal';
 import { useEntitlement } from '@/hooks/useEntitlement';
 import { humanizeLabel } from '@/lib/utils';
+import { getVerseForMood, type ScriptureVerse } from '@/lib/scriptureByMood';
 
 const MOOD_OPTIONS = [
   { value: 'peaceful', label: '🕊️ Peaceful' },
@@ -25,6 +26,7 @@ const JournalHome = () => {
   const [content, setContent] = useState('');
   const [mood, setMood] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [savedVerse, setSavedVerse] = useState<ScriptureVerse | null>(null);
 
   if (authLoading || loading || entLoading) {
     return (
@@ -38,7 +40,7 @@ const JournalHome = () => {
   if (!isPremium) {
     return (
       <div className="min-h-screen bg-background px-6 pb-8 pt-safe flex flex-col">
-        <header className="flex items-center gap-3 pt-4 pb-6">
+        <header className="flex items-center gap-3 pt-4 pb-6 pr-14">
           <button onClick={() => navigate('/')} className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /></button>
           <h1 className="font-serif text-xl text-foreground">Spiritual Journal</h1>
         </header>
@@ -60,12 +62,14 @@ const JournalHome = () => {
 
 
   const handleSubmit = async () => {
-    const result = await saveEntry(content, mood || undefined, selectedTags);
+    const chosenMood = mood;
+    const result = await saveEntry(content, chosenMood || undefined, selectedTags);
     if (!result?.error) {
       setContent('');
-      setMood('');
       setSelectedTags([]);
-      setShowWrite(false);
+      // Reveal a mood-matched verse in place of the form, then close on dismiss.
+      setSavedVerse(getVerseForMood(chosenMood || 'neutral'));
+      setMood('');
     }
   };
 
@@ -75,7 +79,7 @@ const JournalHome = () => {
 
   return (
     <div className="min-h-screen bg-background px-6 pb-8 pt-safe">
-      <header className="flex items-center justify-between pt-6 pb-4">
+      <header className="flex items-center justify-between pt-6 pb-4 pr-14">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate('/')} className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" />
@@ -140,62 +144,89 @@ const JournalHome = () => {
       {/* Write modal */}
       {showWrite && (
         <div className="fixed inset-0 z-50 flex flex-col bg-background pt-safe">
-          <div className="flex items-center justify-between px-6 pt-6 pb-4">
-            <button onClick={() => setShowWrite(false)} className="text-sm text-muted-foreground hover:text-foreground">Cancel</button>
-            <h2 className="font-serif text-lg text-foreground">New Entry</h2>
+          <div className="flex items-center justify-between px-6 pt-6 pb-4 pr-16">
             <button
-              onClick={handleSubmit}
-              disabled={!content.trim() || saving}
-              className="text-sm font-medium text-gold disabled:opacity-40"
+              onClick={() => { setShowWrite(false); setSavedVerse(null); }}
+              className="text-sm text-muted-foreground hover:text-foreground"
             >
-              {saving ? '...' : 'Save'}
+              {savedVerse ? 'Close' : 'Cancel'}
             </button>
+            <h2 className="font-serif text-lg text-foreground">{savedVerse ? 'A Word for You' : 'New Entry'}</h2>
+            {savedVerse ? (
+              <span className="w-10" />
+            ) : (
+              <button
+                onClick={handleSubmit}
+                disabled={!content.trim() || saving}
+                className="text-sm font-medium text-gold disabled:opacity-40"
+              >
+                {saving ? '...' : 'Save'}
+              </button>
+            )}
           </div>
-          <div className="flex-1 overflow-y-auto px-6 pb-8">
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value.slice(0, 5000))}
-              placeholder="Where did you feel close to God today? Where did you struggle?"
-              maxLength={5000}
-              className="w-full min-h-[200px] resize-none rounded-xl border border-border bg-card p-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-gold/50 focus:outline-none"
-              autoFocus
-            />
-            <p className="mt-1 text-right text-[10px] text-muted-foreground">{content.length}/5000</p>
 
-            <div className="mt-4">
-              <p className="text-xs text-muted-foreground mb-2">How are you feeling?</p>
-              <div className="flex flex-wrap gap-2">
-                {MOOD_OPTIONS.map(m => (
-                  <button
-                    key={m.value}
-                    onClick={() => setMood(mood === m.value ? '' : m.value)}
-                    className={`rounded-full border px-3 py-1.5 text-xs transition-all ${
-                      mood === m.value ? 'border-gold/50 bg-gold/10 text-foreground' : 'border-border text-muted-foreground hover:border-gold/20'
-                    }`}
-                  >
-                    {m.label}
-                  </button>
-                ))}
+          {savedVerse ? (
+            <div className="flex-1 overflow-y-auto px-6 pb-12 flex flex-col items-center justify-center text-center animate-fade-in">
+              <Sparkles className="h-5 w-5 text-gold mb-4" />
+              <p className="text-[10px] uppercase tracking-[0.32em] text-gold/70 mb-3">Scripture for this moment</p>
+              <p className="font-serif text-xl text-foreground leading-relaxed max-w-sm">
+                &ldquo;{savedVerse.text}&rdquo;
+              </p>
+              <p className="mt-4 text-xs uppercase tracking-[0.2em] text-gold/80">{savedVerse.ref}</p>
+              <button
+                onClick={() => { setShowWrite(false); setSavedVerse(null); }}
+                className="mt-10 rounded-xl border border-gold/30 px-6 py-3 text-sm text-gold hover:bg-gold/10 transition-colors"
+              >
+                Carry this with me
+              </button>
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto px-6 pb-8">
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value.slice(0, 5000))}
+                placeholder="Where did you feel close to God today? Where did you struggle?"
+                maxLength={5000}
+                className="w-full min-h-[200px] resize-none rounded-xl border border-border bg-card p-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-gold/50 focus:outline-none"
+                autoFocus
+              />
+              <p className="mt-1 text-right text-[10px] text-muted-foreground">{content.length}/5000</p>
+
+              <div className="mt-4">
+                <p className="text-xs text-muted-foreground mb-2">How are you feeling?</p>
+                <div className="flex flex-wrap gap-2">
+                  {MOOD_OPTIONS.map(m => (
+                    <button
+                      key={m.value}
+                      onClick={() => setMood(mood === m.value ? '' : m.value)}
+                      className={`rounded-full border px-3 py-1.5 text-xs transition-all ${
+                        mood === m.value ? 'border-gold/50 bg-gold/10 text-foreground' : 'border-border text-muted-foreground hover:border-gold/20'
+                      }`}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <p className="text-xs text-muted-foreground mb-2">Tags</p>
+                <div className="flex flex-wrap gap-2">
+                  {TAG_SUGGESTIONS.map(tag => (
+                    <button
+                      key={tag}
+                      onClick={() => toggleTag(tag)}
+                      className={`rounded-full border px-3 py-1.5 text-xs transition-all ${
+                        selectedTags.includes(tag) ? 'border-gold/50 bg-gold/10 text-foreground' : 'border-border text-muted-foreground hover:border-gold/20'
+                      }`}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-
-            <div className="mt-4">
-              <p className="text-xs text-muted-foreground mb-2">Tags</p>
-              <div className="flex flex-wrap gap-2">
-                {TAG_SUGGESTIONS.map(tag => (
-                  <button
-                    key={tag}
-                    onClick={() => toggleTag(tag)}
-                    className={`rounded-full border px-3 py-1.5 text-xs transition-all ${
-                      selectedTags.includes(tag) ? 'border-gold/50 bg-gold/10 text-foreground' : 'border-border text-muted-foreground hover:border-gold/20'
-                    }`}
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       )}
 
