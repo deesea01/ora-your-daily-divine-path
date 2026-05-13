@@ -178,17 +178,56 @@ function NightGlow() {
             'radial-gradient(60% 50% at 50% 60%, hsl(var(--gold) / 0.10), transparent 70%), radial-gradient(120% 80% at 50% 0%, hsl(var(--background)) 0%, transparent 60%)',
         }}
       />
-      {/* Candle flame */}
-      <div className="absolute left-1/2 top-[58%] -translate-x-1/2">
+
+      {/* Incense plumes — slow, drifting, very faint */}
+      <div className="absolute left-[44%] bottom-[34%]">
         <div
-          className="h-16 w-8 rounded-full opacity-80 blur-md motion-safe:animate-[pulse_2.4s_ease-in-out_infinite]"
+          className="h-24 w-10 rounded-full bg-gold/40 blur-2xl motion-safe:animate-[incense-rise_9s_ease-out_infinite]"
+          style={{ animationDelay: '0s' }}
+        />
+      </div>
+      <div className="absolute left-[58%] bottom-[38%]">
+        <div
+          className="h-20 w-8 rounded-full bg-foreground/40 blur-2xl motion-safe:animate-[incense-rise_11s_ease-out_infinite]"
+          style={{ animationDelay: '3.5s' }}
+        />
+      </div>
+
+      {/* Candle */}
+      <div className="absolute left-1/2 top-[58%] -translate-x-1/2">
+        {/* Outer halo glow */}
+        <div
+          className="absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl motion-safe:animate-[flame-glow_3.6s_ease-in-out_infinite]"
           style={{
             background:
-              'radial-gradient(closest-side, hsl(45 100% 70% / 0.95), hsl(35 90% 55% / 0.5) 55%, transparent 75%)',
+              'radial-gradient(closest-side, hsl(45 100% 70% / 0.55), hsl(35 90% 55% / 0.18) 55%, transparent 80%)',
           }}
         />
-        <div className="mx-auto mt-[-6px] h-1.5 w-1.5 rounded-full bg-gold/80" />
+        {/* Outer flame */}
+        <div
+          className="absolute left-1/2 -top-2 h-20 w-10 -translate-x-1/2 rounded-[50%/55%_55%_45%_45%] blur-md motion-safe:animate-[flame-flicker_2.1s_ease-in-out_infinite]"
+          style={{
+            background:
+              'radial-gradient(60% 70% at 50% 70%, hsl(40 100% 70% / 0.95) 0%, hsl(30 100% 55% / 0.7) 45%, hsl(15 90% 45% / 0.0) 80%)',
+            transformOrigin: '50% 100%',
+          }}
+        />
+        {/* Inner flame core */}
+        <div
+          className="absolute left-1/2 top-0 h-12 w-5 -translate-x-1/2 rounded-[50%/60%_60%_45%_45%] blur-[2px] motion-safe:animate-[flame-flicker_1.6s_ease-in-out_infinite]"
+          style={{
+            background:
+              'radial-gradient(60% 70% at 50% 75%, hsl(60 100% 92% / 0.95) 0%, hsl(45 100% 70% / 0.85) 45%, hsl(30 100% 55% / 0.0) 90%)',
+            transformOrigin: '50% 100%',
+            animationDelay: '0.3s',
+          }}
+        />
+        {/* Wick */}
+        <div className="mx-auto mt-10 h-2 w-[3px] rounded-full bg-foreground/70" />
+        {/* Candle body suggestion */}
+        <div className="mx-auto mt-0 h-10 w-2 rounded-b-sm bg-foreground/15" />
       </div>
+
       {/* Tiny stars */}
       <div className="absolute inset-0">
         {[
