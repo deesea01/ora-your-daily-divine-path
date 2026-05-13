@@ -159,26 +159,48 @@ const PrayerDetail = () => {
         label: slot === "night" ? "Examen" : slot === "midday" ? "Angelus" : "Opening",
         content: <Prose text={devotion.opening} />,
       },
-      {
-        key: "prayer",
-        label: "Prayer",
-        content: <Prose text={devotion.prayer} serif />,
-      },
-      {
+    ];
+
+    if (devotion.antiphon?.text) {
+      list.push({
+        key: "antiphon",
+        label: "Antiphon",
+        content: <ScriptureBlock ref={devotion.antiphon.ref} text={devotion.antiphon.text} />,
+      });
+    }
+
+    if (devotion.psalm?.text) {
+      list.push({
+        key: "psalm",
+        label: "Psalm",
+        content: <ScriptureBlock ref={devotion.psalm.ref} text={devotion.psalm.text} multiline />,
+      });
+    }
+
+    if (devotion.scripture?.text) {
+      list.push({
         key: "scripture",
         label: "Scripture",
-        content: (
-          <div className="space-y-3">
-            <p className="font-serif text-xl leading-relaxed text-foreground">
-              "{devotion.scripture.text}"
-            </p>
-            <p className="text-[11px] uppercase tracking-[0.22em] text-gold/80">
-              {devotion.scripture.ref}
-            </p>
-          </div>
-        ),
-      },
-    ];
+        content: <ScriptureBlock ref={devotion.scripture.ref} text={devotion.scripture.text} />,
+      });
+    }
+
+    if (devotion.reflection) {
+      list.push({
+        key: "reflection",
+        label: "Reflection",
+        content: <Prose text={devotion.reflection} />,
+      });
+    }
+
+    if (devotion.intercession) {
+      list.push({
+        key: "intercession",
+        label: "Intercession",
+        content: <Prose text={devotion.intercession} serif />,
+      });
+    }
+
     if (devotion.saint) {
       list.push({
         key: "saint",
@@ -195,6 +217,13 @@ const PrayerDetail = () => {
         ),
       });
     }
+
+    list.push({
+      key: "prayer",
+      label: "Prayer",
+      content: <Prose text={devotion.prayer} serif />,
+    });
+
     list.push({
       key: "blessing",
       label: "Blessing",
@@ -202,6 +231,7 @@ const PrayerDetail = () => {
         <p className="font-serif text-2xl leading-relaxed text-foreground">{devotion.blessing}</p>
       ),
     });
+
     return list;
   }, [devotion, slot]);
 
