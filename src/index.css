@@ -273,6 +273,8 @@
   .animate-fade-in-delay-3,
   .animate-pulse-soft,
   .animate-glow-pulse,
+  .animate-saint-reveal,
+  .animate-halo-soft,
   .shimmer-gold::after {
     animation: none !important;
   }
