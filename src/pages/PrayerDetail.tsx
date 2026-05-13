@@ -27,11 +27,16 @@ const SLOT_META: Record<Slot, { title: string; subtitle: string; Icon: typeof Su
   night: { title: "Night Prayer", subtitle: "Rest in His peace", Icon: Moon },
 };
 
+interface RefText { ref: string; text: string }
 interface Devotion {
   opening: string;
-  prayer: string;
-  scripture: { ref: string; text: string };
+  antiphon?: RefText;
+  psalm?: RefText;
+  scripture: RefText;
+  reflection?: string;
+  intercession?: string;
   saint: null | { key: string; name: string; intercession: string };
+  prayer: string;
   blessing: string;
   themes: string[];
   next_step: null | { kind: string; label: string; reason: string };
@@ -41,7 +46,7 @@ const todayStr = () => localDateStr();
 const cacheKey = (uid: string, slot: Slot) => `ora:devotion:${uid}:${slot}:${todayStr()}`;
 
 interface Step {
-  key: "opening" | "prayer" | "scripture" | "saint" | "blessing";
+  key: "opening" | "antiphon" | "psalm" | "scripture" | "reflection" | "intercession" | "saint" | "prayer" | "blessing";
   label: string;
   content: JSX.Element;
 }
