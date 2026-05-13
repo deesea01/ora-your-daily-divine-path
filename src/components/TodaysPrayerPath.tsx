@@ -73,6 +73,7 @@ export function TodaysPrayerPath({ completions, tickMs = 60_000 }: Props) {
   const { t, language } = useLanguage();
   const [plan, setPlan] = useState<DevotionalPlan | null>(null);
   const [now, setNow] = useState<Date>(new Date());
+  const [verse, setVerse] = useState<ScriptureVerse>(() => getVerseForMood('neutral'));
 
   // Live clock — re-pick active slot when the boundary is crossed.
   useEffect(() => {
@@ -93,6 +94,22 @@ export function TodaysPrayerPath({ completions, tickMs = 60_000 }: Props) {
         if (raw && typeof raw === 'object' && Array.isArray(raw.prayers)) {
           setPlan(raw as DevotionalPlan);
         }
+      });
+  }, [user]);
+
+  // Mood-matched Scripture: pull the latest journal mood and choose a verse.
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from('journal_entries')
+      .select('mood')
+      .eq('user_id', user.id)
+      .not('mood', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        setVerse(getVerseForMood((data as any)?.mood ?? 'neutral'));
       });
   }, [user]);
 
