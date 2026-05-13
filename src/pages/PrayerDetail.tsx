@@ -43,7 +43,7 @@ interface Devotion {
 }
 
 const todayStr = () => localDateStr();
-const cacheKey = (uid: string, slot: Slot) => `ora:devotion:${uid}:${slot}:${todayStr()}`;
+const cacheKey = (uid: string, slot: Slot) => `ora:devotion:v2:${uid}:${slot}:${todayStr()}`;
 
 interface Step {
   key: "opening" | "antiphon" | "psalm" | "scripture" | "reflection" | "intercession" | "saint" | "prayer" | "blessing";
