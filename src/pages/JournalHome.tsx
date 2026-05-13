@@ -144,62 +144,89 @@ const JournalHome = () => {
       {/* Write modal */}
       {showWrite && (
         <div className="fixed inset-0 z-50 flex flex-col bg-background pt-safe">
-          <div className="flex items-center justify-between px-6 pt-6 pb-4">
-            <button onClick={() => setShowWrite(false)} className="text-sm text-muted-foreground hover:text-foreground">Cancel</button>
-            <h2 className="font-serif text-lg text-foreground">New Entry</h2>
+          <div className="flex items-center justify-between px-6 pt-6 pb-4 pr-16">
             <button
-              onClick={handleSubmit}
-              disabled={!content.trim() || saving}
-              className="text-sm font-medium text-gold disabled:opacity-40"
+              onClick={() => { setShowWrite(false); setSavedVerse(null); }}
+              className="text-sm text-muted-foreground hover:text-foreground"
             >
-              {saving ? '...' : 'Save'}
+              {savedVerse ? 'Close' : 'Cancel'}
             </button>
+            <h2 className="font-serif text-lg text-foreground">{savedVerse ? 'A Word for You' : 'New Entry'}</h2>
+            {savedVerse ? (
+              <span className="w-10" />
+            ) : (
+              <button
+                onClick={handleSubmit}
+                disabled={!content.trim() || saving}
+                className="text-sm font-medium text-gold disabled:opacity-40"
+              >
+                {saving ? '...' : 'Save'}
+              </button>
+            )}
           </div>
-          <div className="flex-1 overflow-y-auto px-6 pb-8">
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value.slice(0, 5000))}
-              placeholder="Where did you feel close to God today? Where did you struggle?"
-              maxLength={5000}
-              className="w-full min-h-[200px] resize-none rounded-xl border border-border bg-card p-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-gold/50 focus:outline-none"
-              autoFocus
-            />
-            <p className="mt-1 text-right text-[10px] text-muted-foreground">{content.length}/5000</p>
 
-            <div className="mt-4">
-              <p className="text-xs text-muted-foreground mb-2">How are you feeling?</p>
-              <div className="flex flex-wrap gap-2">
-                {MOOD_OPTIONS.map(m => (
-                  <button
-                    key={m.value}
-                    onClick={() => setMood(mood === m.value ? '' : m.value)}
-                    className={`rounded-full border px-3 py-1.5 text-xs transition-all ${
-                      mood === m.value ? 'border-gold/50 bg-gold/10 text-foreground' : 'border-border text-muted-foreground hover:border-gold/20'
-                    }`}
-                  >
-                    {m.label}
-                  </button>
-                ))}
+          {savedVerse ? (
+            <div className="flex-1 overflow-y-auto px-6 pb-12 flex flex-col items-center justify-center text-center animate-fade-in">
+              <Sparkles className="h-5 w-5 text-gold mb-4" />
+              <p className="text-[10px] uppercase tracking-[0.32em] text-gold/70 mb-3">Scripture for this moment</p>
+              <p className="font-serif text-xl text-foreground leading-relaxed max-w-sm">
+                &ldquo;{savedVerse.text}&rdquo;
+              </p>
+              <p className="mt-4 text-xs uppercase tracking-[0.2em] text-gold/80">{savedVerse.ref}</p>
+              <button
+                onClick={() => { setShowWrite(false); setSavedVerse(null); }}
+                className="mt-10 rounded-xl border border-gold/30 px-6 py-3 text-sm text-gold hover:bg-gold/10 transition-colors"
+              >
+                Carry this with me
+              </button>
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto px-6 pb-8">
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value.slice(0, 5000))}
+                placeholder="Where did you feel close to God today? Where did you struggle?"
+                maxLength={5000}
+                className="w-full min-h-[200px] resize-none rounded-xl border border-border bg-card p-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-gold/50 focus:outline-none"
+                autoFocus
+              />
+              <p className="mt-1 text-right text-[10px] text-muted-foreground">{content.length}/5000</p>
+
+              <div className="mt-4">
+                <p className="text-xs text-muted-foreground mb-2">How are you feeling?</p>
+                <div className="flex flex-wrap gap-2">
+                  {MOOD_OPTIONS.map(m => (
+                    <button
+                      key={m.value}
+                      onClick={() => setMood(mood === m.value ? '' : m.value)}
+                      className={`rounded-full border px-3 py-1.5 text-xs transition-all ${
+                        mood === m.value ? 'border-gold/50 bg-gold/10 text-foreground' : 'border-border text-muted-foreground hover:border-gold/20'
+                      }`}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <p className="text-xs text-muted-foreground mb-2">Tags</p>
+                <div className="flex flex-wrap gap-2">
+                  {TAG_SUGGESTIONS.map(tag => (
+                    <button
+                      key={tag}
+                      onClick={() => toggleTag(tag)}
+                      className={`rounded-full border px-3 py-1.5 text-xs transition-all ${
+                        selectedTags.includes(tag) ? 'border-gold/50 bg-gold/10 text-foreground' : 'border-border text-muted-foreground hover:border-gold/20'
+                      }`}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-
-            <div className="mt-4">
-              <p className="text-xs text-muted-foreground mb-2">Tags</p>
-              <div className="flex flex-wrap gap-2">
-                {TAG_SUGGESTIONS.map(tag => (
-                  <button
-                    key={tag}
-                    onClick={() => toggleTag(tag)}
-                    className={`rounded-full border px-3 py-1.5 text-xs transition-all ${
-                      selectedTags.includes(tag) ? 'border-gold/50 bg-gold/10 text-foreground' : 'border-border text-muted-foreground hover:border-gold/20'
-                    }`}
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       )}
 
