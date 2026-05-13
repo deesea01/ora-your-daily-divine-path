@@ -6,6 +6,7 @@ import { useJournal } from '@/hooks/useJournal';
 import { useEntitlement } from '@/hooks/useEntitlement';
 import { humanizeLabel } from '@/lib/utils';
 import { getVerseForMood, type ScriptureVerse } from '@/lib/scriptureByMood';
+import { VerseActions } from '@/components/VerseActions';
 
 const MOOD_OPTIONS = [
   { value: 'peaceful', label: '🕊️ Peaceful' },
