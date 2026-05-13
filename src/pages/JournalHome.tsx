@@ -6,6 +6,7 @@ import { useJournal } from '@/hooks/useJournal';
 import { useEntitlement } from '@/hooks/useEntitlement';
 import { humanizeLabel } from '@/lib/utils';
 import { getVerseForMood, type ScriptureVerse } from '@/lib/scriptureByMood';
+import { VerseActions } from '@/components/VerseActions';
 
 const MOOD_OPTIONS = [
   { value: 'peaceful', label: '🕊️ Peaceful' },
@@ -173,9 +174,12 @@ const JournalHome = () => {
                 &ldquo;{savedVerse.text}&rdquo;
               </p>
               <p className="mt-4 text-xs uppercase tracking-[0.2em] text-gold/80">{savedVerse.ref}</p>
+              <div className="mt-6">
+                <VerseActions verse={savedVerse} theme={mood || null} />
+              </div>
               <button
                 onClick={() => { setShowWrite(false); setSavedVerse(null); }}
-                className="mt-10 rounded-xl border border-gold/30 px-6 py-3 text-sm text-gold hover:bg-gold/10 transition-colors"
+                className="mt-8 rounded-xl border border-gold/30 px-6 py-3 text-sm text-gold hover:bg-gold/10 transition-colors"
               >
                 Carry this with me
               </button>
