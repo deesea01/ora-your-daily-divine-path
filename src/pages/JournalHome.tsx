@@ -40,7 +40,7 @@ const JournalHome = () => {
   if (!isPremium) {
     return (
       <div className="min-h-screen bg-background px-6 pb-8 pt-safe flex flex-col">
-        <header className="flex items-center gap-3 pt-4 pb-6">
+        <header className="flex items-center gap-3 pt-4 pb-6 pr-14">
           <button onClick={() => navigate('/')} className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /></button>
           <h1 className="font-serif text-xl text-foreground">Spiritual Journal</h1>
         </header>
