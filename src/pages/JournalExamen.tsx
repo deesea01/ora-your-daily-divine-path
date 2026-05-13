@@ -52,7 +52,7 @@ const JournalExamen = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe">
-      <header className="flex items-center gap-3 pt-6 pb-4">
+      <header className="flex items-center gap-3 pt-6 pb-4 pr-14">
         <button
           onClick={() => step > 0 ? setStep(s => s - 1) : navigate('/journal')}
           className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground"
