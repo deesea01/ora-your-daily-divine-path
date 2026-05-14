@@ -45,14 +45,42 @@ export function SaintAvatar({
       <div className={cn('relative', reverent && 'animate-saint-reveal')}>
         {/* Soft golden halo (reverent mode) */}
         {reverent && (
-          <div
-            className="pointer-events-none absolute -inset-4 rounded-full blur-2xl animate-halo-soft"
-            style={{
-              background:
-                'radial-gradient(closest-side, hsl(var(--gold) / 0.45), hsl(var(--gold) / 0.10) 60%, transparent 80%)',
-            }}
-            aria-hidden
-          />
+          <>
+            <div
+              className="pointer-events-none absolute -inset-6 rounded-full blur-2xl animate-halo-soft"
+              style={{
+                background:
+                  'radial-gradient(closest-side, hsl(var(--gold) / 0.55), hsl(var(--gold) / 0.12) 60%, transparent 80%)',
+              }}
+              aria-hidden
+            />
+            {/* Slow rotating outer ring with conic gold gradient */}
+            <div
+              className="pointer-events-none absolute -inset-3 rounded-full opacity-70 animate-halo-rotate-slow"
+              style={{
+                background:
+                  'conic-gradient(from 0deg, transparent 0deg, hsl(var(--gold) / 0.55) 60deg, transparent 140deg, hsl(var(--gold) / 0.35) 220deg, transparent 320deg)',
+                WebkitMask:
+                  'radial-gradient(circle, transparent 60%, black 62%, black 70%, transparent 72%)',
+                mask:
+                  'radial-gradient(circle, transparent 60%, black 62%, black 70%, transparent 72%)',
+              }}
+              aria-hidden
+            />
+            {/* Reverse-rotating filigree ring (dotted) */}
+            <div
+              className="pointer-events-none absolute -inset-5 rounded-full opacity-50 animate-halo-rotate-reverse"
+              style={{
+                background:
+                  'repeating-conic-gradient(hsl(var(--gold) / 0.6) 0deg 2deg, transparent 2deg 14deg)',
+                WebkitMask:
+                  'radial-gradient(circle, transparent 66%, black 68%, black 70%, transparent 72%)',
+                mask:
+                  'radial-gradient(circle, transparent 66%, black 68%, black 70%, transparent 72%)',
+              }}
+              aria-hidden
+            />
+          </>
         )}
         <div
           className={cn(
@@ -61,6 +89,7 @@ export function SaintAvatar({
             glowMap[state],
             !reverent && state === 'idle' && 'animate-[avatar-breathe_4s_ease-in-out_infinite]',
             !reverent && state === 'speaking' && 'animate-[avatar-pulse_1.5s_ease-in-out_infinite]',
+            reverent && 'animate-[avatar-breathe_6s_ease-in-out_infinite]',
             state === 'reflecting' && 'opacity-90',
           )}
         >
@@ -71,6 +100,15 @@ export function SaintAvatar({
             loading="lazy"
             width={512}
             height={512}
+          />
+          {/* Gentle inner gold rim light */}
+          <div
+            className="pointer-events-none absolute inset-0 rounded-full"
+            style={{
+              boxShadow:
+                'inset 0 0 18px hsl(var(--gold) / 0.25), inset 0 0 2px hsl(var(--gold) / 0.5)',
+            }}
+            aria-hidden
           />
         </div>
         {/* Halo glow overlay (non-reverent baseline) */}
