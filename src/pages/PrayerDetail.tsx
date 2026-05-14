@@ -163,22 +163,6 @@ const PrayerDetail = () => {
       },
     ];
 
-    if (devotion.antiphon?.text) {
-      list.push({
-        key: "antiphon",
-        label: "Antiphon",
-        content: <ScriptureBlock reference={devotion.antiphon.ref} text={devotion.antiphon.text} />,
-      });
-    }
-
-    if (devotion.psalm?.text) {
-      list.push({
-        key: "psalm",
-        label: "Psalm",
-        content: <ScriptureBlock reference={devotion.psalm.ref} text={devotion.psalm.text} multiline />,
-      });
-    }
-
     if (devotion.scripture?.text) {
       list.push({
         key: "scripture",
