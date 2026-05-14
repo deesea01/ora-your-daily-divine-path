@@ -19,6 +19,7 @@ import { SacredPause } from "@/components/SacredPause";
 import { toast } from "sonner";
 import { localDateStr } from "@/lib/utils";
 import SEO from "@/components/SEO";
+import { StepErrorBoundary } from "@/components/StepErrorBoundary";
 
 type Slot = "morning" | "midday" | "night";
 
@@ -362,7 +363,11 @@ const PrayerDetail = () => {
             <p className="mb-6 text-[10px] uppercase tracking-[0.32em] text-gold/70">
               {steps[stepIdx]?.label}
             </p>
-            <div className="flex-1">{steps[stepIdx]?.content}</div>
+            <div className="flex-1">
+              <StepErrorBoundary resetKey={stepIdx} context={`PrayerDetail:${steps[stepIdx]?.label ?? stepIdx}`}>
+                {steps[stepIdx]?.content}
+              </StepErrorBoundary>
+            </div>
 
             {/* Optional reflection on the last step */}
             {onLastShown && (
