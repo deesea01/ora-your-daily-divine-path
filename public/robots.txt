@@ -2,6 +2,7 @@ User-agent: *
 Allow: /
 Disallow: /auth
 Disallow: /reset-password
+Disallow: /onboarding
 Disallow: /checkout/success
 Disallow: /unsubscribe
 Disallow: /settings
@@ -12,3 +13,4 @@ Disallow: /journal/*
 Disallow: /recap
 
 Sitemap: https://oradevotion.com/sitemap.xml
+

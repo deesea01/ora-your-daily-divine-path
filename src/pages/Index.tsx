@@ -108,23 +108,25 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background px-6 pb-8 pt-safe app-container-wide">
-      <SEO title="Ora — Daily Catholic Prayer App for Devotion, Rosary & Saints" description="Your personalized daily devotion: Catholic prayers, the rosary, the saints, Examen, and reflections to help you grow closer to God." canonicalPath="/" />
+      <SEO title="Ora — Daily Catholic Prayer, Rosary & Saints" description="Your personalized daily devotion: Catholic prayers, the rosary, the saints, the Examen, and reflections to help you grow closer to God." canonicalPath="/" />
+      <h1 className="sr-only">Ora — Daily Catholic Prayer & Devotion</h1>
       <header className="flex items-center justify-between pb-6 pt-6 animate-fade-in">
         <div className="flex items-center gap-3">
-          <img src={logoImg} alt="Ora" className="w-10 h-10 object-contain" />
+          <img src={logoImg} alt="Ora Catholic Prayer Logo" className="w-10 h-10 object-contain" />
           <div>
             <p className="text-sm text-muted-foreground">{greeting}{profile?.display_name ? `, ${profile.display_name}` : ''}</p>
-            <h1 className="font-serif text-2xl font-light text-foreground">Ora</h1>
+            <p className="font-serif text-2xl font-light text-foreground" aria-hidden="true">Ora</p>
           </div>
         </div>
         <button
           onClick={() => navigate('/settings')}
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:text-foreground hover:border-gold/30 sm:mr-0 mr-14"
-          aria-label="Settings"
+          aria-label="Open settings"
         >
           <Settings className="h-4 w-4" />
         </button>
       </header>
+      <main>
 
       <section className="mb-8 animate-fade-in">
         <div className="rounded-xl border border-gold/20 bg-card p-5">
@@ -312,6 +314,7 @@ const Index = () => {
           </div>
         </button>
       </section>
+      </main>
       <InstallPrompt />
     </div>
   );

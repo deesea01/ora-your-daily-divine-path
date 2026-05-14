@@ -72,7 +72,28 @@ const PrayerLibrary = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <SEO title="Daily Catholic Prayers — Rosary, Novenas & Devotions | Ora" description="Browse 30+ daily Catholic prayers: the rosary, novenas, Liturgy of the Hours, Lent and Advent guides. Read, listen, and pray with Ora." canonicalPath="/prayer-library" />
+      <SEO
+        title="Daily Catholic Prayers — Rosary, Novenas & Devotions | Ora"
+        description="Browse 30+ daily Catholic prayers: the rosary, novenas, Liturgy of the Hours, Lent and Advent guides. Read, listen, and pray with Ora."
+        canonicalPath="/prayer-library"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'CollectionPage',
+          name: 'Catholic Prayer Library',
+          description: 'A collection of 30+ traditional and modern Catholic prayers, rosaries, novenas, and devotions.',
+          url: 'https://oradevotion.com/prayer-library',
+          mainEntity: {
+            '@type': 'ItemList',
+            numberOfItems: PRAYERS.length,
+            itemListElement: PRAYERS.slice(0, 30).map((p, i) => ({
+              '@type': 'ListItem',
+              position: i + 1,
+              name: p.title,
+              url: `https://oradevotion.com/prayer-library/${p.id}`,
+            })),
+          },
+        }}
+      />
       <header className="flex items-center gap-3 border-b border-border px-4 py-4">
         <button onClick={() => navigate('/')} className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground" aria-label={t.back}>
           <ArrowLeft className="h-4 w-4" />

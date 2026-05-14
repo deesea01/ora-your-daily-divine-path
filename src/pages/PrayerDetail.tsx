@@ -18,6 +18,7 @@ import { notifyAdminError } from "@/lib/notifyAdmin";
 import { SacredPause } from "@/components/SacredPause";
 import { toast } from "sonner";
 import { localDateStr } from "@/lib/utils";
+import SEO from "@/components/SEO";
 
 type Slot = "morning" | "midday" | "night";
 
@@ -282,6 +283,20 @@ const PrayerDetail = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      <SEO
+        title={`${meta.title} — Daily Catholic Devotion | Ora`}
+        description={`${meta.subtitle}. A guided ${meta.title.toLowerCase()} with scripture, reflection, and a saint companion.`}
+        canonicalPath={`/prayer/${slot}`}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'Article',
+          headline: `${meta.title} — Daily Catholic Devotion`,
+          description: meta.subtitle,
+          inLanguage: 'en',
+          isPartOf: { '@type': 'WebSite', name: 'Ora', url: 'https://oradevotion.com' },
+          publisher: { '@type': 'Organization', name: 'Ora Devotion' },
+        }}
+      />
       {showPause && <SacredPause slot={slot} onContinue={dismissPause} />}
 
       {/* Header */}
@@ -352,14 +367,16 @@ const PrayerDetail = () => {
             {/* Optional reflection on the last step */}
             {onLastShown && (
               <div className="mt-8 space-y-2">
-                <label className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+                <label htmlFor="prayer-reflection" className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
                   A word from your heart (optional)
                 </label>
                 <textarea
+                  id="prayer-reflection"
                   value={reflection}
                   onChange={(e) => setReflection(e.target.value.slice(0, 500))}
                   placeholder="What rose in you during this prayer?"
                   rows={3}
+                  aria-label="Prayer reflection"
                   className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-gold/40 focus:outline-none"
                 />
               </div>

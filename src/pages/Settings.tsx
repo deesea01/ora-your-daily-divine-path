@@ -9,6 +9,7 @@ import { LanguageSelector } from '@/components/LanguageSelector';
 import { SubscriptionCard } from '@/components/SubscriptionCard';
 import PrayerRemindersCard from '@/components/PrayerRemindersCard';
 import { toast } from '@/hooks/use-toast';
+import SEO from '@/components/SEO';
 
 const SEEKING_OPTIONS = [
   { value: 'peace', label: 'Inner Peace', emoji: '🕊️' },
@@ -83,15 +84,18 @@ const Settings = () => {
 
   return (
     <div className="min-h-screen bg-background px-6 pb-8 pt-safe app-container">
+      <SEO title="Settings — Ora Catholic Prayer" description="Manage your Ora account: spiritual guide, daily prayer goal, reminders, language, and subscription." canonicalPath="/settings" noindex />
       <header className="flex items-center gap-3 pb-6 pt-6">
-        <button onClick={() => navigate('/')} className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-gold/30 transition-colors">
+        <button onClick={() => navigate('/')} aria-label="Back to home" className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-gold/30 transition-colors">
           <ArrowLeft className="h-4 w-4" />
         </button>
         <h1 className="font-serif text-2xl text-foreground">Settings</h1>
       </header>
 
+      <main>
       {/* Profile Name */}
-      <section className="mb-4">
+      <section className="mb-4" aria-labelledby="settings-name-heading">
+        <h2 id="settings-name-heading" className="sr-only">Display name</h2>
         <button
           onClick={() => setActiveSection(activeSection === 'name' ? null : 'name')}
           className="w-full rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-gold/20"
@@ -111,12 +115,15 @@ const Settings = () => {
         </button>
         {activeSection === 'name' && (
           <div className="mt-2 rounded-xl border border-gold/20 bg-card p-4 animate-fade-in">
+            <label htmlFor="settings-display-name" className="sr-only">Display name</label>
             <input
+              id="settings-display-name"
               type="text"
               value={displayName}
               onChange={e => setDisplayName(e.target.value)}
               placeholder="Your name"
               maxLength={50}
+              aria-label="Display name"
               className="w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-gold/40 focus:outline-none"
             />
             <button onClick={saveChanges} disabled={saving} className="mt-3 w-full rounded-lg bg-gold py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50">
@@ -328,6 +335,7 @@ const Settings = () => {
           </div>
         </button>
       </section>
+      </main>
     </div>
   );
 };

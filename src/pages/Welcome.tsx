@@ -63,6 +63,17 @@ const Welcome = () => {
             operatingSystem: 'iOS, Android, Web',
             offers: { '@type': 'Offer', price: '10.00', priceCurrency: 'USD' },
           },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: [
+              { '@type': 'Question', name: 'What is the best Catholic prayer app for daily devotion?', acceptedAnswer: { '@type': 'Answer', text: 'Ora is a daily Catholic prayer app that guides you through morning prayer, the rosary, the Examen, and saint-led reflections. Each day\u2019s devotion is personalized to your prayer life so you can grow closer to God consistently.' } },
+              { '@type': 'Question', name: 'How can I grow closer to God every day?', acceptedAnswer: { '@type': 'Answer', text: 'Begin with a small, faithful daily devotion: a few minutes of guided prayer, a Scripture passage, and an evening Examen. Ora builds this rhythm for you and pairs you with a saint companion.' } },
+              { '@type': 'Question', name: 'Does Ora include daily Catholic prayers and the rosary?', acceptedAnswer: { '@type': 'Answer', text: 'Yes. Ora includes 30+ traditional and modern Catholic prayers, a fully guided rosary with all four sets of mysteries, novenas, the Liturgy of the Hours moments, Lent and Advent guides, and saint-led reflections.' } },
+              { '@type': 'Question', name: 'Is Ora available in Spanish and Portuguese?', acceptedAnswer: { '@type': 'Answer', text: 'Yes. Ora supports English, Spanish (oraciones cat\u00f3licas) and Portuguese (ora\u00e7\u00e3o cat\u00f3lica di\u00e1ria), with localized prayers, audio, and saint guidance.' } },
+              { '@type': 'Question', name: 'How much does Ora cost?', acceptedAnswer: { '@type': 'Answer', text: 'Ora Premium is $10 per month or $70 per year. You can begin with a 3-day free trial. A portion of subscriptions supports Catholic charities and ministries.' } },
+            ],
+          },
         ]}
       />
 
