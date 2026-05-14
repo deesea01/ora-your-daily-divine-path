@@ -315,6 +315,8 @@
   .animate-glow-pulse,
   .animate-saint-reveal,
   .animate-halo-soft,
+  .animate-halo-rotate-slow,
+  .animate-halo-rotate-reverse,
   .shimmer-gold::after {
     animation: none !important;
   }
