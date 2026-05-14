@@ -32,8 +32,6 @@ const SLOT_META: Record<Slot, { title: string; subtitle: string; Icon: typeof Su
 interface RefText { ref: string; text: string }
 interface Devotion {
   opening: string;
-  antiphon?: RefText;
-  psalm?: RefText;
   scripture: RefText;
   reflection?: string;
   intercession?: string;
