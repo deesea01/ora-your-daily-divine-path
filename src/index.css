@@ -253,12 +253,52 @@
   50%      { opacity: 0.6;  transform: scale(1.04); }
 }
 
+@keyframes halo-rotate-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes halo-rotate-reverse {
+  from { transform: rotate(360deg); }
+  to   { transform: rotate(0deg); }
+}
+
+@keyframes ember-drift {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0; }
+  15%  { opacity: 0.85; }
+  100% { transform: translate(var(--dx, 20px), -160px) scale(0.4); opacity: 0; }
+}
+
+@keyframes ring-expand {
+  0%   { transform: translate(-50%, -50%) scale(0.6); opacity: 0.6; }
+  80%  { opacity: 0.05; }
+  100% { transform: translate(-50%, -50%) scale(2.2); opacity: 0; }
+}
+
+@keyframes star-twinkle {
+  0%, 100% { opacity: 0.25; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.6); }
+}
+
+@keyframes sun-ray-sweep {
+  0%, 100% { opacity: 0.18; }
+  50%      { opacity: 0.35; }
+}
+
 .animate-saint-reveal {
   animation: saint-reveal 0.9s var(--transition-elegant) both;
 }
 
 .animate-halo-soft {
   animation: halo-pulse-soft 4s ease-in-out infinite;
+}
+
+.animate-halo-rotate-slow {
+  animation: halo-rotate-slow 28s linear infinite;
+}
+
+.animate-halo-rotate-reverse {
+  animation: halo-rotate-reverse 42s linear infinite;
 }
 
 .bg-gradient-radial {
@@ -275,6 +315,8 @@
   .animate-glow-pulse,
   .animate-saint-reveal,
   .animate-halo-soft,
+  .animate-halo-rotate-slow,
+  .animate-halo-rotate-reverse,
   .shimmer-gold::after {
     animation: none !important;
   }

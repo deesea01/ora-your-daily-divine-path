@@ -32,8 +32,6 @@ const SLOT_META: Record<Slot, { title: string; subtitle: string; Icon: typeof Su
 interface RefText { ref: string; text: string }
 interface Devotion {
   opening: string;
-  antiphon?: RefText;
-  psalm?: RefText;
   scripture: RefText;
   reflection?: string;
   intercession?: string;
@@ -48,7 +46,7 @@ const todayStr = () => localDateStr();
 const cacheKey = (uid: string, slot: Slot) => `ora:devotion:v2:${uid}:${slot}:${todayStr()}`;
 
 interface Step {
-  key: "opening" | "antiphon" | "psalm" | "scripture" | "reflection" | "intercession" | "saint" | "prayer" | "blessing";
+  key: "opening" | "scripture" | "reflection" | "intercession" | "saint" | "prayer" | "blessing";
   label: string;
   content: JSX.Element;
 }
@@ -162,22 +160,6 @@ const PrayerDetail = () => {
         content: <Prose text={devotion.opening} />,
       },
     ];
-
-    if (devotion.antiphon?.text) {
-      list.push({
-        key: "antiphon",
-        label: "Antiphon",
-        content: <ScriptureBlock reference={devotion.antiphon.ref} text={devotion.antiphon.text} />,
-      });
-    }
-
-    if (devotion.psalm?.text) {
-      list.push({
-        key: "psalm",
-        label: "Psalm",
-        content: <ScriptureBlock reference={devotion.psalm.ref} text={devotion.psalm.text} multiline />,
-      });
-    }
 
     if (devotion.scripture?.text) {
       list.push({
