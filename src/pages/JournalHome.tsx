@@ -7,6 +7,7 @@ import { useEntitlement } from '@/hooks/useEntitlement';
 import { humanizeLabel } from '@/lib/utils';
 import { getVerseForMood, type ScriptureVerse } from '@/lib/scriptureByMood';
 import { VerseActions } from '@/components/VerseActions';
+import SEO from '@/components/SEO';
 
 const MOOD_OPTIONS = [
   { value: 'peaceful', label: '🕊️ Peaceful' },
@@ -80,9 +81,10 @@ const JournalHome = () => {
 
   return (
     <div className="min-h-screen bg-background px-6 pb-8 pt-safe">
+      <SEO title="Spiritual Journal — Daily Examen | Ora" description="Reflect on your day with the Ignatian Examen, voice journaling, and AI-guided spiritual insights." canonicalPath="/journal" noindex />
       <header className="flex items-center justify-between pt-6 pb-4 pr-14">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/')} className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground">
+          <button onClick={() => navigate('/')} aria-label="Back to home" className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" />
           </button>
           <h1 className="font-serif text-xl text-foreground">Spiritual Journal</h1>
@@ -90,6 +92,7 @@ const JournalHome = () => {
         <div className="flex gap-2">
           <button
             onClick={() => navigate('/journal/examen')}
+            aria-label="Start daily Examen"
             className="flex h-10 items-center gap-1.5 rounded-full border border-gold/30 px-3 text-xs text-gold hover:bg-gold/10 transition-colors"
           >
             <BookOpen className="h-3.5 w-3.5" />
@@ -97,6 +100,7 @@ const JournalHome = () => {
           </button>
           <button
             onClick={() => setShowWrite(true)}
+            aria-label="New journal entry"
             className="flex h-10 w-10 items-center justify-center rounded-full bg-gold text-primary-foreground"
           >
             <Plus className="h-4 w-4" />
@@ -186,11 +190,14 @@ const JournalHome = () => {
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto px-6 pb-8">
+              <label htmlFor="journal-entry" className="sr-only">Journal entry</label>
               <textarea
+                id="journal-entry"
                 value={content}
                 onChange={(e) => setContent(e.target.value.slice(0, 5000))}
                 placeholder="Where did you feel close to God today? Where did you struggle?"
                 maxLength={5000}
+                aria-label="Journal entry"
                 className="w-full min-h-[200px] resize-none rounded-xl border border-border bg-card p-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-gold/50 focus:outline-none"
                 autoFocus
               />
@@ -262,7 +269,7 @@ const JournalHome = () => {
                     <span className="rounded-full bg-gold/10 px-2 py-0.5 text-[10px] text-gold">Examen</span>
                   )}
                 </div>
-                <button onClick={() => deleteEntry(entry.id)} className="text-muted-foreground/40 hover:text-destructive transition-colors">
+                <button onClick={() => deleteEntry(entry.id)} aria-label="Delete entry" className="text-muted-foreground/40 hover:text-destructive transition-colors">
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
               </div>

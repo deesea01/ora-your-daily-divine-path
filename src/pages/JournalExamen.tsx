@@ -3,6 +3,7 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { ArrowLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useJournal } from '@/hooks/useJournal';
+import SEO from '@/components/SEO';
 
 const EXAMEN_STEPS = [
   { key: 'gratitude', title: 'Gratitude', prompt: 'Where did you see God today? What are you grateful for?' },
@@ -52,9 +53,11 @@ const JournalExamen = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe">
+      <SEO title="Daily Examen — Ignatian Reflection | Ora" description="Walk through the five steps of the Ignatian Daily Examen with Ora to review your day in God's light." canonicalPath="/journal/examen" noindex />
       <header className="flex items-center gap-3 pt-6 pb-4 pr-14">
         <button
           onClick={() => step > 0 ? setStep(s => s - 1) : navigate('/journal')}
+          aria-label={step > 0 ? 'Previous step' : 'Back to journal'}
           className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -82,11 +85,14 @@ const JournalExamen = () => {
           <p className="text-xs font-medium uppercase tracking-widest text-gold/60 mb-2">{current.title}</p>
           <h2 className="font-serif text-2xl text-foreground mb-6">{current.prompt}</h2>
 
+          <label htmlFor="examen-answer" className="sr-only">{current.title} reflection</label>
           <textarea
+            id="examen-answer"
             value={answers[current.key] || ''}
             onChange={(e) => setAnswers(prev => ({ ...prev, [current.key]: e.target.value.slice(0, 2000) }))}
             placeholder="Take a moment to reflect…"
             maxLength={2000}
+            aria-label={`${current.title} reflection`}
             className="w-full min-h-[180px] resize-none rounded-xl border border-border bg-card p-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-gold/50 focus:outline-none"
             autoFocus
           />
