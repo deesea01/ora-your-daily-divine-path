@@ -463,7 +463,7 @@ function Prose({ text, serif }: { text: string; serif?: boolean }) {
   );
 }
 
-function ScriptureBlock({ ref, text, multiline }: { ref: string; text: string; multiline?: boolean }) {
+function ScriptureBlock({ reference, text, multiline }: { reference: string; text: string; multiline?: boolean }) {
   const lines = multiline
     ? text.split(/\n+/).map((l) => l.trim()).filter(Boolean)
     : [text.trim()];
@@ -477,8 +477,8 @@ function ScriptureBlock({ ref, text, multiline }: { ref: string; text: string; m
           {multiline ? l : `“${l}”`}
         </p>
       ))}
-      {ref && (
-        <p className="text-[11px] uppercase tracking-[0.22em] text-gold/80">{ref}</p>
+      {reference && (
+        <p className="text-[11px] uppercase tracking-[0.22em] text-gold/80">{reference}</p>
       )}
     </div>
   );
