@@ -19,6 +19,7 @@ import { SacredPause } from "@/components/SacredPause";
 import { toast } from "sonner";
 import { localDateStr } from "@/lib/utils";
 import SEO from "@/components/SEO";
+import { StepErrorBoundary } from "@/components/StepErrorBoundary";
 
 type Slot = "morning" | "midday" | "night";
 
