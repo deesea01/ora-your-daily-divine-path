@@ -46,7 +46,7 @@ const todayStr = () => localDateStr();
 const cacheKey = (uid: string, slot: Slot) => `ora:devotion:v2:${uid}:${slot}:${todayStr()}`;
 
 interface Step {
-  key: "opening" | "antiphon" | "psalm" | "scripture" | "reflection" | "intercession" | "saint" | "prayer" | "blessing";
+  key: "opening" | "scripture" | "reflection" | "intercession" | "saint" | "prayer" | "blessing";
   label: string;
   content: JSX.Element;
 }
