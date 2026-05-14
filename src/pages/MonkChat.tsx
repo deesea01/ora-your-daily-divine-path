@@ -342,6 +342,7 @@ const MonkChat = () => {
       <header className="flex items-center gap-3 border-b border-border px-4 py-3">
         <button
           onClick={() => navigate('/')}
+          aria-label="Back to home"
           className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="h-5 w-5" />
@@ -363,6 +364,7 @@ const MonkChat = () => {
         {messages.length > 0 && (
           <button
             onClick={clearConversation}
+            aria-label={t.clearConversation}
             className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-destructive"
             title={t.clearConversation}
           >
@@ -371,6 +373,7 @@ const MonkChat = () => {
         )}
         <button
           onClick={voice.toggle}
+          aria-label={voice.isEnabled ? t.muteVoice : t.enableVoice}
           className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground"
           title={voice.isEnabled ? t.muteVoice : t.enableVoice}
         >
@@ -522,6 +525,7 @@ const MonkChat = () => {
             <button
               type="button"
               onClick={speech.toggle}
+              aria-label={speech.isListening ? t.stopListening : t.speakToSaint}
               className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all active:scale-95 ${
                 speech.isListening
                   ? 'bg-destructive text-destructive-foreground animate-pulse'
@@ -532,7 +536,9 @@ const MonkChat = () => {
               {speech.isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
             </button>
           )}
+          <label htmlFor="monk-chat-input" className="sr-only">Message your saint companion</label>
           <textarea
+            id="monk-chat-input"
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => {
@@ -540,11 +546,13 @@ const MonkChat = () => {
             }}
             placeholder={speech.isListening ? `${t.listening}` : `${t.askSaint} ${guide.label}...`}
             rows={1}
+            aria-label="Message your saint companion"
             className="flex-1 resize-none rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 transition-colors"
           />
           <button
             type="submit"
             disabled={!input.trim() || isStreaming}
+            aria-label="Send message"
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-40 active:scale-95"
           >
             <Send className="h-4 w-4" />
