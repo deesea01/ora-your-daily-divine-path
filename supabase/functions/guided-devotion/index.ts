@@ -225,8 +225,6 @@ serve(async (req) => {
 
     const out = {
       opening: String(parsed.opening ?? ""),
-      antiphon: refText(parsed.antiphon),
-      psalm: refText(parsed.psalm),
       scripture: refText(parsed.scripture),
       reflection: String(parsed.reflection ?? ""),
       intercession: String(parsed.intercession ?? ""),
