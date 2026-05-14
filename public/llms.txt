@@ -1,0 +1,19 @@
+# Ora — Daily Catholic Prayer & Devotion
+
+> Ora is a daily Catholic devotion app that helps you grow closer to God through guided prayer, the rosary, the saints, the Examen, and a personalized prayer plan. Available in English, Spanish, and Portuguese.
+
+## Pages
+
+- [Welcome](/welcome): Public landing page introducing daily Catholic devotion, the rosary, saint companions, and how Ora helps you pray every day.
+- [Prayer Library](/prayer-library): Browse 30+ Catholic prayers — Our Father, Hail Mary, novenas, Liturgy of the Hours, Lent and Advent guides — to read, listen, and practice.
+- [Holy Rosary](/rosary): Step-by-step guided rosary with all four sets of mysteries, daily reflections, and saint-narrated audio.
+- [Saint Companions](/guide): Choose a Catholic saint companion (Francis of Assisi, Augustine, Teresa of Ávila, Padre Pio, Thérèse, Joan of Arc, Thomas Aquinas) to guide your prayer life.
+- [Talk with a Saint](/monk-chat): Sacred AI conversations with a saint companion for prayer, scripture, and spiritual guidance.
+- [Premium](/paywall): Ora Premium plans — $10/month or $70/year with a 3-day free trial.
+- [Impact](/impact): How Ora subscriptions support Catholic charities and ministries.
+
+## Optional
+
+- [Privacy Policy](/privacy-policy)
+- [Terms of Service](/terms-of-service)
+- [Refund Policy](/refund-policy)
