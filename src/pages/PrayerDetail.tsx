@@ -473,23 +473,23 @@ function ScriptureBlock({ reference, text, multiline }: { reference: string; tex
     ? text.split(/\n+/).map((l) => l.trim()).filter(Boolean)
     : [text.trim()];
   return (
-    <figure className="relative mx-auto max-w-prose space-y-5 border-l border-gold/30 pl-6">
+    <figure className="relative mx-auto w-full max-w-[34ch] space-y-4 border-l border-gold/30 pl-4 sm:max-w-[42ch] sm:space-y-5 sm:pl-6">
       {/* Decorative gold opening glyph */}
       <span
         aria-hidden
-        className="absolute -left-[2px] -top-2 font-serif text-3xl leading-none text-gold/60"
+        className="absolute -left-[2px] -top-2 font-serif text-2xl leading-none text-gold/60 sm:text-3xl"
       >
         ❧
       </span>
 
-      <blockquote className="space-y-3">
+      <blockquote className="space-y-2.5 sm:space-y-3 [text-wrap:balance]">
         {lines.map((l, i) => (
           <p
             key={i}
             className={
               multiline
-                ? "font-serif text-[1.35rem] leading-[1.7] tracking-[0.005em] text-foreground/95"
-                : "font-serif text-[1.5rem] leading-[1.65] tracking-[0.005em] text-foreground first-letter:text-gold first-letter:font-serif"
+                ? "font-serif text-[1.15rem] leading-[1.7] tracking-[0.005em] text-foreground/95 sm:text-[1.35rem]"
+                : "font-serif text-[1.25rem] leading-[1.65] tracking-[0.005em] text-foreground first-letter:font-serif first-letter:text-gold sm:text-[1.5rem]"
             }
           >
             {multiline ? l : `“${l}”`}
