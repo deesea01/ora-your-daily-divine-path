@@ -166,7 +166,7 @@ const PrayerDetail = () => {
       list.push({
         key: "antiphon",
         label: "Antiphon",
-        content: <ScriptureBlock ref={devotion.antiphon.ref} text={devotion.antiphon.text} />,
+        content: <ScriptureBlock reference={devotion.antiphon.ref} text={devotion.antiphon.text} />,
       });
     }
 
@@ -174,7 +174,7 @@ const PrayerDetail = () => {
       list.push({
         key: "psalm",
         label: "Psalm",
-        content: <ScriptureBlock ref={devotion.psalm.ref} text={devotion.psalm.text} multiline />,
+        content: <ScriptureBlock reference={devotion.psalm.ref} text={devotion.psalm.text} multiline />,
       });
     }
 
@@ -182,7 +182,7 @@ const PrayerDetail = () => {
       list.push({
         key: "scripture",
         label: "Scripture",
-        content: <ScriptureBlock ref={devotion.scripture.ref} text={devotion.scripture.text} />,
+        content: <ScriptureBlock reference={devotion.scripture.ref} text={devotion.scripture.text} />,
       });
     }
 
