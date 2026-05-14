@@ -38,9 +38,7 @@ function systemPrompt(slot: Slot, guideKey: string | undefined, recent: RecentCt
 Return ONLY a single JSON object with this exact shape, no prose, no markdown fences:
 {
   "opening": string,                                 // 2-3 sentences. Intimate, sacred. Sets the heart before God. No headings.
-  "antiphon": { "ref": string, "text": string },     // ONE short Psalm or Scripture line that frames this hour (the "antiphon"). Faithfully quoted (RSV-style ok).
-  "psalm": { "ref": string, "text": string },        // A SHORT psalm passage — 3-5 verses, formatted with line breaks. Choose what fits the hour and recent context.
-  "scripture": { "ref": string, "text": string },    // ONE Gospel or NT verse for reflection (different book than the antiphon if possible).
+  "scripture": { "ref": string, "text": string },    // ONE single Bible verse chosen specifically for THIS person today, faithfully quoted (RSV-style ok). Keep it to ONE verse — never a passage. This is the only Scripture in the devotion.
   "reflection": string,                              // 2-4 sentences gently unpacking the scripture for THIS person today.
   "intercession": string,                            // 2-3 short petitions, line-broken. Weave in the user's open intentions if any, but never quote them verbatim.
   "saint": null | { "key": string, "name": string, "intercession": string }, // Include ONLY when meaningful; otherwise null.
