@@ -31,11 +31,12 @@ export class StepErrorBoundary extends Component<Props, State> {
     // Log for the developer console
     console.error("StepErrorBoundary caught:", error, info);
     // Best-effort admin notification
-    notifyAdminError({
-      where: this.props.context || "StepErrorBoundary",
-      message: error.message,
-      stack: `${error.stack || ""}\n${info.componentStack || ""}`,
-    }).catch(() => {});
+    notifyAdminError(
+      this.props.context || "StepErrorBoundary",
+      error.message,
+      undefined,
+      { stack: `${error.stack || ""}\n${info.componentStack || ""}` }
+    ).catch(() => {});
   }
 
   handleRetry = () => {
