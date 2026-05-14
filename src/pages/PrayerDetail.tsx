@@ -468,19 +468,39 @@ function ScriptureBlock({ reference, text, multiline }: { reference: string; tex
     ? text.split(/\n+/).map((l) => l.trim()).filter(Boolean)
     : [text.trim()];
   return (
-    <div className="space-y-3">
-      {lines.map((l, i) => (
-        <p
-          key={i}
-          className="font-serif text-xl leading-relaxed text-foreground"
-        >
-          {multiline ? l : `“${l}”`}
-        </p>
-      ))}
+    <figure className="relative mx-auto max-w-prose space-y-5 border-l border-gold/30 pl-6">
+      {/* Decorative gold opening glyph */}
+      <span
+        aria-hidden
+        className="absolute -left-[2px] -top-2 font-serif text-3xl leading-none text-gold/60"
+      >
+        ❧
+      </span>
+
+      <blockquote className="space-y-3">
+        {lines.map((l, i) => (
+          <p
+            key={i}
+            className={
+              multiline
+                ? "font-serif text-[1.35rem] leading-[1.7] tracking-[0.005em] text-foreground/95"
+                : "font-serif text-[1.5rem] leading-[1.65] tracking-[0.005em] text-foreground first-letter:text-gold first-letter:font-serif"
+            }
+          >
+            {multiline ? l : `“${l}”`}
+          </p>
+        ))}
+      </blockquote>
+
       {reference && (
-        <p className="text-[11px] uppercase tracking-[0.22em] text-gold/80">{reference}</p>
+        <figcaption className="flex items-center gap-3 pt-1">
+          <span aria-hidden className="h-px w-6 bg-gold/40" />
+          <span className="text-[10px] font-medium uppercase tracking-[0.32em] text-gold/80">
+            {reference}
+          </span>
+        </figcaption>
       )}
-    </div>
+    </figure>
   );
 }
 
