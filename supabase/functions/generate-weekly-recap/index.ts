@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { isAdminCaller } from "../_shared/admin-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -285,7 +286,13 @@ serve(async (req) => {
     let userIds: string[] = [];
 
     if (mode === "all_users") {
-      // System batch (cron) — process every user with onboarding completed
+      // System batch (cron) — restricted to service-role / cron-secret callers only.
+      if (!isAdminCaller(req)) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       const { data } = await admin
         .from("user_profiles")
         .select("user_id")

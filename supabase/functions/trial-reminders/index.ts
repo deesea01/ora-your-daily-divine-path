@@ -1,15 +1,20 @@
 // Daily cron: finds trials ending tomorrow and enqueues "trial_ending" emails.
 // Idempotent — uses subscription_notifications to avoid double-sends.
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { isAdminCaller } from "../_shared/admin-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, content-type",
+  "Access-Control-Allow-Headers": "authorization, content-type, x-cron-secret",
   "Content-Type": "application/json",
 };
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  if (!isAdminCaller(req)) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders });
+  }
 
   const admin = createClient(
     Deno.env.get("SUPABASE_URL")!,
