@@ -30,14 +30,22 @@ function generateToken(): string {
     .join('')
 }
 
-// Auth note: this function uses verify_jwt = true in config.toml, so Supabase's
-// gateway validates the caller's JWT (anon or service_role) before the request
-// reaches this code. No in-function auth check is needed.
+// Auth: verify_jwt = true gates this function to authenticated callers.
+// We additionally require the caller's JWT to carry the service_role claim,
+// so end users cannot invoke this and send arbitrary emails through our domain.
+import { isAdminCaller } from '../_shared/admin-auth.ts'
 
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
+  }
+
+  if (!isAdminCaller(req)) {
+    return new Response(
+      JSON.stringify({ error: 'Forbidden' }),
+      { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
