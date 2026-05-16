@@ -286,7 +286,13 @@ serve(async (req) => {
     let userIds: string[] = [];
 
     if (mode === "all_users") {
-      // System batch (cron) — process every user with onboarding completed
+      // System batch (cron) — restricted to service-role / cron-secret callers only.
+      if (!isAdminCaller(req)) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       const { data } = await admin
         .from("user_profiles")
         .select("user_id")
