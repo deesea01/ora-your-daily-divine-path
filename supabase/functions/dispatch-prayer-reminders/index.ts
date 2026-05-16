@@ -9,6 +9,7 @@
 // Scheduling tolerance: fires when local time is within [target, target+15min].
 
 import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { isAdminCaller } from '../_shared/admin-auth.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
