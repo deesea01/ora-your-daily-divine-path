@@ -58,7 +58,7 @@ export default function WeeklyRecap() {
           {/* Featured latest */}
           <button
             onClick={() => setStoryRecapId(latest.id)}
-            className="group mb-8 block w-full overflow-hidden rounded-2xl border border-gold/30 bg-gradient-to-br from-card to-background p-6 text-left transition-all hover:border-gold/60"
+            className="group mb-3 block w-full overflow-hidden rounded-2xl border border-gold/30 bg-gradient-to-br from-card to-background p-6 text-left transition-all hover:border-gold/60"
           >
             <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-gold">
               <Sparkles className="h-3 w-3" /> This week
