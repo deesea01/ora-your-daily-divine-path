@@ -267,16 +267,21 @@ serve(async (req) => {
     const sendEmail = sendEmailParam ?? mode === "all_users";
     const APP_URL = Deno.env.get("APP_PUBLIC_URL") || "https://oradevotion.com";
 
-    // Determine week window — last completed Sun-Sat by default
+    // Determine week window.
+    //   - cron batch (all_users): last completed Sun–Sat
+    //   - on-demand single user: CURRENT in-progress week (so rosaries / journal
+    //     entries logged today show up immediately in Wrapped)
     const today = new Date();
     let weekStartDate: Date;
     if (weekStartParam) {
       weekStartDate = new Date(weekStartParam + "T00:00:00Z");
-    } else {
-      // most recent past Sunday (the just-completed week starts the Sunday before that)
+    } else if (mode === "all_users") {
       const thisSunday = startOfWeekSunday(today);
       weekStartDate = new Date(thisSunday);
       weekStartDate.setDate(thisSunday.getDate() - 7);
+    } else {
+      // current in-progress week, starting this past Sunday
+      weekStartDate = startOfWeekSunday(today);
     }
     const weekEndDate = new Date(weekStartDate);
     weekEndDate.setDate(weekStartDate.getDate() + 6);
