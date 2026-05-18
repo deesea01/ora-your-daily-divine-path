@@ -109,6 +109,19 @@ export default function WeeklyRecap() {
             <p className="mt-5 text-center text-xs text-muted-foreground">Tap to play your story →</p>
           </button>
 
+          <div className="mb-8 flex items-center justify-between rounded-xl border border-border bg-card px-4 py-2.5">
+            <p className="text-[11px] text-muted-foreground">
+              Updated {new Date(latest.generated_at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+            </p>
+            <button
+              onClick={generateForLastWeek}
+              disabled={generating}
+              className="rounded-full border border-gold/30 px-3 py-1 text-[11px] font-medium text-gold hover:bg-gold/10 disabled:opacity-50"
+            >
+              {generating ? 'Refreshing…' : 'Refresh'}
+            </button>
+          </div>
+
           {/* Premium-only sections inline preview */}
           {isPremium && latest.top_virtues.length > 0 && (
             <section className="mb-6">
