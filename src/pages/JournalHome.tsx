@@ -163,12 +163,22 @@ const JournalHome = () => {
       {showWrite && (
         <div className="fixed inset-0 z-50 flex flex-col bg-background pt-safe">
           <div className="flex items-center justify-between px-6 pt-6 pb-4 pr-16">
-            <button
-              onClick={() => { setShowWrite(false); setSavedVerse(null); }}
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
-              {savedVerse ? 'Close' : 'Cancel'}
-            </button>
+            {savedVerse ? (
+              <button
+                onClick={closeWriteModal}
+                aria-label="Back to journal"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground hover:text-foreground"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+            ) : (
+              <button
+                onClick={closeWriteModal}
+                className="text-sm text-muted-foreground hover:text-foreground"
+              >
+                Cancel
+              </button>
+            )}
             <h2 className="font-serif text-lg text-foreground">{savedVerse ? 'A Word for You' : 'New Entry'}</h2>
             {savedVerse ? (
               <span className="w-10" />
@@ -184,22 +194,44 @@ const JournalHome = () => {
           </div>
 
           {savedVerse ? (
-            <div className="flex-1 overflow-y-auto px-6 pb-12 flex flex-col items-center justify-center text-center animate-fade-in">
-              <Sparkles className="h-5 w-5 text-gold mb-4" />
-              <p className="text-[10px] uppercase tracking-[0.32em] text-gold/70 mb-3">Scripture for this moment</p>
-              <p className="font-serif text-xl text-foreground leading-relaxed max-w-sm">
-                &ldquo;{savedVerse.text}&rdquo;
-              </p>
-              <p className="mt-4 text-xs uppercase tracking-[0.2em] text-gold/80">{savedVerse.ref}</p>
-              <div className="mt-6">
-                <VerseActions verse={savedVerse} theme={mood || null} />
+            <div className="flex-1 overflow-y-auto px-6 pb-12 animate-fade-in">
+              <div className="mx-auto flex max-w-md flex-col items-center text-center pt-2">
+                <Sparkles className="h-5 w-5 text-gold mb-4" />
+                <p className="text-[10px] uppercase tracking-[0.32em] text-gold/70 mb-3">Scripture for this moment</p>
+                <p className="font-serif text-xl text-foreground leading-relaxed">
+                  &ldquo;{savedVerse.text}&rdquo;
+                </p>
+                <p className="mt-4 text-xs uppercase tracking-[0.2em] text-gold/80">{savedVerse.ref}</p>
+                <div className="mt-6">
+                  <VerseActions verse={savedVerse} theme={mood || null} />
+                </div>
+
+                {savedQuote && (
+                  <div className="mt-10 w-full rounded-xl border border-gold/15 bg-card/60 p-5">
+                    <p className="text-[10px] uppercase tracking-[0.28em] text-gold/70 mb-3">From the Saints</p>
+                    <p className="font-serif text-base italic text-foreground/90 leading-relaxed">
+                      &ldquo;{savedQuote.text}&rdquo;
+                    </p>
+                    <p className="mt-3 text-xs uppercase tracking-[0.2em] text-gold/80">— {savedQuote.saint}</p>
+                  </div>
+                )}
+
+                {savedPrayer && (
+                  <div className="mt-6 w-full rounded-xl border border-border bg-card/40 p-5">
+                    <p className="text-[10px] uppercase tracking-[0.28em] text-gold/70 mb-3">{savedPrayer.title}</p>
+                    <p className="font-serif text-base text-foreground/90 leading-relaxed">
+                      {savedPrayer.text}
+                    </p>
+                  </div>
+                )}
+
+                <button
+                  onClick={closeWriteModal}
+                  className="mt-10 rounded-xl border border-gold/30 px-6 py-3 text-sm text-gold hover:bg-gold/10 transition-colors"
+                >
+                  Carry this with me
+                </button>
               </div>
-              <button
-                onClick={() => { setShowWrite(false); setSavedVerse(null); }}
-                className="mt-8 rounded-xl border border-gold/30 px-6 py-3 text-sm text-gold hover:bg-gold/10 transition-colors"
-              >
-                Carry this with me
-              </button>
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto px-6 pb-8">
