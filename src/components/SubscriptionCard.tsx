@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, ExternalLink, X, AlertTriangle, RotateCcw } from "lucide-react";
+import { Sparkles, ExternalLink, X, AlertTriangle, RotateCcw, Apple } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { MissionNote } from "@/components/MissionNote";
 import { getPaddleEnvironment } from "@/lib/paddle";
+import { isNativeIOS } from "@/lib/platform";
 
 export function SubscriptionCard() {
   const navigate = useNavigate();
@@ -13,6 +14,12 @@ export function SubscriptionCard() {
   const [busy, setBusy] = useState<"portal" | "cancel" | "resume" | "switch" | null>(null);
   const [confirmCancel, setConfirmCancel] = useState(false);
   const env = getPaddleEnvironment();
+  const onIos = isNativeIOS();
+  // Apple's anti-steering rules: when the subscription was purchased via
+  // Apple IAP, OR when the user is in the native iOS app, all subscription
+  // management must happen in Apple's Manage Subscriptions UI — never via
+  // an external (Paddle) checkout/portal.
+  const isAppleManaged = onIos || (subscription as any)?.provider === "revenuecat_ios";
 
   if (loading) return null;
 
@@ -140,48 +147,65 @@ export function SubscriptionCard() {
         </div>
       )}
 
-      <button
-        onClick={openPortal}
-        disabled={busy !== null}
-        className="w-full rounded-lg border border-border bg-background py-2.5 text-sm font-medium text-foreground hover:border-gold/40 disabled:opacity-50 flex items-center justify-center gap-2"
-      >
-        <ExternalLink className="h-4 w-4" />
-        {busy === "portal" ? "Opening..." : "Manage billing"}
-      </button>
-
-      {!subscription?.cancel_at_period_end && (
-        <button
-          onClick={switchPlan}
-          disabled={busy !== null}
-          className="w-full rounded-lg border border-border bg-background py-2.5 text-sm font-medium text-foreground hover:border-gold/40 disabled:opacity-50"
-        >
-          {busy === "switch" ? "Updating..." : isYearly ? "Switch to monthly" : "Switch to yearly · save 50%"}
-        </button>
-      )}
-
-      {subscription?.cancel_at_period_end ? (
-        <button
-          onClick={resumeSub}
-          disabled={busy !== null}
-          className="w-full rounded-lg bg-gold/10 border border-gold/30 py-2 text-xs font-medium text-gold hover:bg-gold/20 disabled:opacity-50 flex items-center justify-center gap-1"
-        >
-          <RotateCcw className="h-3 w-3" />
-          {busy === "resume" ? "Resuming..." : "Resume subscription"}
-        </button>
-      ) : confirmCancel ? (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 space-y-2">
-          <p className="text-xs text-foreground">Cancel subscription? You'll keep access until {periodEnd ?? "the end of your period"}.</p>
-          <div className="flex gap-2">
-            <button onClick={() => setConfirmCancel(false)} disabled={busy !== null} className="flex-1 rounded-lg border border-border py-2 text-xs text-muted-foreground">Keep</button>
-            <button onClick={cancelSub} disabled={busy !== null} className="flex-1 rounded-lg bg-destructive py-2 text-xs font-medium text-destructive-foreground disabled:opacity-50">
-              {busy === "cancel" ? "Canceling..." : "Confirm cancel"}
-            </button>
-          </div>
-        </div>
+      {isAppleManaged ? (
+        <>
+          <a
+            href="itms-apps://apps.apple.com/account/subscriptions"
+            className="w-full rounded-lg border border-border bg-background py-2.5 text-sm font-medium text-foreground hover:border-gold/40 flex items-center justify-center gap-2"
+          >
+            <Apple className="h-4 w-4" />
+            Manage in Apple Settings
+          </a>
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            Your subscription is managed through your Apple ID. Change plans, view receipts, or cancel anytime from Settings → Apple ID → Subscriptions.
+          </p>
+        </>
       ) : (
-        <button onClick={() => setConfirmCancel(true)} className="w-full rounded-lg py-2 text-xs text-muted-foreground hover:text-destructive flex items-center justify-center gap-1">
-          <X className="h-3 w-3" /> Cancel subscription
-        </button>
+        <>
+          <button
+            onClick={openPortal}
+            disabled={busy !== null}
+            className="w-full rounded-lg border border-border bg-background py-2.5 text-sm font-medium text-foreground hover:border-gold/40 disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            <ExternalLink className="h-4 w-4" />
+            {busy === "portal" ? "Opening..." : "Manage billing"}
+          </button>
+
+          {!subscription?.cancel_at_period_end && (
+            <button
+              onClick={switchPlan}
+              disabled={busy !== null}
+              className="w-full rounded-lg border border-border bg-background py-2.5 text-sm font-medium text-foreground hover:border-gold/40 disabled:opacity-50"
+            >
+              {busy === "switch" ? "Updating..." : isYearly ? "Switch to monthly" : "Switch to yearly · save 50%"}
+            </button>
+          )}
+
+          {subscription?.cancel_at_period_end ? (
+            <button
+              onClick={resumeSub}
+              disabled={busy !== null}
+              className="w-full rounded-lg bg-gold/10 border border-gold/30 py-2 text-xs font-medium text-gold hover:bg-gold/20 disabled:opacity-50 flex items-center justify-center gap-1"
+            >
+              <RotateCcw className="h-3 w-3" />
+              {busy === "resume" ? "Resuming..." : "Resume subscription"}
+            </button>
+          ) : confirmCancel ? (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 space-y-2">
+              <p className="text-xs text-foreground">Cancel subscription? You'll keep access until {periodEnd ?? "the end of your period"}.</p>
+              <div className="flex gap-2">
+                <button onClick={() => setConfirmCancel(false)} disabled={busy !== null} className="flex-1 rounded-lg border border-border py-2 text-xs text-muted-foreground">Keep</button>
+                <button onClick={cancelSub} disabled={busy !== null} className="flex-1 rounded-lg bg-destructive py-2 text-xs font-medium text-destructive-foreground disabled:opacity-50">
+                  {busy === "cancel" ? "Canceling..." : "Confirm cancel"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button onClick={() => setConfirmCancel(true)} className="w-full rounded-lg py-2 text-xs text-muted-foreground hover:text-destructive flex items-center justify-center gap-1">
+              <X className="h-3 w-3" /> Cancel subscription
+            </button>
+          )}
+        </>
       )}
 
       <div className="pt-1"><MissionNote variant="compact" /></div>
