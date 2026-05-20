@@ -29,9 +29,11 @@ const JournalHome = () => {
   const [content, setContent] = useState('');
   const [mood, setMood] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [savedVerse, setSavedVerse] = useState<ScriptureVerse | null>(null);
-  const [savedQuote, setSavedQuote] = useState<SaintQuote | null>(null);
-  const [savedPrayer, setSavedPrayer] = useState<BriefPrayer | null>(null);
+  type Reflection =
+    | { kind: 'verse'; verse: ScriptureVerse }
+    | { kind: 'quote'; quote: SaintQuote }
+    | { kind: 'prayer'; prayer: BriefPrayer };
+  const [reflection, setReflection] = useState<Reflection | null>(null);
 
   if (authLoading || loading || entLoading) {
     return (
