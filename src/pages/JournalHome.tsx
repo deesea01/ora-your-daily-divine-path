@@ -29,9 +29,11 @@ const JournalHome = () => {
   const [content, setContent] = useState('');
   const [mood, setMood] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [savedVerse, setSavedVerse] = useState<ScriptureVerse | null>(null);
-  const [savedQuote, setSavedQuote] = useState<SaintQuote | null>(null);
-  const [savedPrayer, setSavedPrayer] = useState<BriefPrayer | null>(null);
+  type Reflection =
+    | { kind: 'verse'; verse: ScriptureVerse }
+    | { kind: 'quote'; quote: SaintQuote }
+    | { kind: 'prayer'; prayer: BriefPrayer };
+  const [reflection, setReflection] = useState<Reflection | null>(null);
 
   if (authLoading || loading || entLoading) {
     return (
@@ -72,20 +74,23 @@ const JournalHome = () => {
     if (!result?.error) {
       setContent('');
       setSelectedTags([]);
-      // Reveal a mood-matched verse, saint quote, and brief prayer in place of the form.
+      // Reveal ONE mood-matched reflection: a verse, a saint quote, or a brief prayer.
       const moodKey = chosenMood || 'neutral';
-      setSavedVerse(getVerseForMood(moodKey));
-      setSavedQuote(getSaintQuoteForMood(moodKey));
-      setSavedPrayer(getBriefPrayerForMood(moodKey));
+      const pick = Math.floor(Math.random() * 3);
+      if (pick === 0) {
+        setReflection({ kind: 'verse', verse: getVerseForMood(moodKey) });
+      } else if (pick === 1) {
+        setReflection({ kind: 'quote', quote: getSaintQuoteForMood(moodKey) });
+      } else {
+        setReflection({ kind: 'prayer', prayer: getBriefPrayerForMood(moodKey) });
+      }
       setMood('');
     }
   };
 
   const closeWriteModal = () => {
     setShowWrite(false);
-    setSavedVerse(null);
-    setSavedQuote(null);
-    setSavedPrayer(null);
+    setReflection(null);
   };
 
   const toggleTag = (tag: string) => {
@@ -163,7 +168,7 @@ const JournalHome = () => {
       {showWrite && (
         <div className="fixed inset-0 z-50 flex flex-col bg-background pt-safe">
           <div className="flex items-center justify-between px-6 pt-6 pb-4 pr-16">
-            {savedVerse ? (
+            {reflection ? (
               <button
                 onClick={closeWriteModal}
                 aria-label="Back to journal"
@@ -179,8 +184,16 @@ const JournalHome = () => {
                 Cancel
               </button>
             )}
-            <h2 className="font-serif text-lg text-foreground">{savedVerse ? 'A Word for You' : 'New Entry'}</h2>
-            {savedVerse ? (
+            <h2 className="font-serif text-lg text-foreground">
+              {reflection?.kind === 'verse'
+                ? 'A Word for You'
+                : reflection?.kind === 'quote'
+                ? 'From the Saints'
+                : reflection?.kind === 'prayer'
+                ? 'A Brief Prayer'
+                : 'New Entry'}
+            </h2>
+            {reflection ? (
               <span className="w-10" />
             ) : (
               <button
@@ -193,36 +206,41 @@ const JournalHome = () => {
             )}
           </div>
 
-          {savedVerse ? (
+          {reflection ? (
             <div className="flex-1 overflow-y-auto px-6 pb-12 animate-fade-in">
-              <div className="mx-auto flex max-w-md flex-col items-center text-center pt-2">
-                <Sparkles className="h-5 w-5 text-gold mb-4" />
-                <p className="text-[10px] uppercase tracking-[0.32em] text-gold/70 mb-3">Scripture for this moment</p>
-                <p className="font-serif text-xl text-foreground leading-relaxed">
-                  &ldquo;{savedVerse.text}&rdquo;
-                </p>
-                <p className="mt-4 text-xs uppercase tracking-[0.2em] text-gold/80">{savedVerse.ref}</p>
-                <div className="mt-6">
-                  <VerseActions verse={savedVerse} theme={mood || null} />
-                </div>
+              <div className="mx-auto flex max-w-md flex-col items-center text-center pt-6">
+                <Sparkles className="h-5 w-5 text-gold mb-5" />
 
-                {savedQuote && (
-                  <div className="mt-10 w-full rounded-xl border border-gold/15 bg-card/60 p-5">
-                    <p className="text-[10px] uppercase tracking-[0.28em] text-gold/70 mb-3">From the Saints</p>
-                    <p className="font-serif text-base italic text-foreground/90 leading-relaxed">
-                      &ldquo;{savedQuote.text}&rdquo;
+                {reflection.kind === 'verse' && (
+                  <>
+                    <p className="text-[10px] uppercase tracking-[0.32em] text-gold/70 mb-3">Scripture for this moment</p>
+                    <p className="font-serif text-xl text-foreground leading-relaxed">
+                      &ldquo;{reflection.verse.text}&rdquo;
                     </p>
-                    <p className="mt-3 text-xs uppercase tracking-[0.2em] text-gold/80">— {savedQuote.saint}</p>
-                  </div>
+                    <p className="mt-4 text-xs uppercase tracking-[0.2em] text-gold/80">{reflection.verse.ref}</p>
+                    <div className="mt-6">
+                      <VerseActions verse={reflection.verse} theme={mood || null} />
+                    </div>
+                  </>
                 )}
 
-                {savedPrayer && (
-                  <div className="mt-6 w-full rounded-xl border border-border bg-card/40 p-5">
-                    <p className="text-[10px] uppercase tracking-[0.28em] text-gold/70 mb-3">{savedPrayer.title}</p>
-                    <p className="font-serif text-base text-foreground/90 leading-relaxed">
-                      {savedPrayer.text}
+                {reflection.kind === 'quote' && (
+                  <>
+                    <p className="text-[10px] uppercase tracking-[0.32em] text-gold/70 mb-3">From the Saints</p>
+                    <p className="font-serif text-xl italic text-foreground leading-relaxed">
+                      &ldquo;{reflection.quote.text}&rdquo;
                     </p>
-                  </div>
+                    <p className="mt-4 text-xs uppercase tracking-[0.2em] text-gold/80">— {reflection.quote.saint}</p>
+                  </>
+                )}
+
+                {reflection.kind === 'prayer' && (
+                  <>
+                    <p className="text-[10px] uppercase tracking-[0.32em] text-gold/70 mb-3">{reflection.prayer.title}</p>
+                    <p className="font-serif text-xl text-foreground leading-relaxed">
+                      {reflection.prayer.text}
+                    </p>
+                  </>
                 )}
 
                 <button
