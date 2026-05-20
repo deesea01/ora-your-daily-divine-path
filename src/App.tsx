@@ -43,6 +43,7 @@ import { RequirePremium } from "@/components/RequirePremium";
 import SpiritualJourney from "./pages/SpiritualJourney.tsx";
 import { useNativeShell } from "@/hooks/useNativeShell";
 import { useNativeNotifications } from "@/hooks/useNativeNotifications";
+import OfflineBanner from "@/components/OfflineBanner";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +63,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <NativeBootstrap />
+            <OfflineBanner />
             <PaymentTestModeBanner />
             <AuthNav />
             <RouteTransition>
