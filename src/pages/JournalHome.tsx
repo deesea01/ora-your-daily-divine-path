@@ -72,10 +72,20 @@ const JournalHome = () => {
     if (!result?.error) {
       setContent('');
       setSelectedTags([]);
-      // Reveal a mood-matched verse in place of the form, then close on dismiss.
-      setSavedVerse(getVerseForMood(chosenMood || 'neutral'));
+      // Reveal a mood-matched verse, saint quote, and brief prayer in place of the form.
+      const moodKey = chosenMood || 'neutral';
+      setSavedVerse(getVerseForMood(moodKey));
+      setSavedQuote(getSaintQuoteForMood(moodKey));
+      setSavedPrayer(getBriefPrayerForMood(moodKey));
       setMood('');
     }
+  };
+
+  const closeWriteModal = () => {
+    setShowWrite(false);
+    setSavedVerse(null);
+    setSavedQuote(null);
+    setSavedPrayer(null);
   };
 
   const toggleTag = (tag: string) => {
