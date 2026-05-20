@@ -74,20 +74,23 @@ const JournalHome = () => {
     if (!result?.error) {
       setContent('');
       setSelectedTags([]);
-      // Reveal a mood-matched verse, saint quote, and brief prayer in place of the form.
+      // Reveal ONE mood-matched reflection: a verse, a saint quote, or a brief prayer.
       const moodKey = chosenMood || 'neutral';
-      setSavedVerse(getVerseForMood(moodKey));
-      setSavedQuote(getSaintQuoteForMood(moodKey));
-      setSavedPrayer(getBriefPrayerForMood(moodKey));
+      const pick = Math.floor(Math.random() * 3);
+      if (pick === 0) {
+        setReflection({ kind: 'verse', verse: getVerseForMood(moodKey) });
+      } else if (pick === 1) {
+        setReflection({ kind: 'quote', quote: getSaintQuoteForMood(moodKey) });
+      } else {
+        setReflection({ kind: 'prayer', prayer: getBriefPrayerForMood(moodKey) });
+      }
       setMood('');
     }
   };
 
   const closeWriteModal = () => {
     setShowWrite(false);
-    setSavedVerse(null);
-    setSavedQuote(null);
-    setSavedPrayer(null);
+    setReflection(null);
   };
 
   const toggleTag = (tag: string) => {
