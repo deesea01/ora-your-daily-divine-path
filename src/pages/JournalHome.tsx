@@ -30,6 +30,8 @@ const JournalHome = () => {
   const [mood, setMood] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [savedVerse, setSavedVerse] = useState<ScriptureVerse | null>(null);
+  const [savedQuote, setSavedQuote] = useState<SaintQuote | null>(null);
+  const [savedPrayer, setSavedPrayer] = useState<BriefPrayer | null>(null);
 
   if (authLoading || loading || entLoading) {
     return (
