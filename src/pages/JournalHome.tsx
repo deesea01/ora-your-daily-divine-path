@@ -6,6 +6,7 @@ import { useJournal } from '@/hooks/useJournal';
 import { useEntitlement } from '@/hooks/useEntitlement';
 import { humanizeLabel } from '@/lib/utils';
 import { getVerseForMood, type ScriptureVerse } from '@/lib/scriptureByMood';
+import { getSaintQuoteForMood, getBriefPrayerForMood, type SaintQuote, type BriefPrayer } from '@/lib/reflectionByMood';
 import { VerseActions } from '@/components/VerseActions';
 import SEO from '@/components/SEO';
 
