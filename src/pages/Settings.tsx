@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { ArrowLeft, User, Sparkles, BookOpen, LogOut, ChevronRight, Check } from 'lucide-react';
+import { ArrowLeft, User, Sparkles, BookOpen, LogOut, ChevronRight, Check, Trash2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { SPIRITUAL_GUIDES, SpiritualGuideKey } from '@/lib/guides';
@@ -10,6 +10,7 @@ import { SubscriptionCard } from '@/components/SubscriptionCard';
 import PrayerRemindersCard from '@/components/PrayerRemindersCard';
 import { toast } from '@/hooks/use-toast';
 import SEO from '@/components/SEO';
+import { supabase } from '@/integrations/supabase/client';
 
 const SEEKING_OPTIONS = [
   { value: 'peace', label: 'Inner Peace', emoji: '🕊️' },
@@ -324,7 +325,7 @@ const Settings = () => {
       </section>
 
       {/* Sign Out */}
-      <section className="mb-8">
+      <section className="mb-4">
         <button
           onClick={signOut}
           className="w-full rounded-xl border border-destructive/30 bg-card p-4 text-left transition-all hover:border-destructive/50"
@@ -335,9 +336,75 @@ const Settings = () => {
           </div>
         </button>
       </section>
+
+      {/* Delete Account (App Store Guideline 5.1.1(v)) */}
+      <DeleteAccountSection onSignOut={signOut} />
       </main>
     </div>
   );
 };
+
+function DeleteAccountSection({ onSignOut }: { onSignOut: () => Promise<void> }) {
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const handleDelete = async () => {
+    setBusy(true);
+    try {
+      const { error } = await supabase.functions.invoke('delete-account');
+      if (error) throw error;
+      toast({ title: 'Account deleted', description: 'Your account and data have been permanently removed.' });
+      await onSignOut();
+      window.location.href = '/';
+    } catch (e: any) {
+      toast({ title: 'Could not delete account', description: String(e?.message || e), variant: 'destructive' });
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="mb-8">
+      {!confirming ? (
+        <button
+          onClick={() => setConfirming(true)}
+          className="w-full rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-destructive/40"
+        >
+          <div className="flex items-center gap-3">
+            <Trash2 className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <p className="text-sm font-medium text-foreground">Delete Account</p>
+              <p className="text-xs text-muted-foreground">Permanently remove your account and all data</p>
+            </div>
+          </div>
+        </button>
+      ) : (
+        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 space-y-3">
+          <p className="text-sm text-foreground">
+            This permanently deletes your account, prayer history, journal entries, and all related data. This cannot be undone.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            If you have an active subscription, please cancel it first in your billing settings (or Apple ID Settings on iOS).
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setConfirming(false)}
+              disabled={busy}
+              className="flex-1 rounded-lg border border-border py-2.5 text-sm text-muted-foreground"
+            >
+              Keep my account
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={busy}
+              className="flex-1 rounded-lg bg-destructive py-2.5 text-sm font-medium text-destructive-foreground disabled:opacity-50"
+            >
+              {busy ? 'Deleting…' : 'Permanently delete'}
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
 
 export default Settings;
