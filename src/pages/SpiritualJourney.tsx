@@ -241,6 +241,23 @@ export default function SpiritualJourney() {
           Last refreshed {new Date(profile.last_refreshed_at).toLocaleString()}
         </p>
       )}
+
+      <Dialog open={!!openPassage} onOpenChange={(o) => !o && setOpenPassage(null)}>
+        <DialogContent className="max-w-md border-gold/20 bg-card">
+          <DialogHeader>
+            <p className="text-[10px] uppercase tracking-[0.3em] text-gold/80">Scripture</p>
+            <DialogTitle className="font-serif text-xl text-foreground">
+              {openPassage?.ref} — {openPassage?.title}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mt-2 max-h-[60vh] overflow-y-auto whitespace-pre-line font-serif text-[15px] leading-relaxed text-foreground/90">
+            {openPassage?.text}
+          </div>
+          <p className="mt-3 text-[11px] text-muted-foreground italic">
+            Read slowly. Let one phrase rest on your heart.
+          </p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
