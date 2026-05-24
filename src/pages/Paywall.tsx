@@ -143,7 +143,7 @@ const Paywall = () => {
                 <p className="mt-1 font-serif text-2xl text-foreground">
                   $1<span className="text-sm text-muted-foreground"> for your first month</span>
                 </p>
-                <p className="mt-1 text-[11px] text-muted-foreground">After 3-day trial · then $10/mo · cancel anytime</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">After 3-day trial · then $9.99/mo · cancel anytime</p>
               </button>
 
               <div className="grid grid-cols-2 gap-3">
