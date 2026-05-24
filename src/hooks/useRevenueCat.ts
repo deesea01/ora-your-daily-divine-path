@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   Purchases,
-  LOG_LEVEL,
   type CustomerInfo,
   type PurchasesPackage,
   type PurchasesOffering,
@@ -24,26 +23,19 @@ import { useAuth } from '@/hooks/useAuth';
  * server-side `REVENUECAT_IOS_API_KEY` secret is used by edge functions.
  */
 
-const RC_KEY = (import.meta.env.VITE_REVENUECAT_IOS_API_KEY as string | undefined) ?? '';
-
-let configured = false;
-let configuringPromise: Promise<void> | null = null;
-
-async function ensureConfigured(appUserID: string) {
-  if (!isNativeIOS()) return;
-  if (!RC_KEY) {
-    console.warn('[RevenueCat] VITE_REVENUECAT_IOS_API_KEY is not set — IAP disabled.');
-    return;
-  }
-  if (configured) return;
-  if (configuringPromise) return configuringPromise;
-
-  configuringPromise = (async () => {
-    await Purchases.setLogLevel({ level: LOG_LEVEL.WARN });
-    await Purchases.configure({ apiKey: RC_KEY, appUserID });
-    configured = true;
-  })();
-  return configuringPromise;
+/**
+ * NOTE: `Purchases.configure(...)` is intentionally NOT called here.
+ *
+ * The native iOS shell (see `ios/App/App/RevenueCatBootstrap.swift`) configures
+ * the SDK during `application(_:didFinishLaunchingWithOptions:)`, before the
+ * Capacitor webview boots. Configuring again from JS would reset the singleton
+ * and break the in-flight StoreKit2 transaction listener.
+ *
+ * On non-iOS platforms this hook short-circuits via `isNativeIOS()`.
+ */
+async function ensureConfigured(_appUserID: string) {
+  // No-op: native bootstrap owns configuration.
+  return;
 }
 
 export interface IapPlan {
