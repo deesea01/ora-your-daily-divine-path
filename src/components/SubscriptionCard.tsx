@@ -95,7 +95,7 @@ export function SubscriptionCard() {
 
   const switchPlan = async () => {
     const target = subscription?.price_id === "ora_premium_yearly" ? "ora_premium_monthly" : "ora_premium_yearly";
-    const targetLabel = target === "ora_premium_yearly" ? "yearly ($60/yr)" : "monthly ($10/mo)";
+    const targetLabel = target === "ora_premium_yearly" ? "yearly ($59.99/yr)" : "monthly ($9.99/mo)";
     if (!confirm(`Switch to ${targetLabel}? Your billing will be prorated immediately.`)) return;
     setBusy("switch");
     try {
