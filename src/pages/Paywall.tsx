@@ -81,7 +81,7 @@ const Paywall = () => {
     <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe app-container">
       <SEO
         title="Ora Premium — Daily Catholic Prayer & Devotion Plans"
-        description="Begin a guided life of prayer, devotion, and spiritual growth. Ora Premium is $10/month or $70/year with a free trial. Cancel anytime."
+        description="Begin a guided life of prayer, devotion, and spiritual growth. Ora Premium is $9.99/month or $59.99/year with a free trial. Cancel anytime."
         canonicalPath="/paywall"
         jsonLd={{
           '@context': 'https://schema.org',
@@ -90,8 +90,8 @@ const Paywall = () => {
           description: 'Guided Catholic prayer, rosary, saint companions, and personalized devotion plans.',
           brand: { '@type': 'Brand', name: 'Ora' },
           offers: [
-            { '@type': 'Offer', name: 'Monthly', price: '10.00', priceCurrency: 'USD', category: 'subscription', url: 'https://oradevotion.com/paywall' },
-            { '@type': 'Offer', name: 'Yearly', price: '70.00', priceCurrency: 'USD', category: 'subscription', url: 'https://oradevotion.com/paywall' },
+            { '@type': 'Offer', name: 'Monthly', price: '9.99', priceCurrency: 'USD', category: 'subscription', url: 'https://oradevotion.com/paywall' },
+            { '@type': 'Offer', name: 'Yearly', price: '59.99', priceCurrency: 'USD', category: 'subscription', url: 'https://oradevotion.com/paywall' },
           ],
         }}
       />
