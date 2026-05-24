@@ -88,7 +88,7 @@ This is the longest step. You only do it once.
 3. Create an **Auto-Renewable Subscription** group called `Ora Premium`.
 4. Inside the group, create two products:
    - **Product ID: `ora_premium_monthly`** — $9.99/month, 3-day free trial
-   - **Product ID: `ora_premium_yearly`** — $69.99/year, 3-day free trial
+   - **Product ID: `ora_premium_yearly`** — $59.99/year, 3-day free trial
 5. Add a localized name + description for each.
 6. Under each product → **App Store Promotion** → upload a 1024×1024 promo image.
 
