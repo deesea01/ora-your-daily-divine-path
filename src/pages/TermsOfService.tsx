@@ -38,7 +38,7 @@ const TermsOfService = () => {
 
         <h2 className="font-serif text-lg text-foreground">4. Subscriptions & Payments</h2>
         <ul className="list-disc pl-5 space-y-1">
-          <li>Ora may offer paid subscriptions (e.g., $10/month or $60/year)</li>
+          <li>Ora may offer paid subscriptions (e.g., $9.99/month or $59.99/year)</li>
           <li>Payments are billed automatically on a recurring basis unless canceled before renewal</li>
           <li>You may cancel anytime via your account settings or through Paddle</li>
           <li>Refunds are handled by Paddle in accordance with our <a href="/refund-policy" className="text-gold hover:underline">Refund Policy</a> and Paddle's <a href="https://www.paddle.com/legal/refund-policy" target="_blank" rel="noopener noreferrer" className="text-gold hover:underline">Refund Policy</a></li>
