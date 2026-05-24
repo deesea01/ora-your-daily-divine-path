@@ -179,10 +179,10 @@ const Paywall = () => {
                 <Check className="h-3.5 w-3.5 text-gold" />
                 <span>
                   {plan === 'intro'
-                    ? '3 days free — then $1 for your first month, then $10/month'
+                    ? '3 days free — then $1 for your first month, then $9.99/month'
                     : plan === 'yearly'
-                    ? '3 days free — then $70/year'
-                    : '3 days free — then $10/month'}
+                    ? '3 days free — then $59.99/year'
+                    : '3 days free — then $9.99/month'}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
