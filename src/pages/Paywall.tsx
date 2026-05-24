@@ -157,8 +157,8 @@ const Paywall = () => {
                     Best value
                   </span>
                   <p className="text-xs uppercase tracking-widest text-muted-foreground">Yearly</p>
-                  <p className="mt-1 font-serif text-2xl text-foreground">$70<span className="text-sm text-muted-foreground">/yr</span></p>
-                  <p className="mt-1 text-[11px] text-muted-foreground">$5.83/mo · save 42%</p>
+                  <p className="mt-1 font-serif text-2xl text-foreground">$59.99<span className="text-sm text-muted-foreground">/yr</span></p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">$5.00/mo · save 50%</p>
                 </button>
                 <button
                   onClick={() => setPlan('monthly')}
@@ -167,7 +167,7 @@ const Paywall = () => {
                   }`}
                 >
                   <p className="text-xs uppercase tracking-widest text-muted-foreground">Monthly</p>
-                  <p className="mt-1 font-serif text-2xl text-foreground">$10<span className="text-sm text-muted-foreground">/mo</span></p>
+                  <p className="mt-1 font-serif text-2xl text-foreground">$9.99<span className="text-sm text-muted-foreground">/mo</span></p>
                   <p className="mt-1 text-[11px] text-muted-foreground">Cancel anytime</p>
                 </button>
               </div>
