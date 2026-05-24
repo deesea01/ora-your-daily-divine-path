@@ -189,7 +189,7 @@ App Store Connect → App Store tab → fill in:
 - App description, keywords, category (Lifestyle, secondary: Reference)
 - Age rating questionnaire
 - Screenshots (Step 9)
-- Subscription review notes — **include sandbox test account credentials**, and note: "Premium unlocks all features. The 3-day free trial converts to $9.99/mo or $69.99/yr. Subscription is managed in iOS Settings."
+- Subscription review notes — **include sandbox test account credentials**, and note: "Premium unlocks all features. The 3-day free trial converts to $9.99/mo or $59.99/yr. Subscription is managed in iOS Settings."
 - App Review notes — explain that web subscriptions exist but iOS users must use Apple IAP per Guideline 3.1.1; restore is supported.
 
 Submit. Apple typically reviews within 24–48 hours.
