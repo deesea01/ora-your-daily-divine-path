@@ -81,7 +81,7 @@ const Paywall = () => {
     <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe app-container">
       <SEO
         title="Ora Premium — Daily Catholic Prayer & Devotion Plans"
-        description="Begin a guided life of prayer, devotion, and spiritual growth. Ora Premium is $10/month or $70/year with a free trial. Cancel anytime."
+        description="Begin a guided life of prayer, devotion, and spiritual growth. Ora Premium is $9.99/month or $59.99/year with a free trial. Cancel anytime."
         canonicalPath="/paywall"
         jsonLd={{
           '@context': 'https://schema.org',
@@ -90,8 +90,8 @@ const Paywall = () => {
           description: 'Guided Catholic prayer, rosary, saint companions, and personalized devotion plans.',
           brand: { '@type': 'Brand', name: 'Ora' },
           offers: [
-            { '@type': 'Offer', name: 'Monthly', price: '10.00', priceCurrency: 'USD', category: 'subscription', url: 'https://oradevotion.com/paywall' },
-            { '@type': 'Offer', name: 'Yearly', price: '70.00', priceCurrency: 'USD', category: 'subscription', url: 'https://oradevotion.com/paywall' },
+            { '@type': 'Offer', name: 'Monthly', price: '9.99', priceCurrency: 'USD', category: 'subscription', url: 'https://oradevotion.com/paywall' },
+            { '@type': 'Offer', name: 'Yearly', price: '59.99', priceCurrency: 'USD', category: 'subscription', url: 'https://oradevotion.com/paywall' },
           ],
         }}
       />
@@ -143,7 +143,7 @@ const Paywall = () => {
                 <p className="mt-1 font-serif text-2xl text-foreground">
                   $1<span className="text-sm text-muted-foreground"> for your first month</span>
                 </p>
-                <p className="mt-1 text-[11px] text-muted-foreground">After 3-day trial · then $10/mo · cancel anytime</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">After 3-day trial · then $9.99/mo · cancel anytime</p>
               </button>
 
               <div className="grid grid-cols-2 gap-3">
@@ -157,8 +157,8 @@ const Paywall = () => {
                     Best value
                   </span>
                   <p className="text-xs uppercase tracking-widest text-muted-foreground">Yearly</p>
-                  <p className="mt-1 font-serif text-2xl text-foreground">$70<span className="text-sm text-muted-foreground">/yr</span></p>
-                  <p className="mt-1 text-[11px] text-muted-foreground">$5.83/mo · save 42%</p>
+                  <p className="mt-1 font-serif text-2xl text-foreground">$59.99<span className="text-sm text-muted-foreground">/yr</span></p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">$5.00/mo · save 50%</p>
                 </button>
                 <button
                   onClick={() => setPlan('monthly')}
@@ -167,7 +167,7 @@ const Paywall = () => {
                   }`}
                 >
                   <p className="text-xs uppercase tracking-widest text-muted-foreground">Monthly</p>
-                  <p className="mt-1 font-serif text-2xl text-foreground">$10<span className="text-sm text-muted-foreground">/mo</span></p>
+                  <p className="mt-1 font-serif text-2xl text-foreground">$9.99<span className="text-sm text-muted-foreground">/mo</span></p>
                   <p className="mt-1 text-[11px] text-muted-foreground">Cancel anytime</p>
                 </button>
               </div>
@@ -179,10 +179,10 @@ const Paywall = () => {
                 <Check className="h-3.5 w-3.5 text-gold" />
                 <span>
                   {plan === 'intro'
-                    ? '3 days free — then $1 for your first month, then $10/month'
+                    ? '3 days free — then $1 for your first month, then $9.99/month'
                     : plan === 'yearly'
-                    ? '3 days free — then $70/year'
-                    : '3 days free — then $10/month'}
+                    ? '3 days free — then $59.99/year'
+                    : '3 days free — then $9.99/month'}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
