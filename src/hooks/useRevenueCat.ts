@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   Purchases,
-  LOG_LEVEL,
   type CustomerInfo,
   type PurchasesPackage,
   type PurchasesOffering,
