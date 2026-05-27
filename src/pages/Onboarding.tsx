@@ -297,16 +297,16 @@ const Onboarding = () => {
 
     // 4) Persist the plan to spiritual_profiles for the Memory Engine + dashboard
     const recommendations = [
-      { type: 'saint' as const, title: generated.saint.name, reason: generated.saint.reason, action_label: 'Meet your guide', action_route: '/guides', priority: 1 },
+      { type: 'saint' as const, title: generated.saint.name, reason: generated.saint.reason, action_label: 'Meet your guide', action_route: '/guide', priority: 1 },
       ...generated.prayers.slice(0, 3).map((p, i) => ({
         type: 'prayer' as const,
         title: p.title,
         reason: p.reason,
         action_label: 'Pray now',
-        action_route: `/prayers/${p.prayer_id}`,
+        action_route: `/prayer-library/${p.prayer_id}`,
         priority: 2 + i,
       })),
-      { type: 'scripture' as const, title: generated.scripture.ref, reason: generated.scripture.reason, action_label: 'Open scripture', action_route: '/prayers', priority: 10 },
+      { type: 'scripture' as const, title: generated.scripture.ref, reason: generated.scripture.reason, action_label: 'Open scripture', action_route: '/prayer-library', priority: 10 },
       { type: 'sacrament' as const, title: `Confession — ${generated.confession_cadence.label}`, reason: generated.confession_cadence.reason, action_label: 'Prepare', action_route: '/confession', priority: 20 },
     ];
 
