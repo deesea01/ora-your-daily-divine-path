@@ -6,13 +6,16 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
 import { lovable } from '@/integrations/lovable/index';
 import SEO from '@/components/SEO';
+import { isNativeIOS } from '@/lib/platform';
 
 const Welcome = () => {
   const { user, loading } = useAuth();
   const { t, language, setLanguage } = useLanguage();
   const navigate = useNavigate();
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
   const [error, setError] = useState('');
+  const onIos = isNativeIOS();
 
   if (loading) {
     return (
