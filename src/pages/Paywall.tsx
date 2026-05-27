@@ -96,7 +96,17 @@ const Paywall = () => {
         }}
       />
       <div className="flex-1 flex flex-col">
-        <div className="pt-10 text-center">
+        <div className="flex justify-end pt-3">
+          <button
+            type="button"
+            onClick={() => navigate('/welcome')}
+            aria-label="Close"
+            className="rounded-full p-2 text-muted-foreground transition-colors hover:text-foreground active:scale-95"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="pt-4 text-center">
           <div className="mb-4 text-4xl">✨</div>
           <h1 className="font-serif text-3xl text-foreground mb-2">Begin Your New Journey</h1>
           <p className="text-sm text-muted-foreground max-w-xs mx-auto">
