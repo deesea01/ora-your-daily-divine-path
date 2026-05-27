@@ -192,6 +192,31 @@ App Store Connect → App Store tab → fill in:
 - Subscription review notes — **include sandbox test account credentials**, and note: "Premium unlocks all features. The 3-day free trial converts to $9.99/mo or $59.99/yr. Subscription is managed in iOS Settings."
 - App Review notes — explain that web subscriptions exist but iOS users must use Apple IAP per Guideline 3.1.1; restore is supported.
 
+### Reviewer demo account (required — Guideline 2.3)
+
+Apple's reviewer must be able to sign in without creating an account. Provide
+this in **App Store Connect → App Information → App Review Information**:
+
+1. **Create a real Ora account** the reviewer can use:
+   - Sign up at https://ora-sacred-path.lovable.app/auth?mode=signup
+   - Email: `appreview@oradevotion.com` (or any inbox you control)
+   - Password: pick a strong one and paste it into App Review Information
+   - Complete onboarding once so `onboarding_completed = true` (otherwise the reviewer lands on `/onboarding`, not the home screen).
+2. **Mark the account as premium in the database** so reviewers can explore Premium content without needing IAP for non-purchase flows. In Lovable Cloud → SQL editor:
+   ```sql
+   insert into public.subscriptions (user_id, status, provider, environment, product_id, price_id, paddle_subscription_id, paddle_customer_id, current_period_end)
+   select id, 'active', 'review_grant', 'review', 'ora_premium_review', 'ora_premium_review',
+          'review_' || id::text, 'review_' || id::text, now() + interval '180 days'
+   from auth.users where email = 'appreview@oradevotion.com'
+   on conflict (user_id, environment) do update set current_period_end = excluded.current_period_end, status = 'active';
+   ```
+3. **Paste into App Review Information**:
+   - Sign-in required: **Yes**
+   - User name: `appreview@oradevotion.com`
+   - Password: *(your chosen password)*
+   - Notes: "Account is pre-onboarded and pre-granted Premium for review. To exercise the StoreKit purchase + restore flow, please sign in to a Sandbox Apple ID under iOS Settings → App Store → Sandbox Account, then open the in-app paywall (Settings → Manage Subscription or from any premium gate)."
+4. **Sandbox Apple ID for IAP testing**: create one at App Store Connect → Users and Access → Sandbox → Test Accounts, then provide its email to reviewers in the notes (Apple requires they use their own sandbox device, but knowing your product IDs (`ora_premium_monthly`, `ora_premium_yearly`) helps them validate the flow).
+
 Submit. Apple typically reviews within 24–48 hours.
 
 ---

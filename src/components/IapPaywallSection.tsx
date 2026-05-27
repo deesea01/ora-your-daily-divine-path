@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Loader2, RefreshCw, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRevenueCat, type IapPlan } from '@/hooks/useRevenueCat';
@@ -97,6 +98,13 @@ export function IapPaywallSection() {
               {plan.period === 'yearly' ? 'Yearly' : plan.period === 'monthly' ? 'Monthly' : plan.title}
             </p>
             <p className="mt-1 font-serif text-2xl text-foreground">{plan.priceString}</p>
+            {plan.introPeriod && (
+              <p className="mt-1 text-[11px] text-gold">
+                {plan.introPriceString === 'Free' || !plan.introPriceString
+                  ? `${plan.introPeriod} free trial, then ${plan.priceString}`
+                  : `${plan.introPriceString} for ${plan.introPeriod}, then ${plan.priceString}`}
+              </p>
+            )}
           </div>
           {busyId === plan.identifier ? (
             <Loader2 className="h-5 w-5 animate-spin text-gold" />
@@ -123,6 +131,12 @@ export function IapPaywallSection() {
         Subscriptions auto-renew unless cancelled at least 24 hours before the end of the period. Manage or
         cancel anytime in your Apple ID settings. Payment is charged to your Apple ID account at confirmation.
       </p>
+
+      <div className="flex items-center justify-center gap-4 pt-1 text-[11px] text-muted-foreground">
+        <Link to="/terms-of-service" className="underline underline-offset-2 hover:text-gold">Terms of Service</Link>
+        <span aria-hidden>·</span>
+        <Link to="/privacy-policy" className="underline underline-offset-2 hover:text-gold">Privacy Policy</Link>
+      </div>
     </div>
   );
 }

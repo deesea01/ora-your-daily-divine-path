@@ -44,6 +44,8 @@ export interface IapPlan {
   title: string;
   priceString: string;
   period: 'monthly' | 'yearly' | 'other';
+  introPriceString?: string; // e.g. "Free" or "$0.00"
+  introPeriod?: string; // e.g. "3 days"
   rcPackage: PurchasesPackage;
 }
 
@@ -79,14 +81,23 @@ export function useRevenueCat() {
         const offerings = await Purchases.getOfferings();
         const current: PurchasesOffering | null = offerings.current ?? null;
 
-        const list: IapPlan[] = (current?.availablePackages ?? []).map((p) => ({
-          identifier: p.identifier,
-          productId: p.product.identifier,
-          title: p.product.title,
-          priceString: p.product.priceString,
-          period: inferPeriod(p),
-          rcPackage: p,
-        }));
+        const list: IapPlan[] = (current?.availablePackages ?? []).map((p) => {
+          const intro: any = (p.product as any).introPrice;
+          const introPeriod = intro?.periodNumberOfUnits && intro?.periodUnit
+            ? `${intro.periodNumberOfUnits} ${String(intro.periodUnit).toLowerCase()}${intro.periodNumberOfUnits > 1 ? 's' : ''}`
+            : undefined;
+          const introPriceString = intro?.price === 0 ? 'Free' : intro?.priceString;
+          return {
+            identifier: p.identifier,
+            productId: p.product.identifier,
+            title: p.product.title,
+            priceString: p.product.priceString,
+            period: inferPeriod(p),
+            introPriceString,
+            introPeriod,
+            rcPackage: p,
+          };
+        });
 
         const info = await Purchases.getCustomerInfo();
         if (cancelled) return;
