@@ -44,6 +44,8 @@ export interface IapPlan {
   title: string;
   priceString: string;
   period: 'monthly' | 'yearly' | 'other';
+  introPriceString?: string; // e.g. "Free" or "$0.00"
+  introPeriod?: string; // e.g. "3 days"
   rcPackage: PurchasesPackage;
 }
 
