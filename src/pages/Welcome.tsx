@@ -44,6 +44,22 @@ const Welcome = () => {
     }
   };
 
+  const handleAppleSignIn = async () => {
+    setAppleLoading(true);
+    setError('');
+    try {
+      const result = await lovable.auth.signInWithOAuth('apple', {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) setError(result.error.message || 'Apple sign-in failed');
+      if (result.redirected) return;
+    } catch (err: any) {
+      setError(err?.message || 'Apple sign-in failed');
+    } finally {
+      setAppleLoading(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe app-container">
       <SEO
