@@ -35,6 +35,7 @@ import Paywall from "./pages/Paywall.tsx";
 import CheckoutSuccess from "./pages/CheckoutSuccess.tsx";
 import Unsubscribe from "./pages/Unsubscribe.tsx";
 import WeeklyRecap from "./pages/WeeklyRecap.tsx";
+import Support from "./pages/Support.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { AuthNav } from "@/components/AuthNav";
