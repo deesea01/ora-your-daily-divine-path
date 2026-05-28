@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Mail, Phone, ArrowLeft } from "lucide-react";
-import { SEO } from "@/components/SEO";
+import SEO from "@/components/SEO";
 
 const SUPPORT_EMAIL = "support@oradevotion.com";
 const SUPPORT_PHONE = "+1 (555) 123-4567";
