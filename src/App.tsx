@@ -81,6 +81,8 @@ const App = () => (
                 <Route path="/checkout/success" element={<CheckoutSuccess />} />
                 <Route path="/unsubscribe" element={<Unsubscribe />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/support" element={<Support />} />
+
 
                 {/* Premium-gated routes */}
                 <Route path="/monk-chat" element={<RequirePremium><MonkChat /></RequirePremium>} />
