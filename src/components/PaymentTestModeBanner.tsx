@@ -1,6 +1,8 @@
 const clientToken = import.meta.env.VITE_PAYMENTS_CLIENT_TOKEN as string | undefined;
 
 export function PaymentTestModeBanner() {
+  // Hide in production builds (App Store, published web) — only show in dev/preview.
+  if (import.meta.env.PROD) return null;
   if (!clientToken?.startsWith("test_")) return null;
 
   return (
