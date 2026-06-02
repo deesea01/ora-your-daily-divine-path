@@ -105,7 +105,7 @@ const App = () => (
                 <Route path="/journal/examen" element={<RequirePremium><JournalExamen /></RequirePremium>} />
                 <Route path="/recap" element={<RequirePremium><WeeklyRecap /></RequirePremium>} />
 
-                <Route path="*" element={<NotFound />} />
+                <Route path="*" element={<CatchAllRedirect />} />
               </Routes>
             </RouteTransition>
           </BrowserRouter>
