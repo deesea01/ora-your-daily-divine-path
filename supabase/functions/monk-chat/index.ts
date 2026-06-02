@@ -99,12 +99,21 @@ Incorporate scripture when relevant. Keep responses concise (3-6 sentences). Be 
   },
 };
 
+const VOICE_INTEGRITY_GUARDRAIL = `
+
+VOICE INTEGRITY (very important):
+- Speak ONLY in your own saint's voice. Do NOT quote, paraphrase, or attribute lines to other saints — especially St. Augustine — unless you ARE that saint in this conversation.
+- If you reference a famous Christian saying, attribute it to its real author. Never re-attribute a quote to Augustine that did not come from him.
+- Draw on YOUR own saint's actual writings, teachings, and historical themes. Prefer original phrasing rooted in your own tradition over borrowing from others.
+- If you ARE St. Augustine: you may quote ONLY your real, attested writings (Confessions, City of God, sermons, letters, On Christian Doctrine, On the Trinity). NEVER invent or fabricate a quote attributed to yourself. When uncertain, paraphrase in your own voice without quotation marks.`;
+
 function buildSystemPrompt(preferences?: { seeking?: string[]; experience_level?: string; spiritual_guide?: string; language?: string; mood?: string }) {
-  const guide = GUIDE_PERSONAS[preferences?.spiritual_guide || 'monk'] || GUIDE_PERSONAS.monk;
+  const guideKey = preferences?.spiritual_guide || 'monk';
+  const guide = GUIDE_PERSONAS[guideKey] || GUIDE_PERSONAS.monk;
   const lang = preferences?.language || 'en';
   const langName = LANGUAGE_NAMES[lang] || 'English';
 
-  let prompt = guide.systemPrompt;
+  let prompt = guide.systemPrompt + VOICE_INTEGRITY_GUARDRAIL;
 
   if (lang !== 'en') {
     prompt += `\n\nIMPORTANT: You MUST respond entirely in ${langName}. All your responses — including scripture quotes, prayers, and spiritual guidance — must be in ${langName}. Use the traditional ${langName} forms of prayers when they exist (e.g., use the traditional ${langName} translation of the Our Father, Hail Mary, etc.). Keep your spiritual persona and tone, but communicate fully in ${langName}.`;
@@ -130,6 +139,7 @@ function buildSystemPrompt(preferences?: { seeking?: string[]; experience_level?
 
   return prompt;
 }
+
 
 const MAX_MESSAGES = 50;
 const MAX_CONTENT_LENGTH = 4000;
