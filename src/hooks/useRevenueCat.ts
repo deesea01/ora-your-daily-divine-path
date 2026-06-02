@@ -24,19 +24,39 @@ import { useAuth } from '@/hooks/useAuth';
  */
 
 /**
- * NOTE: `Purchases.configure(...)` is intentionally NOT called here.
+ * Ensure the RevenueCat SDK is configured before any other call.
  *
- * The native iOS shell (see `ios/App/App/RevenueCatBootstrap.swift`) configures
- * the SDK during `application(_:didFinishLaunchingWithOptions:)`, before the
- * Capacitor webview boots. Configuring again from JS would reset the singleton
- * and break the in-flight StoreKit2 transaction listener.
+ * Primary path: the native iOS shell (`ios/App/App/RevenueCatBootstrap.swift`)
+ * calls `Purchases.configure(...)` during `didFinishLaunchingWithOptions`,
+ * before the Capacitor webview boots. That is the preferred place because
+ * it lets StoreKit2's transaction listener attach in time to catch
+ * App Store-initiated purchases.
  *
- * On non-iOS platforms this hook short-circuits via `isNativeIOS()`.
+ * Safety net (this function): if for any reason the native bootstrap did
+ * not run (e.g. dev builds without the Swift file, hot-reload edge cases,
+ * or a TestFlight build missing the bootstrap), we configure from JS using
+ * `VITE_REVENUECAT_IOS_API_KEY`. This prevents the
+ * "Purchases must be configured before calling this function" runtime error.
+ *
+ * Throws a descriptive error if neither the native bootstrap nor a JS key
+ * is available — callers surface that as a friendly setup message.
  */
-async function ensureConfigured(_appUserID: string) {
-  // No-op: native bootstrap owns configuration.
-  return;
+async function ensureConfigured(appUserID: string): Promise<void> {
+  try {
+    const { isConfigured } = await Purchases.isConfigured();
+    if (isConfigured) return;
+  } catch {
+    // Older SDKs may not expose isConfigured — fall through and try to configure.
+  }
+  const apiKey = (import.meta.env.VITE_REVENUECAT_IOS_API_KEY as string | undefined)?.trim();
+  if (!apiKey) {
+    throw new Error(
+      'In-app purchases are not set up on this build. Please update the app from the App Store.',
+    );
+  }
+  await Purchases.configure({ apiKey, appUserID });
 }
+
 
 export interface IapPlan {
   identifier: string; // RevenueCat package ID, e.g. "$rc_monthly"
