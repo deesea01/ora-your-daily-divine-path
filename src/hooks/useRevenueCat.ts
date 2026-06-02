@@ -139,13 +139,17 @@ export function useRevenueCat() {
   }, [user?.id]);
 
   const purchase = useCallback(async (plan: IapPlan) => {
-    if (!isNativeIOS()) throw new Error('IAP is only available in the iOS app.');
+    if (!isNativeIOS()) throw new Error('In-app purchases are only available in the iOS app.');
+    if (!user) throw new Error('Please sign in before subscribing.');
+    if (!ready) throw new Error('Subscriptions are still loading. Please try again in a moment.');
     setError(null);
     setLoading(true);
     try {
+      // Defensive: guarantee SDK is configured before invoking purchase.
+      await ensureConfigured(user.id);
       const result = await Purchases.purchasePackage({ aPackage: plan.rcPackage });
       setCustomerInfo(result.customerInfo);
-      if (user) await syncEntitlement(user.id, result.customerInfo);
+      await syncEntitlement(user.id, result.customerInfo);
       return result.customerInfo;
     } catch (e: any) {
       // RevenueCat sets userCancelled when the user dismisses the sheet.
@@ -155,16 +159,18 @@ export function useRevenueCat() {
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, ready]);
 
   const restore = useCallback(async () => {
     if (!isNativeIOS()) return null;
+    if (!user) throw new Error('Please sign in before restoring purchases.');
     setError(null);
     setLoading(true);
     try {
+      await ensureConfigured(user.id);
       const result = await Purchases.restorePurchases();
       setCustomerInfo(result.customerInfo);
-      if (user) await syncEntitlement(user.id, result.customerInfo);
+      await syncEntitlement(user.id, result.customerInfo);
       return result.customerInfo;
     } catch (e: any) {
       setError(e?.message ?? 'Restore failed');
@@ -173,6 +179,7 @@ export function useRevenueCat() {
       setLoading(false);
     }
   }, [user?.id]);
+
 
   const hasPremiumEntitlement = !!customerInfo?.entitlements?.active?.['premium'];
 
