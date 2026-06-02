@@ -47,33 +47,39 @@ export function useConfession() {
     if (!user) return;
     setLoading(true);
 
-    const [confRes, prepRes, settRes] = await Promise.all([
-      supabase
-        .from('confessions')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('confession_date', { ascending: false }),
-      supabase
-        .from('confession_prep_notes')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('is_draft', true),
-      supabase
-        .from('confession_settings')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle(),
-    ]);
+    try {
+      const [confRes, prepRes, settRes] = await Promise.all([
+        supabase
+          .from('confessions')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('confession_date', { ascending: false }),
+        supabase
+          .from('confession_prep_notes')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('is_draft', true),
+        supabase
+          .from('confession_settings')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle(),
+      ]);
 
-    if (confRes.data) setConfessions(confRes.data as any);
-    if (prepRes.data) setPrepNotes(prepRes.data as any);
-    if (settRes.data) {
-      const { id, user_id, created_at, updated_at, ...rest } = settRes.data as any;
-      setSettings(rest);
+      if (confRes.data) setConfessions(confRes.data as any);
+      if (prepRes.data) setPrepNotes(prepRes.data as any);
+      if (settRes.data) {
+        const { id, user_id, created_at, updated_at, ...rest } = settRes.data as any;
+        setSettings(rest);
+      }
+    } catch (e) {
+      // Swallow — we always want to clear loading so the UI doesn't freeze.
+      console.warn('[useConfession] fetchAll failed', e);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   }, [user]);
+
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
