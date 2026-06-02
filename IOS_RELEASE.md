@@ -54,9 +54,16 @@ This creates `ios/App/` containing the Xcode project. Commit it.
 npx capacitor-assets generate --ios
 ```
 
-This reads `resources/icon.png` and `resources/splash.png` and produces every
-size iOS demands (App Icon 1024, plus all the @2x/@3x assets). Re-run this
-whenever you change the source artwork.
+This reads `resources/icon.png` (the final Ora gold-cross icon, 1024×1024) and
+`resources/splash.png` and produces every size iOS demands — iPhone home
+screen, iPad, App Store marketing 1024, notification, settings, spotlight,
+plus all @2x/@3x variants. Re-run whenever you change the source artwork.
+
+If you'd rather skip the generator, the repo also ships a prebuilt
+`ios-appicon/AppIcon.appiconset/` you can drop straight into
+`ios/App/App/Assets.xcassets/` (see `ios-appicon/README.md`). Either path
+guarantees the build icon matches the App Store Connect listing and not the
+generic Capacitor placeholder.
 
 ## Step 4 — Open in Xcode and configure signing
 
