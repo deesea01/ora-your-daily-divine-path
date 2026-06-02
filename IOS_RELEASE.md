@@ -69,7 +69,49 @@ In Xcode:
 2. Set **Team** to your Apple Developer team.
 3. Bundle Identifier: `app.lovable.402451b9e2f440359c315d5149811cd4` (or change to your preferred reverse-DNS — must be unique on App Store Connect).
 4. Add capability: **In-App Purchase**.
-5. Add capability: **Push Notifications** *only* if you later add APNs (not needed for local notifications).
+5. Add capability: **Sign In with Apple** (required by the iOS auth flow and by App Review Guideline 4.8 since the app also offers Google sign-in).
+6. Add capability: **Push Notifications** *only* if you later add APNs (not needed for local notifications).
+
+### 4a. Register the OAuth custom URL scheme (CRITICAL for Google / Apple sign-in)
+
+Without this, native sign-in dies silently — Supabase tries to redirect back to
+`app.lovable.402451b9e2f440359c315d5149811cd4://oauth-callback` and iOS has no
+idea which app to hand the URL to.
+
+In Xcode → **App target → Info → URL Types → +**:
+- **Identifier:** `oauth`
+- **URL Schemes:** `app.lovable.402451b9e2f440359c315d5149811cd4`
+- **Role:** Editor
+
+Equivalent Info.plist snippet:
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+  <dict>
+    <key>CFBundleURLName</key><string>oauth</string>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>app.lovable.402451b9e2f440359c315d5149811cd4</string>
+    </array>
+  </dict>
+</array>
+```
+
+### 4b. Allow-list the scheme in Lovable Cloud auth
+
+Lovable Cloud → **Users → Auth Settings → URL Configuration → Redirect URLs → Add**:
+```
+app.lovable.402451b9e2f440359c315d5149811cd4://oauth-callback
+```
+
+### 4c. Provider console redirect URIs
+
+Google Cloud Console (only required if using your own Google credentials — managed
+mode just works) and Apple Developer Services ID must both point at the Supabase
+auth callback, **not** the custom scheme:
+```
+https://lrrsmihlulzuhdqndinw.supabase.co/auth/v1/callback
+```
 
 Run on a simulator with **▶︎ Run** to confirm the app boots, the splash hides, and the dark status bar shows.
 
