@@ -28,13 +28,18 @@ const LogConfession = () => {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  if (authLoading || loading) {
+  // Only block the page on auth resolution. We intentionally do NOT gate on
+  // `useConfession().loading` here — that flips true during `logConfession`'s
+  // post-insert refetch and would replace the form with a spinner mid-submit,
+  // causing the page to appear frozen until refetch resolved.
+  if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-6 w-6 rounded-full border-2 border-gold border-t-transparent animate-spin" />
       </div>
     );
   }
+
 
   if (!user) return <Navigate to="/auth" replace />;
 
