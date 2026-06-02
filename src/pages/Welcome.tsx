@@ -168,11 +168,13 @@ const Welcome = () => {
             {t.signIn || 'Log In'}
           </button>
 
-          <div className="flex items-center gap-3 py-1">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-xs text-muted-foreground">{t.or || 'or'}</span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
+          {onIos && (
+            <div className="flex items-center gap-3 py-1">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs text-muted-foreground">{t.or || 'or'}</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+          )}
 
           {onIos && (
             <button
