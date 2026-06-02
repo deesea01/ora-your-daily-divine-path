@@ -49,18 +49,12 @@ export function IapPaywallSection() {
     }
   };
 
-  if (!ready && loading) {
+  // Loading state — block all purchase UI until offerings actually arrive.
+  if (loading || (!ready && !error)) {
     return (
-      <div className="flex items-center justify-center py-10 text-muted-foreground">
+      <div className="flex flex-col items-center justify-center gap-2 py-10 text-muted-foreground">
         <Loader2 className="h-5 w-5 animate-spin" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
-        {error}
+        <p className="text-xs">Loading subscription options…</p>
       </div>
     );
   }
@@ -76,13 +70,31 @@ export function IapPaywallSection() {
     );
   }
 
-  if (plans.length === 0) {
+  // Setup error or empty offerings — show friendly message, still expose Restore.
+  if (error || plans.length === 0) {
     return (
-      <div className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
-        Subscription plans aren't available right now. Please try again in a moment.
+      <div className="space-y-3">
+        <div className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
+          {error
+            ? error
+            : "Subscription plans aren't available right now. Please check your connection and try again in a moment."}
+        </div>
+        <button
+          onClick={handleRestore}
+          disabled={busyId !== null}
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-transparent py-3 text-sm text-muted-foreground transition-all active:scale-[0.98] disabled:opacity-60"
+        >
+          {busyId === 'restore' ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="h-4 w-4" />
+          )}
+          Restore Purchases
+        </button>
       </div>
     );
   }
+
 
   return (
     <div className="space-y-3">
