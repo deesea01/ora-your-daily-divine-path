@@ -7,6 +7,8 @@ import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
 import { lovable } from '@/integrations/lovable/index';
 import SEO from '@/components/SEO';
 import { isNativeIOS } from '@/lib/platform';
+import { nativeOAuthSignIn } from '@/lib/nativeAuth';
+import { toast } from 'sonner';
 
 const Auth = () => {
   const { user, loading, signIn, signUp, resetPasswordForEmail } = useAuth();
@@ -24,40 +26,43 @@ const Auth = () => {
   const [appleLoading, setAppleLoading] = useState(false);
   const onIos = isNativeIOS();
 
-  const handleGoogleSignIn = async () => {
-    setGoogleLoading(true);
+  const runOAuth = async (provider: 'google' | 'apple') => {
     setError('');
+    const label = provider === 'google' ? 'Google' : 'Apple';
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
+      if (onIos) {
+        const { error: nErr } = await nativeOAuthSignIn(provider);
+        if (nErr) {
+          const msg = nErr.message || `${label} sign-in failed`;
+          setError(msg);
+          toast.error(msg);
+        }
+        return;
+      }
+      const result = await lovable.auth.signInWithOAuth(provider, {
         redirect_uri: `${window.location.origin}/auth${window.location.search}`,
       });
       if (result.error) {
-        setError(result.error.message || 'Google sign-in failed');
+        const msg = result.error.message || `${label} sign-in failed`;
+        setError(msg);
+        toast.error(msg);
       }
       if (result.redirected) return;
     } catch (err: any) {
-      setError(err?.message || 'Google sign-in failed');
-    } finally {
-      setGoogleLoading(false);
+      const msg = err?.message || `${label} sign-in failed`;
+      setError(msg);
+      toast.error(msg);
     }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    try { await runOAuth('google'); } finally { setGoogleLoading(false); }
   };
 
   const handleAppleSignIn = async () => {
     setAppleLoading(true);
-    setError('');
-    try {
-      const result = await lovable.auth.signInWithOAuth("apple", {
-        redirect_uri: `${window.location.origin}/auth${window.location.search}`,
-      });
-      if (result.error) {
-        setError(result.error.message || 'Apple sign-in failed');
-      }
-      if (result.redirected) return;
-    } catch (err: any) {
-      setError(err?.message || 'Apple sign-in failed');
-    } finally {
-      setAppleLoading(false);
-    }
+    try { await runOAuth('apple'); } finally { setAppleLoading(false); }
   };
   if (loading) {
     return (
