@@ -37,6 +37,7 @@ import Unsubscribe from "./pages/Unsubscribe.tsx";
 import WeeklyRecap from "./pages/WeeklyRecap.tsx";
 import Support from "./pages/Support.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import CatchAllRedirect from "@/components/CatchAllRedirect";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { AuthNav } from "@/components/AuthNav";
 import { AuthFooterFallback } from "@/components/AuthFooterFallback";
