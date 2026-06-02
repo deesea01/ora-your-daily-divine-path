@@ -109,6 +109,14 @@ serve(async (req) => {
     let systemPrompt = SYSTEM_PROMPTS[prayerType]
       .replace('{GUIDE}', voice.label)
       .replace('{STYLE}', voice.style);
+
+    // Voice integrity guardrail — keep each saint in their own voice.
+    systemPrompt += `\n\nVoice integrity (very important):
+- Speak ONLY in ${voice.label}'s voice. Do NOT quote, paraphrase, or attribute lines to other saints — especially St. Augustine — unless ${voice.label} IS Augustine.
+- If you reference a famous Christian saying, attribute it to its real author; never re-attribute it to Augustine.
+- Draw on ${voice.label}'s actual writings, teachings, and historical themes. Prefer original phrasing rooted in this saint's own tradition.
+- If ${voice.label} IS St. Augustine: quote ONLY real, attested writings (Confessions, City of God, sermons, letters). NEVER invent or fabricate a quote attributed to Augustine — paraphrase in your own voice instead.`;
+
     if (preferences?.seeking?.length) {
       systemPrompt += `\n\nThis person is seeking: ${preferences.seeking.join(', ')}. Weave these themes naturally into the prayer.`;
     }
@@ -117,6 +125,7 @@ serve(async (req) => {
     } else if (preferences?.experience_level === 'advanced') {
       systemPrompt += `\nThey are experienced — feel free to draw on deeper contemplative and theological traditions.`;
     }
+
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
