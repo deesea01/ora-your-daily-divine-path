@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Loader2, RefreshCw, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRevenueCat, type IapPlan } from '@/hooks/useRevenueCat';
+import { useAuth } from '@/hooks/useAuth';
+
 
 /**
  * iOS-only paywall surface, swapped in by `Paywall.tsx` when `isNativeIOS()`.
@@ -14,6 +16,8 @@ import { useRevenueCat, type IapPlan } from '@/hooks/useRevenueCat';
  * instead. Auth + subscription gating logic is identical for both.
  */
 export function IapPaywallSection() {
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const { ready, loading, plans, error, hasPremiumEntitlement, purchase, restore } = useRevenueCat();
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -49,8 +53,27 @@ export function IapPaywallSection() {
     }
   };
 
+  // Not signed in yet — RevenueCat needs an appUserID. Show a sign-in CTA
+  // instead of an infinite spinner so Apple reviewers (and new users landing
+  // on /paywall from "View pricing") always have a clear next step.
+  if (!authLoading && !user) {
+    return (
+      <div className="space-y-3">
+        <div className="rounded-xl border border-border bg-card p-4 text-sm text-foreground">
+          Sign in to view subscription options and start your free trial.
+        </div>
+        <button
+          onClick={() => navigate('/auth?mode=signup&redirect=%2Fpaywall')}
+          className="w-full rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all active:scale-[0.98]"
+        >
+          Sign in to continue
+        </button>
+      </div>
+    );
+  }
+
   // Loading state — block all purchase UI until offerings actually arrive.
-  if (loading || (!ready && !error)) {
+  if (authLoading || loading || (!ready && !error)) {
     return (
       <div className="flex flex-col items-center justify-center gap-2 py-10 text-muted-foreground">
         <Loader2 className="h-5 w-5 animate-spin" />
