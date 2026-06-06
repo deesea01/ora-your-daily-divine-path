@@ -475,7 +475,7 @@ const MonkChat = () => {
           >
             {chatRemaining > 0
               ? `${chatRemaining} of ${chatLimit} free chats left today · Unlock the saints`
-              : `You've used today's free chats · Start your 3-day trial for unlimited`}
+              : `You've used today's free chats · Unlock your prayer life for unlimited`}
           </button>
         )}
         {voice.isEnabled && (
