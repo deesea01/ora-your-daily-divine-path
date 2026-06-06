@@ -79,7 +79,7 @@ const Paywall = () => {
   }, [user, onIos]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe app-container">
+    <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe app-container-wide">
       <SEO
         title="Ora Premium — Daily Catholic Prayer & Devotion Plans"
         description="Begin a guided life of prayer, devotion, and spiritual growth. Ora Premium is $9.99/month or $59.99/year. Cancel anytime."

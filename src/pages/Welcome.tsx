@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
 import SEO from '@/components/SEO';
+import { isNativeIOS } from '@/lib/platform';
 
 const Welcome = () => {
   const { user, loading } = useAuth();
@@ -22,7 +23,7 @@ const Welcome = () => {
   if (user) return <Navigate to="/" replace />;
 
   return (
-    <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe app-container">
+    <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe app-container-wide">
       <SEO
         title="Daily Catholic Prayer App — Grow Closer to God with Ora"
         description="Start a daily devotion with guided Catholic prayers, the rosary, and saint-led reflections. Ora helps you grow closer to God with a personalized spiritual path."
@@ -108,12 +109,14 @@ const Welcome = () => {
           </button>
         </div>
 
-        <Link
-          to="/paywall"
-          className="mt-6 text-xs text-muted-foreground hover:text-gold underline underline-offset-4"
-        >
-          View pricing
-        </Link>
+        {!isNativeIOS() && (
+          <Link
+            to="/paywall"
+            className="mt-6 text-xs text-muted-foreground hover:text-gold underline underline-offset-4"
+          >
+            View pricing
+          </Link>
+        )}
 
         <p className="mt-6 px-4 text-[11px] leading-relaxed text-muted-foreground max-w-xs">
           By continuing, you agree to our{' '}
