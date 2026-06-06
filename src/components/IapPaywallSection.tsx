@@ -60,7 +60,7 @@ export function IapPaywallSection() {
     return (
       <div className="space-y-3">
         <div className="rounded-xl border border-border bg-card p-4 text-sm text-foreground">
-          Sign in to view subscription options and start your free trial.
+          Sign in to view subscription options and unlock your prayer life.
         </div>
         <button
           onClick={() => navigate('/auth?mode=signup&redirect=%2Fpaywall')}
