@@ -1,14 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import logoImg from '@/assets/logo.png';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useSearchParams, Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
-import { lovable } from '@/integrations/lovable/index';
 import SEO from '@/components/SEO';
-import { isNativeIOS } from '@/lib/platform';
-import { nativeOAuthSignIn } from '@/lib/nativeAuth';
-import { toast } from 'sonner';
 
 const Auth = () => {
   const { user, loading, signIn, signUp, resetPasswordForEmail } = useAuth();
@@ -22,48 +18,7 @@ const Auth = () => {
   const [submitting, setSubmitting] = useState(false);
   const [signUpSuccess, setSignUpSuccess] = useState(false);
   const [resetSent, setResetSent] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const [appleLoading, setAppleLoading] = useState(false);
-  const onIos = isNativeIOS();
 
-  const runOAuth = async (provider: 'google' | 'apple') => {
-    setError('');
-    const label = provider === 'google' ? 'Google' : 'Apple';
-    try {
-      if (onIos) {
-        const { error: nErr } = await nativeOAuthSignIn(provider);
-        if (nErr) {
-          const msg = nErr.message || `${label} sign-in failed`;
-          setError(msg);
-          toast.error(msg);
-        }
-        return;
-      }
-      const result = await lovable.auth.signInWithOAuth(provider, {
-        redirect_uri: `${window.location.origin}/auth${window.location.search}`,
-      });
-      if (result.error) {
-        const msg = result.error.message || `${label} sign-in failed`;
-        setError(msg);
-        toast.error(msg);
-      }
-      if (result.redirected) return;
-    } catch (err: any) {
-      const msg = err?.message || `${label} sign-in failed`;
-      setError(msg);
-      toast.error(msg);
-    }
-  };
-
-  const handleGoogleSignIn = async () => {
-    setGoogleLoading(true);
-    try { await runOAuth('google'); } finally { setGoogleLoading(false); }
-  };
-
-  const handleAppleSignIn = async () => {
-    setAppleLoading(true);
-    try { await runOAuth('apple'); } finally { setAppleLoading(false); }
-  };
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
