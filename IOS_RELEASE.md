@@ -226,11 +226,12 @@ Use the Simulator (`File → Save Screen` ⌘S) on each size, or generate market
 
 In Xcode:
 1. Top bar: select **Any iOS Device (arm64)**.
-2. **Product → Archive** (this takes ~2 minutes).
-3. Organizer window opens → **Distribute App → App Store Connect → Upload**.
-4. Wait ~10 minutes for processing in App Store Connect.
-5. App Store Connect → TestFlight → invite yourself as an internal tester.
-6. Install via TestFlight on your device. **Test the IAP again with sandbox account.**
+2. **Set the build for App Store resubmission**: target `App` → **General** → set **Version** to `1.0` and **Build** to `3`. (Also editable in `ios/App/App.xcodeproj/project.pbxproj` as `MARKETING_VERSION = 1.0` and `CURRENT_PROJECT_VERSION = 3`.)
+3. **Product → Archive** (this takes ~2 minutes).
+4. Organizer window opens → **Distribute App → App Store Connect → Upload**.
+5. Wait ~10 minutes for processing in App Store Connect.
+6. App Store Connect → TestFlight → invite yourself as an internal tester.
+7. Install via TestFlight on your device. **Test the IAP again with sandbox account.**
 
 ## Step 11 — Submit for review
 
@@ -238,8 +239,8 @@ App Store Connect → App Store tab → fill in:
 - App description, keywords, category (Lifestyle, secondary: Reference)
 - Age rating questionnaire
 - Screenshots (Step 9)
-- Subscription review notes — **include sandbox test account credentials**, and note: "Premium unlocks all features. The 3-day free trial converts to $9.99/mo or $59.99/yr. Subscription is managed in iOS Settings."
-- App Review notes — explain that web subscriptions exist but iOS users must use Apple IAP per Guideline 3.1.1; restore is supported.
+- Subscription review notes — **include sandbox test account credentials**, and note: "Premium unlocks all features. Subscription is $9.99/mo or $59.99/yr, managed in iOS Settings. No free trial is offered."
+- App Review notes — explain that web subscriptions exist but iOS users must use Apple IAP per Guideline 3.1.1; Restore Purchases is supported. The app uses email-only authentication; no third-party / social login is offered.
 
 ### Reviewer demo account (required — Guideline 2.3)
 

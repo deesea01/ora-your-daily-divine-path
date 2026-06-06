@@ -37,8 +37,6 @@ const RefundPolicy = () => {
         <h2 className="font-serif text-lg text-foreground">30-Day Money-Back Guarantee</h2>
         <p>We want you to feel at peace with your purchase. If you are not satisfied with your Ora subscription, you may request a full refund within <strong className="text-foreground">30 days</strong> of your order date.</p>
 
-        <h2 className="font-serif text-lg text-foreground">Free Trial</h2>
-        <p>New subscribers receive a 3-day free trial. You will not be charged if you cancel before the trial ends.</p>
 
         <h2 className="font-serif text-lg text-foreground">How to Request a Refund</h2>
         <p>Refunds are processed by our payment provider, <strong className="text-foreground">Paddle</strong>, who serves as the Merchant of Record for all Ora purchases. To request a refund:</p>

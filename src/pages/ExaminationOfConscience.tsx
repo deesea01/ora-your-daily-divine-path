@@ -170,14 +170,22 @@ const ExaminationOfConscience = () => {
           );
         })}
 
-        {/* View summary button */}
+        {/* View summary + flow into log */}
         {totalChecked > 0 && (
-          <button
-            onClick={() => navigate('/confession/prep')}
-            className="mt-4 w-full rounded-xl border border-gold/30 bg-gold/10 py-3 text-sm font-medium text-gold transition-all hover:bg-gold/20"
-          >
-            View Preparation Summary
-          </button>
+          <div className="mt-4 space-y-2">
+            <button
+              onClick={() => navigate('/confession/prep')}
+              className="w-full rounded-xl border border-gold/30 bg-gold/10 py-3 text-sm font-medium text-gold transition-all hover:bg-gold/20"
+            >
+              View Preparation Summary
+            </button>
+            <button
+              onClick={() => navigate('/confession/log')}
+              className="w-full rounded-xl bg-gold py-3 text-sm font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98]"
+            >
+              Log Confession
+            </button>
+          </div>
         )}
       </main>
     </div>

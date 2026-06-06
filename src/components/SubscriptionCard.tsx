@@ -39,7 +39,7 @@ export function SubscriptionCard() {
           onClick={() => navigate("/paywall")}
           className="w-full mt-2 rounded-lg bg-gold py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90"
         >
-          Start 3-day free trial
+          Unlock Your Prayer Life
         </button>
         <div className="mt-3"><MissionNote variant="compact" /></div>
       </div>
@@ -124,7 +124,7 @@ export function SubscriptionCard() {
         </div>
         <div className="flex-1">
           <p className="text-sm font-medium text-foreground">
-            Premium {subscription?.status === "trialing" && "(Trial)"} · {isYearly ? "Yearly" : "Monthly"}
+            Premium · {isYearly ? "Yearly" : "Monthly"}
           </p>
           <p className="text-xs text-muted-foreground">
             {subscription?.cancel_at_period_end

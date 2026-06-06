@@ -22,8 +22,8 @@ const CheckoutSuccess = () => {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
       <SEO
-        title="Welcome to Ora — Trial started"
-        description="Your Ora Premium trial has started. Begin your daily Catholic prayer journey."
+        title="Welcome to Ora — Premium activated"
+        description="Your Ora Premium subscription is active. Begin your daily Catholic prayer journey."
         canonicalPath="/checkout/success"
         noindex
         jsonLd={{
@@ -39,7 +39,7 @@ const CheckoutSuccess = () => {
       </div>
       <h1 className="font-serif text-3xl text-foreground mb-3">Welcome to Ora.</h1>
       <p className="text-sm text-muted-foreground max-w-xs mb-2">
-        Your 3-day trial has started. We'll remind you before it ends.
+        Your Premium subscription is active. Cancel anytime.
       </p>
       {isActive && <p className="text-xs text-gold mb-6">✓ Subscription active</p>}
 

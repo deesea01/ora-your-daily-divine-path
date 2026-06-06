@@ -82,7 +82,7 @@ const Paywall = () => {
     <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe app-container">
       <SEO
         title="Ora Premium — Daily Catholic Prayer & Devotion Plans"
-        description="Begin a guided life of prayer, devotion, and spiritual growth. Ora Premium is $9.99/month or $59.99/year with a free trial. Cancel anytime."
+        description="Begin a guided life of prayer, devotion, and spiritual growth. Ora Premium is $9.99/month or $59.99/year. Cancel anytime."
         canonicalPath="/paywall"
         jsonLd={{
           '@context': 'https://schema.org',
@@ -162,7 +162,7 @@ const Paywall = () => {
                 <p className="mt-1 font-serif text-2xl text-foreground">
                   $1<span className="text-sm text-muted-foreground"> for your first month</span>
                 </p>
-                <p className="mt-1 text-[11px] text-muted-foreground">After 3-day trial · then $9.99/mo · cancel anytime</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">Then $9.99/mo · cancel anytime</p>
               </button>
 
               <div className="grid grid-cols-2 gap-3">
@@ -198,10 +198,10 @@ const Paywall = () => {
                 <Check className="h-3.5 w-3.5 text-gold" />
                 <span>
                   {plan === 'intro'
-                    ? '3 days free — then $1 for your first month, then $9.99/month'
+                    ? '$1 for your first month, then $9.99/month'
                     : plan === 'yearly'
-                    ? '3 days free — then $59.99/year'
-                    : '3 days free — then $9.99/month'}
+                    ? '$59.99/year, billed annually'
+                    : '$9.99/month, billed monthly'}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -213,7 +213,7 @@ const Paywall = () => {
                 <span>Secure checkout · taxes handled for you</span>
               </div>
               <label className="flex items-center justify-between pt-2 cursor-pointer">
-                <span className="text-xs text-foreground">Remind me before my trial ends</span>
+                <span className="text-xs text-foreground">Remind me about my subscription</span>
                 <input
                   type="checkbox"
                   checked={reminderOn}
@@ -239,7 +239,7 @@ const Paywall = () => {
             onClick={() => handleStartTrial()}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98] disabled:opacity-60"
           >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Begin Premium Journey'}
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Unlock Your Prayer Life'}
           </button>
         </div>
       )}
