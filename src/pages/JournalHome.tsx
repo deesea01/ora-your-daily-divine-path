@@ -57,10 +57,10 @@ const JournalHome = () => {
           </div>
           <h2 className="font-serif text-2xl text-foreground mb-2">Reflect deeper, with the saints.</h2>
           <p className="text-sm text-muted-foreground max-w-xs mb-8">
-            The journal, daily Examen, and AI-guided spiritual insights are part of premium. Start your 3-day free trial.
+            The journal, daily Examen, and AI-guided spiritual insights are part of premium.
           </p>
           <button onClick={() => navigate('/paywall')} className="w-full max-w-xs rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98]">
-            Start your 3-day free trial
+            Unlock Your Prayer Life
           </button>
         </div>
       </div>
