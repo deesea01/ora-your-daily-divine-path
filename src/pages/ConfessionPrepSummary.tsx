@@ -106,6 +106,19 @@ const ConfessionPrepSummary = () => {
               </div>
             ))}
 
+            {/* Flow into confession log after examination */}
+            <button
+              onClick={() => navigate('/confession/log')}
+              className="mt-2 w-full flex items-center justify-center gap-2 rounded-xl bg-gold py-3.5 text-sm font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98]"
+            >
+              <BookOpen className="h-4 w-4" />
+              Log Confession
+            </button>
+            <p className="text-center text-[11px] text-muted-foreground -mt-2">
+              After Confession, mark it complete in your private log.
+            </p>
+
+
             {/* Delete all */}
             <div className="pt-4">
               {confirmDelete ? (
