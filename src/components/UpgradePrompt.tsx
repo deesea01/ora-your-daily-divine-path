@@ -17,7 +17,7 @@ export function UpgradePrompt({
   onClose,
   title = "Grow deeper in your faith with the saints.",
   description = "Unlock unlimited Saint conversations, the full prayer library, journal & Examen, and progress insights.",
-  ctaLabel = "Start your 3-day free trial",
+  ctaLabel = "Unlock Your Prayer Life",
 }: UpgradePromptProps) {
   const navigate = useNavigate();
 
