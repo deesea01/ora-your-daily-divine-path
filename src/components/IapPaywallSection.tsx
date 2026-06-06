@@ -133,18 +133,16 @@ export function IapPaywallSection() {
               {plan.period === 'yearly' ? 'Yearly' : plan.period === 'monthly' ? 'Monthly' : plan.title}
             </p>
             <p className="mt-1 font-serif text-2xl text-foreground">{plan.priceString}</p>
-            {plan.introPeriod && (
+            {plan.introPeriod && plan.introPriceString && plan.introPriceString !== 'Free' && (
               <p className="mt-1 text-[11px] text-gold">
-                {plan.introPriceString === 'Free' || !plan.introPriceString
-                  ? `${plan.introPeriod} free trial, then ${plan.priceString}`
-                  : `${plan.introPriceString} for ${plan.introPeriod}, then ${plan.priceString}`}
+                {`${plan.introPriceString} for ${plan.introPeriod}, then ${plan.priceString}`}
               </p>
             )}
           </div>
           {busyId === plan.identifier ? (
             <Loader2 className="h-5 w-5 animate-spin text-gold" />
           ) : (
-            <span className="rounded-full bg-gold px-4 py-2 text-sm font-medium text-primary-foreground">Subscribe</span>
+            <span className="rounded-full bg-gold px-4 py-2 text-sm font-medium text-primary-foreground">Unlock</span>
           )}
         </button>
       ))}
