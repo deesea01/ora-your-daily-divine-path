@@ -64,7 +64,7 @@ const Auth = () => {
     setSubmitting(false);
   };
 
-  const currentLang = SUPPORTED_LANGUAGES.find(l => l.code === language);
+  
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-6 bg-background">
