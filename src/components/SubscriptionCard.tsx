@@ -124,7 +124,7 @@ export function SubscriptionCard() {
         </div>
         <div className="flex-1">
           <p className="text-sm font-medium text-foreground">
-            Premium {subscription?.status === "trialing" && "(Trial)"} · {isYearly ? "Yearly" : "Monthly"}
+            Premium · {isYearly ? "Yearly" : "Monthly"}
           </p>
           <p className="text-xs text-muted-foreground">
             {subscription?.cancel_at_period_end
