@@ -22,7 +22,7 @@ const Welcome = () => {
   if (user) return <Navigate to="/" replace />;
 
   return (
-    <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe app-container">
+    <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe app-container-wide">
       <SEO
         title="Daily Catholic Prayer App — Grow Closer to God with Ora"
         description="Start a daily devotion with guided Catholic prayers, the rosary, and saint-led reflections. Ora helps you grow closer to God with a personalized spiritual path."
