@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { ArrowLeft, EyeOff, Eye, Trash2 } from 'lucide-react';
+import { ArrowLeft, EyeOff, Eye, Trash2, BookOpen } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useConfession } from '@/hooks/useConfession';
 import { EXAMINATION_CATEGORIES } from '@/lib/examination';
