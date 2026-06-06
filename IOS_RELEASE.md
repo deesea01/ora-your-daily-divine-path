@@ -226,11 +226,12 @@ Use the Simulator (`File → Save Screen` ⌘S) on each size, or generate market
 
 In Xcode:
 1. Top bar: select **Any iOS Device (arm64)**.
-2. **Product → Archive** (this takes ~2 minutes).
-3. Organizer window opens → **Distribute App → App Store Connect → Upload**.
-4. Wait ~10 minutes for processing in App Store Connect.
-5. App Store Connect → TestFlight → invite yourself as an internal tester.
-6. Install via TestFlight on your device. **Test the IAP again with sandbox account.**
+2. **Set the build for App Store resubmission**: target `App` → **General** → set **Version** to `1.0` and **Build** to `3`. (Also editable in `ios/App/App.xcodeproj/project.pbxproj` as `MARKETING_VERSION = 1.0` and `CURRENT_PROJECT_VERSION = 3`.)
+3. **Product → Archive** (this takes ~2 minutes).
+4. Organizer window opens → **Distribute App → App Store Connect → Upload**.
+5. Wait ~10 minutes for processing in App Store Connect.
+6. App Store Connect → TestFlight → invite yourself as an internal tester.
+7. Install via TestFlight on your device. **Test the IAP again with sandbox account.**
 
 ## Step 11 — Submit for review
 
