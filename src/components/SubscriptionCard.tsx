@@ -39,7 +39,7 @@ export function SubscriptionCard() {
           onClick={() => navigate("/paywall")}
           className="w-full mt-2 rounded-lg bg-gold py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90"
         >
-          Start 3-day free trial
+          Unlock Your Prayer Life
         </button>
         <div className="mt-3"><MissionNote variant="compact" /></div>
       </div>
