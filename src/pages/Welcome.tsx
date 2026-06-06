@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
 import SEO from '@/components/SEO';
+import { isNativeIOS } from '@/lib/platform';
 
 const Welcome = () => {
   const { user, loading } = useAuth();
@@ -108,12 +109,14 @@ const Welcome = () => {
           </button>
         </div>
 
-        <Link
-          to="/paywall"
-          className="mt-6 text-xs text-muted-foreground hover:text-gold underline underline-offset-4"
-        >
-          View pricing
-        </Link>
+        {!isNativeIOS() && (
+          <Link
+            to="/paywall"
+            className="mt-6 text-xs text-muted-foreground hover:text-gold underline underline-offset-4"
+          >
+            View pricing
+          </Link>
+        )}
 
         <p className="mt-6 px-4 text-[11px] leading-relaxed text-muted-foreground max-w-xs">
           By continuing, you agree to our{' '}
