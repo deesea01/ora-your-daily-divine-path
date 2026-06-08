@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { getPaddleEnvironment } from "@/lib/paddle";
+import { isNativeIOS } from "@/lib/platform";
 
 export interface Subscription {
   status: string;
@@ -17,7 +18,7 @@ export function useSubscription() {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const env = getPaddleEnvironment();
+  const env = isNativeIOS() ? "ios_iap" : getPaddleEnvironment();
 
   const load = async () => {
     if (!user) {
