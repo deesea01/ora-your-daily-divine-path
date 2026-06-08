@@ -27,6 +27,10 @@ export function IapPaywallSection() {
       const info = await purchase(plan);
       if (info?.entitlements?.active?.['premium']) {
         toast.success('Welcome to Ora Premium ✦');
+        // Take the user into the app immediately once Apple confirms the
+        // purchase. Without this, the user is left on the paywall waiting
+        // for the RevenueCat → Supabase webhook to flip `isPremium`.
+        navigate('/', { replace: true });
       }
     } catch (e: any) {
       toast.error(e?.message ?? 'Purchase failed');
