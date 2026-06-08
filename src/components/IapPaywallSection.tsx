@@ -63,24 +63,9 @@ export function IapPaywallSection() {
     }
   };
 
-  // Not signed in yet — RevenueCat needs an appUserID. Show a sign-in CTA
-  // instead of an infinite spinner so Apple reviewers (and new users landing
-  // on /paywall from "View pricing") always have a clear next step.
-  if (!authLoading && !user) {
-    return (
-      <div className="space-y-3">
-        <div className="rounded-xl border border-border bg-card p-4 text-sm text-foreground">
-          Sign in to view subscription options and unlock your prayer life.
-        </div>
-        <button
-          onClick={() => navigate('/auth?mode=signup&redirect=%2Fpaywall')}
-          className="w-full rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all active:scale-[0.98]"
-        >
-          Sign in to continue
-        </button>
-      </div>
-    );
-  }
+  // Unauthenticated visitors can still view the plans. Sign-in is prompted
+  // only when they actually tap Purchase or Restore (see handlers above).
+
 
   // Loading state — block all purchase UI until offerings actually arrive.
   if (authLoading || loading || (!ready && !error)) {
