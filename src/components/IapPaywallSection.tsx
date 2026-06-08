@@ -170,10 +170,19 @@ export function IapPaywallSection() {
         cancel anytime in your Apple ID settings. Payment is charged to your Apple ID account at confirmation.
       </p>
 
-      <div className="flex items-center justify-center gap-4 pt-1 text-[11px] text-muted-foreground">
+      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pt-1 text-[11px] text-muted-foreground">
         <Link to="/terms-of-service" className="underline underline-offset-2 hover:text-gold">Terms of Service</Link>
         <span aria-hidden>·</span>
         <Link to="/privacy-policy" className="underline underline-offset-2 hover:text-gold">Privacy Policy</Link>
+        <span aria-hidden>·</span>
+        <a
+          href="https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-2 hover:text-gold"
+        >
+          EULA (Apple Standard)
+        </a>
       </div>
     </div>
   );
