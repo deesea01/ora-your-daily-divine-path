@@ -201,9 +201,10 @@ export function useRevenueCat() {
       await syncEntitlement(user.id, result.customerInfo);
       return result.customerInfo;
     } catch (e: any) {
-      // RevenueCat sets userCancelled when the user dismisses the sheet.
       if (e?.userCancelled) return null;
-      setError(e?.message ?? 'Purchase failed');
+      logRcError('purchase', e);
+      const code = e?.code ? ` (code ${e.code})` : '';
+      setError(`${e?.message ?? 'Purchase failed'}${code}`);
       throw e;
     } finally {
       setLoading(false);
