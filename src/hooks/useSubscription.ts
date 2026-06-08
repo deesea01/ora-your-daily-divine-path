@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { getPaddleEnvironment } from "@/lib/paddle";
-import { isNativeIOS } from "@/lib/platform";
 
 export interface Subscription {
   status: string;
@@ -18,7 +17,17 @@ export function useSubscription() {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const env = isNativeIOS() ? "ios_iap" : getPaddleEnvironment();
+  const env = getPaddleEnvironment();
+
+  const isSubscriptionActive = (row: Subscription | null) => {
+    if (!row) return false;
+    const hasActiveStatus = ["active", "past_due"].includes(row.status);
+    const hasGracePeriod = row.status === "canceled" && !!row.current_period_end;
+    return (
+      (hasActiveStatus || hasGracePeriod) &&
+      (!row.current_period_end || new Date(row.current_period_end) > new Date())
+    );
+  };
 
   const load = async () => {
     if (!user) {
@@ -31,17 +40,16 @@ export function useSubscription() {
       .from("subscriptions")
       .select("status, product_id, price_id, current_period_end, cancel_at_period_end, environment")
       .eq("user_id", user.id)
-      .eq("environment", env)
       .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .limit(20);
     if (error) {
       console.error("[useSubscription] fetch error", error);
       setSubscription(null);
       setLoading(false);
       return;
     }
-    setSubscription(data as Subscription | null);
+    const rows = (data ?? []) as Subscription[];
+    setSubscription(rows.find(isSubscriptionActive) ?? rows[0] ?? null);
     setLoading(false);
   };
 
@@ -64,12 +72,7 @@ export function useSubscription() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  const hasActiveStatus = !!subscription && ["active", "past_due"].includes(subscription.status);
-  const hasGracePeriod = subscription?.status === "canceled" && !!subscription.current_period_end;
-  const isActive =
-    !!subscription &&
-    (hasActiveStatus || hasGracePeriod) &&
-    (!subscription.current_period_end || new Date(subscription.current_period_end) > new Date());
+  const isActive = isSubscriptionActive(subscription);
 
   const isPastDue = subscription?.status === "past_due";
 
