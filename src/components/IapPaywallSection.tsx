@@ -22,14 +22,15 @@ export function IapPaywallSection() {
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const handlePurchase = async (plan: IapPlan) => {
+    if (!user) {
+      navigate(`/auth?mode=signup&redirect=${encodeURIComponent('/paywall?autoStart=1')}`);
+      return;
+    }
     setBusyId(plan.identifier);
     try {
       const info = await purchase(plan);
       if (info?.entitlements?.active?.['premium']) {
         toast.success('Welcome to Ora Premium ✦');
-        // Take the user into the app immediately once Apple confirms the
-        // purchase. Without this, the user is left on the paywall waiting
-        // for the RevenueCat → Supabase webhook to flip `isPremium`.
         navigate('/', { replace: true });
       }
     } catch (e: any) {
@@ -40,6 +41,10 @@ export function IapPaywallSection() {
   };
 
   const handleRestore = async () => {
+    if (!user) {
+      navigate(`/auth?mode=login&redirect=${encodeURIComponent('/paywall')}`);
+      return;
+    }
     setBusyId('restore');
     try {
       const info = await restore();
