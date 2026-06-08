@@ -44,17 +44,39 @@ import { useAuth } from '@/hooks/useAuth';
 async function ensureConfigured(appUserID: string): Promise<void> {
   try {
     const { isConfigured } = await Purchases.isConfigured();
-    if (isConfigured) return;
-  } catch {
-    // Older SDKs may not expose isConfigured — fall through and try to configure.
+    if (isConfigured) {
+      console.info('[RC] SDK already configured (native bootstrap).');
+      return;
+    }
+  } catch (e) {
+    console.warn('[RC] Purchases.isConfigured() threw — falling through to JS configure.', e);
   }
   const apiKey = (import.meta.env.VITE_REVENUECAT_IOS_API_KEY as string | undefined)?.trim();
   if (!apiKey) {
+    console.error('[RC] No VITE_REVENUECAT_IOS_API_KEY and native bootstrap did not run.');
     throw new Error(
-      'In-app purchases are not set up on this build. Please update the app from the App Store.',
+      'RC_NOT_CONFIGURED: RevenueCat SDK is not configured. The native bootstrap did not run and no JS fallback key is set.',
     );
   }
+  console.info('[RC] Configuring SDK from JS fallback with appUserID=', appUserID);
   await Purchases.configure({ apiKey, appUserID });
+}
+
+function logRcError(scope: string, e: any) {
+  // Capture every RC/StoreKit field we know about so the Xcode console shows
+  // something actionable instead of a generic "There was an issue".
+  try {
+    console.error(`[RC] ${scope} failed`, {
+      message: e?.message,
+      code: e?.code,
+      underlyingErrorMessage: e?.underlyingErrorMessage,
+      readableErrorCode: e?.readableErrorCode,
+      userCancelled: e?.userCancelled,
+      raw: e,
+    });
+  } catch {
+    console.error(`[RC] ${scope} failed (unserialisable)`, e);
+  }
 }
 
 
