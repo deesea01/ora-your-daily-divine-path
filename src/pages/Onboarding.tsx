@@ -236,8 +236,8 @@ const Onboarding = () => {
   };
 
   useEffect(() => {
-    if (user === null) navigate('/auth', { replace: true });
-  }, [user, navigate]);
+    if (!authLoading && user === null) navigate('/auth', { replace: true });
+  }, [authLoading, user, navigate]);
 
   // Auto-advance loading screen → reveal
   useEffect(() => {
