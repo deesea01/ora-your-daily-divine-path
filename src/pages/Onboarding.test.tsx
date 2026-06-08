@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 // --- Mocks must be declared before importing the component under test ---
 vi.mock('@/hooks/useAuth', () => ({ useAuth: vi.fn() }));
 vi.mock('@/hooks/useUserProfile', () => ({ useUserProfile: vi.fn() }));
+vi.mock('@/hooks/useEntitlement', () => ({ useEntitlement: vi.fn() }));
 vi.mock('@/hooks/useOnboardingResponses', () => ({
   useOnboardingResponses: () => ({ save: vi.fn() }),
 }));
@@ -20,6 +21,7 @@ vi.mock('@/integrations/supabase/client', () => ({
 import Onboarding from './Onboarding';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { useEntitlement } from '@/hooks/useEntitlement';
 
 const renderAt = () =>
   render(
@@ -32,6 +34,7 @@ describe('Onboarding — stable hook order across states', () => {
   beforeEach(() => {
     cleanup();
     vi.clearAllMocks();
+    (useEntitlement as any).mockReturnValue({ isPremium: false, loading: false });
   });
 
   it('renders the loading spinner when auth is loading', () => {
