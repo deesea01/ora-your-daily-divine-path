@@ -45,6 +45,7 @@ export function IapPaywallSection() {
       const info = await restore();
       if (info?.entitlements?.active?.['premium']) {
         toast.success('Premium restored');
+        navigate('/', { replace: true });
       } else {
         toast('No previous purchase found on this Apple ID', {
           description: 'If you bought Premium with a different Apple ID, sign in to that ID in iOS Settings and try again.',
