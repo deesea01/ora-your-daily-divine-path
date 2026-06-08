@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useRevenueCat } from "@/hooks/useRevenueCat";
+import { isNativeIOS } from "@/lib/platform";
 import { isFounderEmail } from "@/lib/founders";
 
 // Ora is now fully premium after onboarding. These exports are retained for
@@ -22,6 +24,7 @@ export function isPremiumPrayer(_prayerId: string) {
 export function useEntitlement() {
   const { user } = useAuth();
   const { isActive, loading: subLoading, subscription } = useSubscription();
+  const { hasPremiumEntitlement, loading: iapLoading } = useRevenueCat();
   const [chatCountToday, setChatCountToday] = useState<number>(0);
   const [loadingCount, setLoadingCount] = useState(true);
 
@@ -48,14 +51,14 @@ export function useEntitlement() {
   }, [refreshChatCount]);
 
   const isFounder = isFounderEmail(user?.email);
-  const isPremium = isActive || isFounder;
+  const isPremium = isActive || hasPremiumEntitlement || isFounder;
   // No more free chat allowance — premium-only.
   const chatRemaining = isPremium ? Infinity : 0;
   const canChat = isPremium;
 
   return {
     isPremium,
-    loading: subLoading || loadingCount,
+    loading: subLoading || loadingCount || (isNativeIOS() && iapLoading && !isActive),
     subscription,
     chatCountToday,
     chatRemaining,
