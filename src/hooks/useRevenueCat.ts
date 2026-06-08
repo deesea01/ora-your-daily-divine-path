@@ -223,7 +223,9 @@ export function useRevenueCat() {
       await syncEntitlement(user.id, result.customerInfo);
       return result.customerInfo;
     } catch (e: any) {
-      setError(e?.message ?? 'Restore failed');
+      logRcError('restore', e);
+      const code = e?.code ? ` (code ${e.code})` : '';
+      setError(`${e?.message ?? 'Restore failed'}${code}`);
       throw e;
     } finally {
       setLoading(false);
