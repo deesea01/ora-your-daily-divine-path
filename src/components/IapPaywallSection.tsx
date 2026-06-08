@@ -88,14 +88,39 @@ export function IapPaywallSection() {
     );
   }
 
-  // Setup error or empty offerings — show friendly message, still expose Restore.
+  // Setup error or empty offerings — show diagnosable message, still expose Restore.
+  // IMPORTANT: do NOT navigate away from /paywall on error. Apple reviewers must
+  // be able to see the failure context here, not get bounced to /auth.
   if (error || plans.length === 0) {
+    const rawMessage = error ?? 'No subscription plans were returned by the App Store / RevenueCat.';
     return (
       <div className="space-y-3">
         <div className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
-          {error
-            ? error
-            : "Subscription plans aren't available right now. Please check your connection and try again in a moment."}
+          <p className="mb-2 font-medium text-foreground">We couldn't load subscription options.</p>
+          <p className="mb-3">
+            This usually means the App Store products aren't ready yet, or the device isn't signed
+            into a sandbox / production Apple ID that can purchase them.
+          </p>
+          <details className="rounded-md border border-border/60 bg-background/40 p-2 text-[11px]">
+            <summary className="cursor-pointer text-muted-foreground">Technical details (share with support)</summary>
+            <pre className="mt-2 whitespace-pre-wrap break-words text-[11px] leading-relaxed text-foreground/80">
+              {rawMessage}
+            </pre>
+            <button
+              type="button"
+              onClick={() => {
+                try {
+                  navigator.clipboard?.writeText(rawMessage);
+                  toast.success('Error copied');
+                } catch {
+                  /* noop */
+                }
+              }}
+              className="mt-2 rounded border border-border px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground"
+            >
+              Copy error
+            </button>
+          </details>
         </div>
         <button
           onClick={handleRestore}
