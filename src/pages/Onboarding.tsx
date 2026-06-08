@@ -5,6 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useOnboardingResponses } from '@/hooks/useOnboardingResponses';
 import { useAuth } from '@/hooks/useAuth';
+import { useEntitlement } from '@/hooks/useEntitlement';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
 import { supabase } from '@/integrations/supabase/client';
@@ -158,6 +159,7 @@ const Onboarding = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { saveProfile, profile, loading: profileLoading } = useUserProfile();
+  const { isPremium, loading: entitlementLoading } = useEntitlement();
   const { save: saveResponses } = useOnboardingResponses();
 
   const [step, setStep] = useState(0);
@@ -356,11 +358,11 @@ const Onboarding = () => {
     );
   }
 
-  if (authLoading || profileLoading) {
+  if (authLoading || profileLoading || entitlementLoading) {
     return <OnboardingSkeleton />;
   }
   if (user && profile?.onboarding_completed) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={isPremium ? '/' : '/paywall'} replace />;
   }
 
   const topGoal = previewPlan.daily_focus.label;
