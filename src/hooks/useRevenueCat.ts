@@ -119,13 +119,30 @@ export function useRevenueCat() {
       try {
         setLoading(true);
         const appUserID = user?.id ?? `anon_${Math.random().toString(36).slice(2, 12)}`;
+        console.info('[RC] init: ensuring SDK configured', { appUserID, hasUser: !!user });
         await ensureConfigured(appUserID);
         if (user) {
-          await Purchases.logIn({ appUserID: user.id });
+          try {
+            await Purchases.logIn({ appUserID: user.id });
+          } catch (e) {
+            logRcError('Purchases.logIn', e);
+          }
         }
 
+        console.info('[RC] init: fetching offerings…');
         const offerings = await Purchases.getOfferings();
         const current: PurchasesOffering | null = offerings.current ?? null;
+        console.info('[RC] init: offerings loaded', {
+          hasCurrent: !!current,
+          packageCount: current?.availablePackages?.length ?? 0,
+          allOfferingKeys: Object.keys((offerings as any).all ?? {}),
+        });
+
+        if (!current) {
+          throw new Error(
+            'RC_NO_CURRENT_OFFERING: RevenueCat returned no "current" offering. Publish an offering with packages in the RevenueCat dashboard and ensure the App Store products are in "Ready to Submit".',
+          );
+        }
 
         const list: IapPlan[] = (current?.availablePackages ?? []).map((p) => {
           const intro: any = (p.product as any).introPrice;
@@ -151,12 +168,16 @@ export function useRevenueCat() {
         setCustomerInfo(info.customerInfo);
         setReady(true);
         if (user) {
-          // Push entitlement state to Supabase so RequirePremium reflects it
-          // immediately, even before the RevenueCat webhook lands.
           void syncEntitlement(user.id, info.customerInfo);
         }
       } catch (e: any) {
-        if (!cancelled) setError(e?.message ?? 'Failed to load subscriptions');
+        logRcError('init', e);
+        if (!cancelled) {
+          // Surface the raw RC error so the on-screen message is diagnosable
+          // during App Review / TestFlight instead of a generic string.
+          const code = e?.code ? ` (code ${e.code})` : '';
+          setError(`${e?.message ?? 'Failed to load subscriptions'}${code}`);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
