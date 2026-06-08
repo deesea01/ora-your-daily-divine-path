@@ -44,17 +44,39 @@ import { useAuth } from '@/hooks/useAuth';
 async function ensureConfigured(appUserID: string): Promise<void> {
   try {
     const { isConfigured } = await Purchases.isConfigured();
-    if (isConfigured) return;
-  } catch {
-    // Older SDKs may not expose isConfigured — fall through and try to configure.
+    if (isConfigured) {
+      console.info('[RC] SDK already configured (native bootstrap).');
+      return;
+    }
+  } catch (e) {
+    console.warn('[RC] Purchases.isConfigured() threw — falling through to JS configure.', e);
   }
   const apiKey = (import.meta.env.VITE_REVENUECAT_IOS_API_KEY as string | undefined)?.trim();
   if (!apiKey) {
+    console.error('[RC] No VITE_REVENUECAT_IOS_API_KEY and native bootstrap did not run.');
     throw new Error(
-      'In-app purchases are not set up on this build. Please update the app from the App Store.',
+      'RC_NOT_CONFIGURED: RevenueCat SDK is not configured. The native bootstrap did not run and no JS fallback key is set.',
     );
   }
+  console.info('[RC] Configuring SDK from JS fallback with appUserID=', appUserID);
   await Purchases.configure({ apiKey, appUserID });
+}
+
+function logRcError(scope: string, e: any) {
+  // Capture every RC/StoreKit field we know about so the Xcode console shows
+  // something actionable instead of a generic "There was an issue".
+  try {
+    console.error(`[RC] ${scope} failed`, {
+      message: e?.message,
+      code: e?.code,
+      underlyingErrorMessage: e?.underlyingErrorMessage,
+      readableErrorCode: e?.readableErrorCode,
+      userCancelled: e?.userCancelled,
+      raw: e,
+    });
+  } catch {
+    console.error(`[RC] ${scope} failed (unserialisable)`, e);
+  }
 }
 
 
@@ -97,13 +119,30 @@ export function useRevenueCat() {
       try {
         setLoading(true);
         const appUserID = user?.id ?? `anon_${Math.random().toString(36).slice(2, 12)}`;
+        console.info('[RC] init: ensuring SDK configured', { appUserID, hasUser: !!user });
         await ensureConfigured(appUserID);
         if (user) {
-          await Purchases.logIn({ appUserID: user.id });
+          try {
+            await Purchases.logIn({ appUserID: user.id });
+          } catch (e) {
+            logRcError('Purchases.logIn', e);
+          }
         }
 
+        console.info('[RC] init: fetching offerings…');
         const offerings = await Purchases.getOfferings();
         const current: PurchasesOffering | null = offerings.current ?? null;
+        console.info('[RC] init: offerings loaded', {
+          hasCurrent: !!current,
+          packageCount: current?.availablePackages?.length ?? 0,
+          allOfferingKeys: Object.keys((offerings as any).all ?? {}),
+        });
+
+        if (!current) {
+          throw new Error(
+            'RC_NO_CURRENT_OFFERING: RevenueCat returned no "current" offering. Publish an offering with packages in the RevenueCat dashboard and ensure the App Store products are in "Ready to Submit".',
+          );
+        }
 
         const list: IapPlan[] = (current?.availablePackages ?? []).map((p) => {
           const intro: any = (p.product as any).introPrice;
@@ -129,12 +168,16 @@ export function useRevenueCat() {
         setCustomerInfo(info.customerInfo);
         setReady(true);
         if (user) {
-          // Push entitlement state to Supabase so RequirePremium reflects it
-          // immediately, even before the RevenueCat webhook lands.
           void syncEntitlement(user.id, info.customerInfo);
         }
       } catch (e: any) {
-        if (!cancelled) setError(e?.message ?? 'Failed to load subscriptions');
+        logRcError('init', e);
+        if (!cancelled) {
+          // Surface the raw RC error so the on-screen message is diagnosable
+          // during App Review / TestFlight instead of a generic string.
+          const code = e?.code ? ` (code ${e.code})` : '';
+          setError(`${e?.message ?? 'Failed to load subscriptions'}${code}`);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -158,9 +201,10 @@ export function useRevenueCat() {
       await syncEntitlement(user.id, result.customerInfo);
       return result.customerInfo;
     } catch (e: any) {
-      // RevenueCat sets userCancelled when the user dismisses the sheet.
       if (e?.userCancelled) return null;
-      setError(e?.message ?? 'Purchase failed');
+      logRcError('purchase', e);
+      const code = e?.code ? ` (code ${e.code})` : '';
+      setError(`${e?.message ?? 'Purchase failed'}${code}`);
       throw e;
     } finally {
       setLoading(false);
@@ -179,7 +223,9 @@ export function useRevenueCat() {
       await syncEntitlement(user.id, result.customerInfo);
       return result.customerInfo;
     } catch (e: any) {
-      setError(e?.message ?? 'Restore failed');
+      logRcError('restore', e);
+      const code = e?.code ? ` (code ${e.code})` : '';
+      setError(`${e?.message ?? 'Restore failed'}${code}`);
       throw e;
     } finally {
       setLoading(false);
