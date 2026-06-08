@@ -1,6 +1,8 @@
 import { Navigate, useNavigate, Link } from 'react-router-dom';
 import logoImg from '@/assets/logo.png';
 import { useAuth } from '@/hooks/useAuth';
+import { useEntitlement } from '@/hooks/useEntitlement';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { SUPPORTED_LANGUAGES } from '@/lib/i18n';
 import SEO from '@/components/SEO';
@@ -8,10 +10,12 @@ import { isNativeIOS } from '@/lib/platform';
 
 const Welcome = () => {
   const { user, loading } = useAuth();
+  const { profile, loading: profileLoading } = useUserProfile();
+  const { isPremium, loading: entitlementLoading } = useEntitlement();
   const { t, language, setLanguage } = useLanguage();
   const navigate = useNavigate();
 
-  if (loading) {
+  if (loading || (user && (profileLoading || entitlementLoading))) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-6 w-6 rounded-full border-2 border-gold border-t-transparent animate-spin" />
@@ -19,7 +23,8 @@ const Welcome = () => {
     );
   }
 
-  // If already signed in, send to app (Index will route to onboarding if needed)
+  if (user && !profile?.onboarding_completed) return <Navigate to="/onboarding" replace />;
+  if (user && !isPremium) return <Navigate to="/paywall" replace />;
   if (user) return <Navigate to="/" replace />;
 
   return (
