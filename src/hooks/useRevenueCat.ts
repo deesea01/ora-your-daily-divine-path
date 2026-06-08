@@ -212,7 +212,7 @@ async function syncEntitlement(userId: string, info: CustomerInfo) {
           environment: 'ios_iap',
           provider: 'revenuecat_ios',
         } as any,
-        { onConflict: 'user_id,environment' },
+        { onConflict: 'user_id,provider,environment' },
       );
     }
   } catch (e) {

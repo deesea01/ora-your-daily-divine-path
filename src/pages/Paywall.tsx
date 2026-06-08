@@ -8,7 +8,6 @@ import { MissionNote } from '@/components/MissionNote';
 import SEO from '@/components/SEO';
 import { isNativeIOS } from '@/lib/platform';
 import { IapPaywallSection } from '@/components/IapPaywallSection';
-import { supabase } from '@/integrations/supabase/client';
 
 const FEATURES = [
   { icon: Users, text: 'Unlimited Saint companions' },
@@ -101,12 +100,6 @@ const Paywall = () => {
           <button
             type="button"
             onClick={async () => {
-              // On iOS, an authenticated-but-not-premium user clicking close
-              // would loop back here via Index → /paywall. Sign them out so
-              // they always reach Welcome with a clear path forward.
-              if (onIos && user) {
-                try { await supabase.auth.signOut(); } catch {}
-              }
               navigate('/welcome');
             }}
             aria-label="Close"
