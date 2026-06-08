@@ -84,19 +84,23 @@ export function useRevenueCat() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Configure & load offerings whenever a user logs in on iOS.
+  // Configure & load offerings on iOS. Offerings can be loaded with an
+  // anonymous appUserID so unauthenticated visitors can browse subscription
+  // plans on /paywall before signing in (App Store reviewer flow).
   useEffect(() => {
     let cancelled = false;
-    if (!isNativeIOS() || !user) {
+    if (!isNativeIOS()) {
       setReady(false);
       return;
     }
     (async () => {
       try {
         setLoading(true);
-        await ensureConfigured(user.id);
-        // Make sure the configured user matches the logged-in user (e.g. after re-login).
-        await Purchases.logIn({ appUserID: user.id });
+        const appUserID = user?.id ?? `anon_${Math.random().toString(36).slice(2, 12)}`;
+        await ensureConfigured(appUserID);
+        if (user) {
+          await Purchases.logIn({ appUserID: user.id });
+        }
 
         const offerings = await Purchases.getOfferings();
         const current: PurchasesOffering | null = offerings.current ?? null;
@@ -124,9 +128,11 @@ export function useRevenueCat() {
         setPlans(list);
         setCustomerInfo(info.customerInfo);
         setReady(true);
-        // Push entitlement state to Supabase so RequirePremium reflects it
-        // immediately, even before the RevenueCat webhook lands.
-        void syncEntitlement(user.id, info.customerInfo);
+        if (user) {
+          // Push entitlement state to Supabase so RequirePremium reflects it
+          // immediately, even before the RevenueCat webhook lands.
+          void syncEntitlement(user.id, info.customerInfo);
+        }
       } catch (e: any) {
         if (!cancelled) setError(e?.message ?? 'Failed to load subscriptions');
       } finally {
