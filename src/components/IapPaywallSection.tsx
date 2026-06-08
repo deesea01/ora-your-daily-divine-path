@@ -22,14 +22,15 @@ export function IapPaywallSection() {
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const handlePurchase = async (plan: IapPlan) => {
+    if (!user) {
+      navigate(`/auth?mode=signup&redirect=${encodeURIComponent('/paywall?autoStart=1')}`);
+      return;
+    }
     setBusyId(plan.identifier);
     try {
       const info = await purchase(plan);
       if (info?.entitlements?.active?.['premium']) {
         toast.success('Welcome to Ora Premium ✦');
-        // Take the user into the app immediately once Apple confirms the
-        // purchase. Without this, the user is left on the paywall waiting
-        // for the RevenueCat → Supabase webhook to flip `isPremium`.
         navigate('/', { replace: true });
       }
     } catch (e: any) {
@@ -40,6 +41,10 @@ export function IapPaywallSection() {
   };
 
   const handleRestore = async () => {
+    if (!user) {
+      navigate(`/auth?mode=login&redirect=${encodeURIComponent('/paywall')}`);
+      return;
+    }
     setBusyId('restore');
     try {
       const info = await restore();
@@ -58,24 +63,9 @@ export function IapPaywallSection() {
     }
   };
 
-  // Not signed in yet — RevenueCat needs an appUserID. Show a sign-in CTA
-  // instead of an infinite spinner so Apple reviewers (and new users landing
-  // on /paywall from "View pricing") always have a clear next step.
-  if (!authLoading && !user) {
-    return (
-      <div className="space-y-3">
-        <div className="rounded-xl border border-border bg-card p-4 text-sm text-foreground">
-          Sign in to view subscription options and unlock your prayer life.
-        </div>
-        <button
-          onClick={() => navigate('/auth?mode=signup&redirect=%2Fpaywall')}
-          className="w-full rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all active:scale-[0.98]"
-        >
-          Sign in to continue
-        </button>
-      </div>
-    );
-  }
+  // Unauthenticated visitors can still view the plans. Sign-in is prompted
+  // only when they actually tap Purchase or Restore (see handlers above).
+
 
   // Loading state — block all purchase UI until offerings actually arrive.
   if (authLoading || loading || (!ready && !error)) {

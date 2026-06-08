@@ -100,7 +100,7 @@ const Welcome = () => {
 
         <div className="w-full max-w-sm space-y-3">
           <button
-            onClick={() => navigate('/auth?mode=signup')}
+            onClick={() => navigate('/paywall')}
             className="w-full rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98]"
           >
             {t.getStarted || 'Get Started'}
@@ -113,15 +113,6 @@ const Welcome = () => {
             {t.signIn || 'Log In'}
           </button>
         </div>
-
-        {!isNativeIOS() && (
-          <Link
-            to="/paywall"
-            className="mt-6 text-xs text-muted-foreground hover:text-gold underline underline-offset-4"
-          >
-            View pricing
-          </Link>
-        )}
 
         <p className="mt-6 px-4 text-[11px] leading-relaxed text-muted-foreground max-w-xs">
           By continuing, you agree to our{' '}
