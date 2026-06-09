@@ -47,12 +47,12 @@ async function ensureConfigured(appUserID?: string): Promise<void> {
         hasUser: !!appUserID,
         source: import.meta.env.VITE_REVENUECAT_IOS_API_KEY ? 'env' : 'public-fallback',
       });
-      await Purchases.setLogLevel({ level: LOG_LEVEL.WARN });
       await Purchases.configure({
         apiKey,
         appUserID: appUserID ?? null,
         storeKitVersion: STOREKIT_VERSION.STOREKIT_2,
       });
+      await Purchases.setLogLevel({ level: LOG_LEVEL.WARN });
       const { isConfigured } = await Purchases.isConfigured();
       console.info('[RC] configure: Capacitor plugin configured', { isConfigured });
     })().catch((e) => {
