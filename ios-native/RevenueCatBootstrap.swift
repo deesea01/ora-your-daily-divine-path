@@ -1,19 +1,17 @@
 import Foundation
-import RevenueCat
 
-/// Single source of truth for RevenueCat configuration on iOS.
+/// Legacy native bootstrap placeholder.
 ///
-/// Called from `AppDelegate.application(_:didFinishLaunchingWithOptions:)`
-/// BEFORE Capacitor boots its webview. The JS-side `useRevenueCat` hook
-/// intentionally does NOT call `Purchases.configure(...)` again — doing so
-/// would reset the singleton and drop the StoreKit2 transaction listener.
+/// The `@revenuecat/purchases-capacitor` plugin must be initialized through
+/// its Capacitor bridge (`Purchases.configure(...)` in `src/hooks/useRevenueCat.ts`).
+/// Direct native SDK configuration from AppDelegate can leave
+/// PurchasesHybridCommon unconfigured and crash when the plugin is called.
 ///
 /// Entitlement identifier is `premium` (lowercase, no space) to match:
 ///   - JS:      `customerInfo.entitlements.active['premium']`
 ///   - Webhook: `supabase/functions/revenuecat-webhook` PREMIUM_ENTITLEMENT
 enum RevenueCatBootstrap {
-    /// Test (sandbox) key. Swap to the production public iOS key before App Review.
-    /// Prefer reading from Info.plist via an xcconfig so test/prod is build-driven.
+    /// Public iOS SDK key reference only. Runtime configuration now happens in JS.
     static let apiKey = "test_UJIsLopWOTwGmpsbwrrDYAvSHGa"
 
     /// MUST match the entitlement ID configured in the RevenueCat dashboard
@@ -21,12 +19,6 @@ enum RevenueCatBootstrap {
     static let premiumEntitlement = "premium"
 
     static func configure() {
-        guard !Purchases.isConfigured else { return }
-        Purchases.logLevel = .warn
-        Purchases.configure(
-            with: Configuration.Builder(withAPIKey: apiKey)
-                .with(storeKitVersion: .storeKit2)
-                .build()
-        )
+        NSLog("[RC] Native bootstrap skipped; Capacitor plugin configures RevenueCat from JS.")
     }
 }

@@ -1,23 +1,16 @@
 import UIKit
 import Capacitor
-import RevenueCat
 
 /// Drop-in replacement for the default Capacitor `AppDelegate.swift`.
 ///
-/// Copy this file's contents over `ios/App/App/AppDelegate.swift` (or just
-/// paste the `RevenueCatBootstrap.configure()` line into your existing
-/// `application(_:didFinishLaunchingWithOptions:)`).
+/// Copy this file's contents over `ios/App/App/AppDelegate.swift` if you need
+/// the standard Capacitor deep-link handlers below.
 ///
 /// IMPORTANT:
-///   - `RevenueCatBootstrap.configure()` MUST run BEFORE `return true` and
-///     BEFORE Capacitor loads its WKWebView. That is exactly what we do
-///     below: it is the first call in `didFinishLaunchingWithOptions`.
-///   - Do NOT also call `Purchases.configure(...)` from JS. The JS hook
-///     (`src/hooks/useRevenueCat.ts`) only configures as a safety-net
-///     fallback when `Purchases.isConfigured` is false.
-///   - `RevenueCatBootstrap.swift` MUST be added to the **App** target's
-///     "Compile Sources" build phase (Xcode → App target → Build Phases →
-///     Compile Sources → "+"). Otherwise this file will not compile.
+///   - `@revenuecat/purchases-capacitor` must be configured from JS through
+///     the plugin bridge (`Purchases.configure(...)` in `useRevenueCat.ts`).
+///   - Direct native SDK configuration in AppDelegate can leave the hybrid
+///     plugin unconfigured and crash in PurchasesHybridCommon.
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
@@ -27,9 +20,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        // === RevenueCat bootstrap — must be the first thing we do. ===
-        // Configures the StoreKit2 transaction listener before the webview
-        // boots, so App Store-initiated and renewal transactions are caught.
+        // No direct RevenueCat SDK configuration here. The Capacitor plugin is
+        // configured from JS before offerings/customer calls.
         RevenueCatBootstrap.configure()
 
         return true
