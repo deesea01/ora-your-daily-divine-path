@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
+  LOG_LEVEL,
   Purchases,
+  STOREKIT_VERSION,
   type CustomerInfo,
   type PurchasesPackage,
   type PurchasesOffering,
@@ -16,50 +18,49 @@ import { useAuth } from '@/hooks/useAuth';
  * so on the web this hook is essentially a no-op and the existing
  * `usePaddleCheckout` flow runs untouched.
  *
- * RevenueCat is configured with the user's Supabase user_id as the
- * `appUserID` so the server-side webhook can map purchases back to the
- * `subscriptions` row. The iOS public SDK key is provided to JS through
- * `import.meta.env.VITE_REVENUECAT_IOS_API_KEY` (set in `.env`); the
- * server-side `REVENUECAT_IOS_API_KEY` secret is used by edge functions.
+ * RevenueCat must be configured through the Capacitor plugin's
+ * `Purchases.configure(...)` API before any offerings/customer calls. Native
+ * AppDelegate configuration alone can leave PurchasesHybridCommon unready and
+ * crash with "Purchases has not been configured".
  */
 
+const REVENUECAT_IOS_PUBLIC_KEY_FALLBACK = 'test_UJIsLopWOTwGmpsbwrrDYAvSHGa';
+let configurePromise: Promise<void> | null = null;
+
+function getRevenueCatIosApiKey() {
+  return (
+    (import.meta.env.VITE_REVENUECAT_IOS_API_KEY as string | undefined)?.trim()
+    || REVENUECAT_IOS_PUBLIC_KEY_FALLBACK
+  );
+}
+
 /**
- * Ensure the RevenueCat SDK is configured before any other call.
- *
- * Primary path: the native iOS shell (`ios/App/App/RevenueCatBootstrap.swift`)
- * calls `Purchases.configure(...)` during `didFinishLaunchingWithOptions`,
- * before the Capacitor webview boots. That is the preferred place because
- * it lets StoreKit2's transaction listener attach in time to catch
- * App Store-initiated purchases.
- *
- * Safety net (this function): if for any reason the native bootstrap did
- * not run (e.g. dev builds without the Swift file, hot-reload edge cases,
- * or a TestFlight build missing the bootstrap), we configure from JS using
- * `VITE_REVENUECAT_IOS_API_KEY`. This prevents the
- * "Purchases must be configured before calling this function" runtime error.
- *
- * Throws a descriptive error if neither the native bootstrap nor a JS key
- * is available — callers surface that as a friendly setup message.
+ * Ensure the Capacitor RevenueCat plugin is configured before any other call.
+ * Configure via the plugin itself; do not rely on direct native SDK setup from
+ * AppDelegate, which does not initialise the plugin bridge consistently.
  */
-async function ensureConfigured(appUserID: string): Promise<void> {
-  try {
-    const { isConfigured } = await Purchases.isConfigured();
-    if (isConfigured) {
-      console.info('[RC] SDK already configured (native bootstrap).');
-      return;
-    }
-  } catch (e) {
-    console.warn('[RC] Purchases.isConfigured() threw — falling through to JS configure.', e);
+async function ensureConfigured(appUserID?: string): Promise<void> {
+  if (!configurePromise) {
+    configurePromise = (async () => {
+      const apiKey = getRevenueCatIosApiKey();
+      console.info('[RC] configure: initializing Capacitor plugin', {
+        hasUser: !!appUserID,
+        source: import.meta.env.VITE_REVENUECAT_IOS_API_KEY ? 'env' : 'public-fallback',
+      });
+      await Purchases.setLogLevel({ level: LOG_LEVEL.WARN });
+      await Purchases.configure({
+        apiKey,
+        appUserID: appUserID ?? null,
+        storeKitVersion: STOREKIT_VERSION.STOREKIT_2,
+      });
+      const { isConfigured } = await Purchases.isConfigured();
+      console.info('[RC] configure: Capacitor plugin configured', { isConfigured });
+    })().catch((e) => {
+      configurePromise = null;
+      throw e;
+    });
   }
-  const apiKey = (import.meta.env.VITE_REVENUECAT_IOS_API_KEY as string | undefined)?.trim();
-  if (!apiKey) {
-    console.error('[RC] No VITE_REVENUECAT_IOS_API_KEY and native bootstrap did not run.');
-    throw new Error(
-      'RC_NOT_CONFIGURED: RevenueCat SDK is not configured. The native bootstrap did not run and no JS fallback key is set.',
-    );
-  }
-  console.info('[RC] Configuring SDK from JS fallback with appUserID=', appUserID);
-  await Purchases.configure({ apiKey, appUserID });
+  await configurePromise;
 }
 
 function logRcError(scope: string, e: any) {
@@ -118,7 +119,7 @@ export function useRevenueCat() {
     (async () => {
       try {
         setLoading(true);
-        const appUserID = user?.id ?? `anon_${Math.random().toString(36).slice(2, 12)}`;
+        const appUserID = user?.id;
         console.info('[RC] init: ensuring SDK configured', { appUserID, hasUser: !!user });
         await ensureConfigured(appUserID);
         if (user) {
