@@ -51,14 +51,31 @@ export function useEntitlement() {
   }, [refreshChatCount]);
 
   const isFounder = isFounderEmail(user?.email);
-  const isPremium = isActive || hasPremiumEntitlement || isFounder;
+  // On iOS, ONLY RevenueCat (or founder allow-list) grants premium. Ignoring
+  // the Paddle-derived `subscriptions` row prevents stale / cross-environment
+  // rows from bypassing the App Store paywall.
+  const native = isNativeIOS();
+  const isPremium = native
+    ? hasPremiumEntitlement || isFounder
+    : isActive || hasPremiumEntitlement || isFounder;
   // No more free chat allowance — premium-only.
   const chatRemaining = isPremium ? Infinity : 0;
   const canChat = isPremium;
 
+  if (native) {
+    console.info('[entitlement] iOS evaluation', {
+      hasPremiumEntitlement,
+      isFounder,
+      isPremium,
+      iapLoading,
+    });
+  }
+
   return {
     isPremium,
-    loading: subLoading || loadingCount || (isNativeIOS() && iapLoading && !isActive),
+    // On iOS, always wait for the RC SDK to report before allowing
+    // RequirePremium / Paywall to make a routing decision.
+    loading: subLoading || loadingCount || (native && iapLoading),
     subscription,
     chatCountToday,
     chatRemaining,
