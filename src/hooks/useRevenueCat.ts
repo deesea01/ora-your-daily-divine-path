@@ -18,20 +18,31 @@ import { useAuth } from '@/hooks/useAuth';
  * so on the web this hook is essentially a no-op and the existing
  * `usePaddleCheckout` flow runs untouched.
  *
- * RevenueCat must be configured through the Capacitor plugin's
- * `Purchases.configure(...)` API before any offerings/customer calls. Native
- * AppDelegate configuration alone can leave PurchasesHybridCommon unready and
- * crash with "Purchases has not been configured".
+ * Contract:
+ *  - Entitlement identifier: `premium` (must match RevenueCat dashboard
+ *    Entitlements → "premium").
+ *  - Expected product identifiers (App Store Connect):
+ *      • ora_premium_monthly
+ *      • ora_premium_yearly
+ *    Plus the RevenueCat package identifiers $rc_monthly / $rc_annual.
+ *  - No introductory offer is consumed or surfaced — only the standard
+ *    monthly + yearly prices are shown.
  */
 
-const REVENUECAT_IOS_PUBLIC_KEY_FALLBACK = 'test_UJIsLopWOTwGmpsbwrrDYAvSHGa';
+const ENTITLEMENT_ID = 'premium';
 let configurePromise: Promise<void> | null = null;
 
-function getRevenueCatIosApiKey() {
-  return (
-    (import.meta.env.VITE_REVENUECAT_IOS_API_KEY as string | undefined)?.trim()
-    || REVENUECAT_IOS_PUBLIC_KEY_FALLBACK
-  );
+function getRevenueCatIosApiKey(): string {
+  const key = (import.meta.env.VITE_REVENUECAT_IOS_API_KEY as string | undefined)?.trim();
+  if (!key) {
+    // Fail loudly instead of silently falling back to a shared sandbox key.
+    // A missing key here is the single most common cause of "offerings are
+    // empty" / "entitlement never activates" on TestFlight builds.
+    throw new Error(
+      'RC_MISSING_API_KEY: VITE_REVENUECAT_IOS_API_KEY is not set. Add it to .env.production and rebuild before `npx cap sync ios`.',
+    );
+  }
+  return key;
 }
 
 /**
@@ -45,7 +56,7 @@ async function ensureConfigured(appUserID?: string): Promise<void> {
       const apiKey = getRevenueCatIosApiKey();
       console.info('[RC] configure: initializing Capacitor plugin', {
         hasUser: !!appUserID,
-        source: import.meta.env.VITE_REVENUECAT_IOS_API_KEY ? 'env' : 'public-fallback',
+        entitlement: ENTITLEMENT_ID,
       });
       await Purchases.configure({
         apiKey,
@@ -64,8 +75,6 @@ async function ensureConfigured(appUserID?: string): Promise<void> {
 }
 
 function logRcError(scope: string, e: any) {
-  // Capture every RC/StoreKit field we know about so the Xcode console shows
-  // something actionable instead of a generic "There was an issue".
   try {
     console.error(`[RC] ${scope} failed`, {
       message: e?.message,
@@ -80,6 +89,17 @@ function logRcError(scope: string, e: any) {
   }
 }
 
+function logEntitlementSnapshot(scope: string, info: CustomerInfo | null) {
+  const ent = info?.entitlements?.active?.[ENTITLEMENT_ID];
+  console.info(`[RC] ${scope}: entitlement snapshot`, {
+    appUserId: info?.originalAppUserId,
+    hasPremium: !!ent,
+    productIdentifier: ent?.productIdentifier,
+    expirationDate: ent?.expirationDate,
+    willRenew: ent?.willRenew,
+    activeEntitlementKeys: info ? Object.keys(info.entitlements.active ?? {}) : [],
+  });
+}
 
 export interface IapPlan {
   identifier: string; // RevenueCat package ID, e.g. "$rc_monthly"
@@ -87,8 +107,6 @@ export interface IapPlan {
   title: string;
   priceString: string;
   period: 'monthly' | 'yearly' | 'other';
-  introPriceString?: string; // e.g. "Free" or "$0.00"
-  introPeriod?: string; // e.g. "3 days"
   rcPackage: PurchasesPackage;
 }
 
@@ -125,6 +143,7 @@ export function useRevenueCat() {
         if (user) {
           try {
             await Purchases.logIn({ appUserID: user.id });
+            console.info('[RC] init: logged in', { appUserId: user.id });
           } catch (e) {
             logRcError('Purchases.logIn', e);
           }
@@ -134,9 +153,15 @@ export function useRevenueCat() {
         const offerings = await Purchases.getOfferings();
         const current: PurchasesOffering | null = offerings.current ?? null;
         console.info('[RC] init: offerings loaded', {
+          currentOfferingId: current?.identifier,
           hasCurrent: !!current,
           packageCount: current?.availablePackages?.length ?? 0,
           allOfferingKeys: Object.keys((offerings as any).all ?? {}),
+          packages: (current?.availablePackages ?? []).map((p) => ({
+            id: p.identifier,
+            productId: p.product.identifier,
+            price: p.product.priceString,
+          })),
         });
 
         if (!current) {
@@ -145,25 +170,20 @@ export function useRevenueCat() {
           );
         }
 
-        const list: IapPlan[] = (current?.availablePackages ?? []).map((p) => {
-          const intro: any = (p.product as any).introPrice;
-          const introPeriod = intro?.periodNumberOfUnits && intro?.periodUnit
-            ? `${intro.periodNumberOfUnits} ${String(intro.periodUnit).toLowerCase()}${intro.periodNumberOfUnits > 1 ? 's' : ''}`
-            : undefined;
-          const introPriceString = intro?.price === 0 ? 'Free' : intro?.priceString;
-          return {
-            identifier: p.identifier,
-            productId: p.product.identifier,
-            title: p.product.title,
-            priceString: p.product.priceString,
-            period: inferPeriod(p),
-            introPriceString,
-            introPeriod,
-            rcPackage: p,
-          };
-        });
+        // Standard monthly + yearly only — intro pricing is intentionally
+        // ignored. No filtering by intro/non-intro; whatever the offering
+        // exposes as $rc_monthly / $rc_annual (or equivalent) is shown.
+        const list: IapPlan[] = (current?.availablePackages ?? []).map((p) => ({
+          identifier: p.identifier,
+          productId: p.product.identifier,
+          title: p.product.title,
+          priceString: p.product.priceString,
+          period: inferPeriod(p),
+          rcPackage: p,
+        }));
 
         const info = await Purchases.getCustomerInfo();
+        logEntitlementSnapshot('init', info.customerInfo);
         if (cancelled) return;
         setPlans(list);
         setCustomerInfo(info.customerInfo);
@@ -174,8 +194,6 @@ export function useRevenueCat() {
       } catch (e: any) {
         logRcError('init', e);
         if (!cancelled) {
-          // Surface the raw RC error so the on-screen message is diagnosable
-          // during App Review / TestFlight instead of a generic string.
           const code = e?.code ? ` (code ${e.code})` : '';
           setError(`${e?.message ?? 'Failed to load subscriptions'}${code}`);
         }
@@ -194,15 +212,20 @@ export function useRevenueCat() {
     if (!ready) throw new Error('Subscriptions are still loading. Please try again in a moment.');
     setError(null);
     setLoading(true);
+    console.info('[RC] purchase: starting', { package: plan.identifier, productId: plan.productId });
     try {
-      // Defensive: guarantee SDK is configured before invoking purchase.
       await ensureConfigured(user.id);
       const result = await Purchases.purchasePackage({ aPackage: plan.rcPackage });
+      console.info('[RC] purchase: completed', { package: plan.identifier });
+      logEntitlementSnapshot('purchase', result.customerInfo);
       setCustomerInfo(result.customerInfo);
       await syncEntitlement(user.id, result.customerInfo);
       return result.customerInfo;
     } catch (e: any) {
-      if (e?.userCancelled) return null;
+      if (e?.userCancelled) {
+        console.info('[RC] purchase: user cancelled');
+        return null;
+      }
       logRcError('purchase', e);
       const code = e?.code ? ` (code ${e.code})` : '';
       setError(`${e?.message ?? 'Purchase failed'}${code}`);
@@ -217,9 +240,13 @@ export function useRevenueCat() {
     if (!user) throw new Error('Please sign in before restoring purchases.');
     setError(null);
     setLoading(true);
+    console.info('[RC] restore: starting');
     try {
       await ensureConfigured(user.id);
       const result = await Purchases.restorePurchases();
+      logEntitlementSnapshot('restore', result.customerInfo);
+      const isActive = !!result.customerInfo.entitlements.active?.[ENTITLEMENT_ID];
+      console.info('[RC] restore: completed', { isActive });
       setCustomerInfo(result.customerInfo);
       await syncEntitlement(user.id, result.customerInfo);
       return result.customerInfo;
@@ -233,42 +260,41 @@ export function useRevenueCat() {
     }
   }, [user?.id]);
 
-
-  const hasPremiumEntitlement = !!customerInfo?.entitlements?.active?.['premium'];
+  const hasPremiumEntitlement = !!customerInfo?.entitlements?.active?.[ENTITLEMENT_ID];
 
   return { ready, loading, error, plans, customerInfo, hasPremiumEntitlement, purchase, restore };
 }
 
 /**
  * Mirror RevenueCat entitlement state into the `subscriptions` table so the
- * existing `useSubscription` / `RequirePremium` plumbing keeps working
- * unchanged. The authoritative source is the RevenueCat webhook (more
- * reliable, server-verified) — this is just an optimistic update so the UI
- * unlocks immediately after purchase / restore.
+ * server-side `has_active_subscription` helper stays in sync. The authoritative
+ * source remains the RevenueCat webhook; this is an optimistic update so the
+ * server agrees with the device immediately after purchase / restore.
+ *
+ * Only writes when RC reports an active premium entitlement. Never writes a
+ * fake "active" row from a non-entitled customer.
  */
 async function syncEntitlement(userId: string, info: CustomerInfo) {
-  const ent = info.entitlements.active?.['premium'];
-  const isActive = !!ent;
+  const ent = info.entitlements.active?.[ENTITLEMENT_ID];
+  if (!ent) return;
   try {
-    if (isActive && ent) {
-      await supabase.from('subscriptions').upsert(
-        {
-          user_id: userId,
-          paddle_subscription_id: ent.productIdentifier
-            ? `rc_${ent.productIdentifier}_${userId.slice(0, 8)}`
-            : `rc_premium_${userId.slice(0, 8)}`,
-          paddle_customer_id: info.originalAppUserId,
-          product_id: ent.productIdentifier ?? 'ora_premium',
-          price_id: ent.productIdentifier ?? 'ora_premium',
-          status: 'active',
-          current_period_end: ent.expirationDate,
-          environment: 'ios_iap',
-          provider: 'revenuecat_ios',
-        } as any,
-        { onConflict: 'user_id,provider,environment' },
-      );
-    }
+    await supabase.from('subscriptions').upsert(
+      {
+        user_id: userId,
+        paddle_subscription_id: ent.productIdentifier
+          ? `rc_${ent.productIdentifier}_${userId.slice(0, 8)}`
+          : `rc_premium_${userId.slice(0, 8)}`,
+        paddle_customer_id: info.originalAppUserId,
+        product_id: ent.productIdentifier ?? 'ora_premium',
+        price_id: ent.productIdentifier ?? 'ora_premium',
+        status: 'active',
+        current_period_end: ent.expirationDate,
+        environment: 'ios_iap',
+        provider: 'revenuecat_ios',
+      } as any,
+      { onConflict: 'user_id,provider,environment' },
+    );
   } catch (e) {
-    console.warn('[RevenueCat] optimistic entitlement sync failed', e);
+    console.warn('[RC] optimistic entitlement sync failed', e);
   }
 }
