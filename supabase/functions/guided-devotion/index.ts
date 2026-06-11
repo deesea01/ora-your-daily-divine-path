@@ -64,7 +64,23 @@ Personalization rules:
 
   const slotIntent: Record<Slot, string> = {
     morning: `Lead a MORNING PRAYER (Lauds tradition). The "opening" places the day before God in trust. The "scripture" is ONE single morning Bible verse chosen for this person (e.g. Ps 5:3, 63:1, 90:14, 143:8, Lam 3:22-23). The "intercession" lifts up the day's people, work, and unspoken needs. The "prayer" is one personalized morning offering.`,
-    midday: `Lead the MIDDAY ANGELUS. The "opening" walks the user through the traditional Angelus in 3 short call-and-response style lines: "The Angel of the Lord declared unto Mary…", "Behold the handmaid of the Lord…", "And the Word was made flesh…" (concise, not full Hail Marys). The "scripture" is ONE single Marian or noon-hour verse (e.g. Lk 1:38, Jn 1:14, Ps 113:3). The "intercession" asks for grace to surrender the rest of the day. The "prayer" is one brief reflection on incarnation, vocation, or surrender.`,
+    midday: middayPick
+      ? `Lead the MIDDAY ANGELUS, preserving its full Catholic identity.
+The "opening" walks the user through the traditional Angelus in 3 short call-and-response style lines: "The Angel of the Lord declared unto Mary…", "Behold the handmaid of the Lord…", "And the Word was made flesh…" (concise, not full Hail Marys). The Angelus form is non-negotiable.
+
+For the rest of the devotion, ROTATE BEYOND repeated Marian verses. Today's rotation seed:
+- Focus theme: ${middayPick.focusTheme}
+- Scripture to use (use THIS verse, faithfully quoted): ${middayPick.scripture.ref} — "${middayPick.scripture.text}"
+- Reflection angle to develop (in your own words, do not quote verbatim): ${middayPick.reflection.prompt}
+- Saint companion to weave in naturally (only if it fits the voice and theme; otherwise set saint:null): ${middayPick.saint.name} — ${middayPick.saint.note}
+
+Hard variety rules:
+- Do NOT substitute a different Marian verse for the one above. The "scripture" field MUST be exactly { ref: "${middayPick.scripture.ref}", text: "${middayPick.scripture.text}" }.
+- Avoid recycling these recently-used scripture refs: ${recentScriptureRefs.length ? recentScriptureRefs.join(", ") : "none"}.
+- Draw the reflection from the focus theme above — incarnation, humility, obedience, vocational work, midday renewal, service & surrender, or the Gospel in daily life — NOT a generic Marian summary.
+- The "intercession" asks for grace to live the afternoon in this theme (work, people, surrender).
+- The "prayer" is one short personalized prayer rooted in the focus theme, not a re-statement of the Angelus.`
+      : `Lead the MIDDAY ANGELUS.`,
     night: `Lead NIGHT PRAYER (Compline). The "opening" begins with a brief Examen — at most 3 short reflection prompts (one line each: gratitude, awareness, contrition). The "scripture" is ONE single night verse for rest and trust (e.g. Ps 4:8, 31:5, 91:1, Mt 11:28). The "intercession" asks protection for self, loved ones, and those who suffer. The "prayer" is a personalized Compline-style prayer for surrender and rest.`,
   };
 
