@@ -141,7 +141,7 @@ serve(async (req) => {
     const guideKey: string | undefined = preferences.spiritual_guide;
 
     const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-    const [{ data: recentRows }, { data: saintRows }, { data: latestJournal }, { data: openInts }, { data: recentMidday }] = await Promise.all([
+    const [{ data: recentRows }, { data: saintRows }, { data: latestJournal }, { data: openInts }] = await Promise.all([
       supabase
         .from("prayer_completions")
         .select("prayer_type, saint_key, themes, prayer_date")
