@@ -55,8 +55,12 @@ const Paywall = () => {
 
   useEffect(() => {
     if (!user || entitlementLoading || !isPremium) return;
+    console.info('[Paywall] dismissing — user is premium', {
+      onIos,
+      returnTo,
+    });
     navigate(returnTo && returnTo !== '/paywall' ? returnTo : '/', { replace: true });
-  }, [entitlementLoading, isPremium, navigate, returnTo, user]);
+  }, [entitlementLoading, isPremium, navigate, returnTo, user, onIos]);
 
   // If the user just signed in and we asked to auto-start checkout, open it once.
   useEffect(() => {
