@@ -192,14 +192,35 @@ serve(async (req) => {
       : null;
     const openIntentions = (openInts ?? []).map((i: any) => String(i.category ?? "intention"));
 
-    const prompt = systemPrompt(slot, guideKey, {
-      saints: [...saintsRecent].slice(0, 5),
-      themes: topThemes,
-      lastCompleted,
-      recentMood,
-      openIntentions,
-      recentReflectionSnippet,
-    });
+    const middayPick = slot === "midday"
+      ? pickMiddayRotation({
+          userId: user.id,
+          avoidSaintKeys: [...saintsRecent].slice(0, 5),
+          avoidThemes: topThemes,
+        })
+      : undefined;
+    if (middayPick) {
+      console.log("[guided-devotion] midday rotation", {
+        ref: middayPick.scripture.ref,
+        theme: middayPick.focusTheme,
+        saint: middayPick.saint.key,
+      });
+    }
+
+    const prompt = systemPrompt(
+      slot,
+      guideKey,
+      {
+        saints: [...saintsRecent].slice(0, 5),
+        themes: topThemes,
+        lastCompleted,
+        recentMood,
+        openIntentions,
+        recentReflectionSnippet,
+      },
+      middayPick,
+      topThemes,
+    );
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
