@@ -6,9 +6,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import RouteTransition from "@/components/RouteTransition";
+import { useAuthDeepLinks } from "@/hooks/useAuthDeepLinks";
 import Index from "./pages/Index.tsx";
 import Welcome from "./pages/Welcome.tsx";
 import Auth from "./pages/Auth.tsx";
+import AuthCallback from "./pages/AuthCallback.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import MonkChat from "./pages/MonkChat.tsx";
 import PrayerDetail from "./pages/PrayerDetail.tsx";
@@ -53,6 +55,7 @@ const queryClient = new QueryClient();
 const NativeBootstrap = () => {
   useNativeShell();
   useNativeNotifications();
+  useAuthDeepLinks();
   return null;
 };
 
