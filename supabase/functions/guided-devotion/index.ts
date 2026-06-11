@@ -32,7 +32,7 @@ interface RecentCtx {
   recentReflectionSnippet?: string | null;
 }
 
-function systemPrompt(slot: Slot, guideKey: string | undefined, recent: RecentCtx) {
+function systemPrompt(slot: Slot, guideKey: string | undefined, recent: RecentCtx, middayPick?: MiddayRotationPick, recentScriptureRefs: string[] = []) {
   const v = voiceFor(guideKey);
 
   const sharedShape = `
