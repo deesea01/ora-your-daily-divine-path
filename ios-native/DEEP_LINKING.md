@@ -1,12 +1,27 @@
 # iOS Deep-Link Setup for Supabase Auth Emails
 
-The native iOS app must register the custom URL scheme `oradevotion` so that
-Supabase verification / password-reset emails open back inside the app
-(WKWebView) instead of stranding the user in Safari.
+Email verification uses an **https bounce flow** — the most reliable pattern
+for Supabase + Capacitor iOS:
 
-## 1. `ios/App/App/Info.plist`
+```
+Sign up in app
+  → Supabase sends email (redirect_to = https://oradevotion.com/auth/callback)
+  → User taps link in Mail → Safari opens Supabase verify endpoint
+  → Verify succeeds → Safari lands on /auth/callback (bounce page)
+  → Bounce page detects iOS → redirects to oradevotion://auth/callback?...
+  → iOS opens the Ora app → useAuthDeepLinks restores the session in WKWebView
+  → User continues to onboarding / paywall (existing routing guards)
+```
 
-Add the following `CFBundleURLTypes` block inside the top-level `<dict>`:
+Why not put `oradevotion://` directly in the email redirect? Email clients and
+Supabase's allow-list frequently reject custom schemes, silently falling back
+to the Site URL — which stranded users on the website. The https bounce page is
+always allow-listed and forwards the raw tokens into the app without consuming
+them, so the session is created **inside the app**, not in Safari.
+
+## 1. `ios/App/App/Info.plist` (required)
+
+Register the custom URL scheme inside the top-level `<dict>`:
 
 ```xml
 <key>CFBundleURLTypes</key>
@@ -27,30 +42,45 @@ Add the following `CFBundleURLTypes` block inside the top-level `<dict>`:
 ## 2. AppDelegate
 
 `ios-native/AppDelegate.swift` already forwards `application(_:open:options:)`
-to `ApplicationDelegateProxy`, which Capacitor uses to emit the JS
-`appUrlOpen` event. No additional native code required.
+to `ApplicationDelegateProxy`, which emits the JS `appUrlOpen` event. No
+additional native code required.
 
 ## 3. Supabase Auth → URL Configuration
 
-In the Lovable Cloud / Supabase Auth settings:
-
 - **Site URL:** `https://oradevotion.com`
-- **Additional Redirect URLs** (add all of these):
+- **Additional Redirect URLs:**
   - `https://oradevotion.com/auth/callback`
   - `https://oradevotion.com/reset-password`
+  - `https://www.oradevotion.com/auth/callback`
   - `https://ora-sacred-path.lovable.app/auth/callback`
   - `https://ora-sacred-path.lovable.app/reset-password`
-  - `oradevotion://auth/callback`
-  - `oradevotion://reset-password`
 
-The web origins are kept for desktop/PWA users; the `oradevotion://` entries
-allow Supabase to issue verification links that deep-link into the iOS app.
+Custom-scheme entries (`oradevotion://...`) are no longer needed for the email
+flow but are harmless if present.
 
-## 4. Verify
+## 4. Publish requirement (dev + prod)
 
-1. `npx cap sync ios` and rebuild in Xcode.
-2. Sign up a fresh account on a physical device.
-3. Tap the verification link in Mail. iOS should switch into the Ora app and
-   land on the post-verification route (paywall for non-premium users).
-4. Xcode console should show no `appUrlOpen` errors; the JS console should
-   log a successful `supabase.auth` session restore.
+The bounce page lives on the **published** website. After any change to
+`src/pages/AuthCallback.tsx` or `src/lib/authRedirect.ts`, re-publish the
+Lovable project so `https://oradevotion.com/auth/callback` serves the latest
+bounce logic. Native dev builds and TestFlight builds both depend on the
+published page.
+
+## 5. TestFlight testing steps
+
+1. `git pull`, `npm install`, `npm run build`, `npx cap sync ios`.
+2. Confirm `Info.plist` has the `CFBundleURLTypes` block above.
+3. Archive and upload to TestFlight (or run on a physical device via Xcode).
+4. **Scheme smoke test:** in Safari on the device, type
+   `oradevotion://auth/callback` in the address bar → iOS should prompt to
+   open Ora. If not, the URL scheme isn't registered — recheck Info.plist.
+5. Sign up with a fresh email in the app.
+6. Open the verification email in Mail and tap the link.
+7. Safari briefly opens, shows "Email verified — Opening the Ora app…", then
+   iOS switches into Ora ("Open in Ora?" prompt may appear once).
+8. The app should land past sign-in: onboarding/paywall for non-premium users,
+   Home for entitled users (existing guards unchanged).
+9. If the auto-bounce doesn't fire, tap the **"Open the Ora app"** button on
+   the bounce page.
+10. Xcode console: look for `appUrlOpen` and a successful session restore; on
+    failure the app logs `[auth deeplink] failed to restore session`.
