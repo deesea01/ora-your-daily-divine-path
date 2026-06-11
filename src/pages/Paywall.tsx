@@ -19,21 +19,19 @@ const FEATURES = [
   { icon: Bell, text: 'Early access to new features' },
 ];
 
-const INTRO_DISCOUNT_CODE = 'ORAFIRSTMONTH';
-
 const Paywall = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
   const { isPremium, loading: entitlementLoading } = useEntitlement();
   const { openCheckout, loading } = usePaddleCheckout();
-  const [plan, setPlan] = useState<'intro' | 'monthly' | 'yearly'>('intro');
+  const [plan, setPlan] = useState<'monthly' | 'yearly'>('yearly');
   const [reminderOn, setReminderOn] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
   const autoStartedRef = useRef(false);
   const returnTo = (location.state as { from?: string } | null)?.from;
 
-  const handleStartTrial = async (autoPlan?: 'intro' | 'monthly' | 'yearly') => {
+  const handleStartTrial = async (autoPlan?: 'monthly' | 'yearly') => {
     if (!user) {
       // Send unauthenticated users to /auth and bring them back here to auto-open checkout.
       navigate(`/auth?redirect=${encodeURIComponent('/paywall?autoStart=1')}`);
@@ -41,15 +39,12 @@ const Paywall = () => {
     }
     const activePlan = autoPlan ?? plan;
     const priceId = activePlan === 'yearly' ? 'ora_premium_yearly' : 'ora_premium_monthly';
-    // Intro discount is restricted to the monthly price only — never attach it on yearly.
-    const discountCode = activePlan === 'intro' && priceId === 'ora_premium_monthly' ? INTRO_DISCOUNT_CODE : undefined;
     try {
       await openCheckout({
         priceId,
         customerEmail: user.email,
         customData: { userId: user.id, reminderOn: String(reminderOn), plan: activePlan },
         successUrl: `${window.location.origin}/checkout/success`,
-        ...(discountCode ? { discountCode } : {}),
       });
     } catch (e) {
       console.error('Checkout failed', e);
@@ -142,22 +137,6 @@ const Paywall = () => {
         {!onIos && (
           <>
             <div className="mt-8 space-y-3">
-              <button
-                onClick={() => setPlan('intro')}
-                className={`relative w-full rounded-xl border-2 px-4 py-4 text-left transition-all active:scale-[0.98] ${
-                  plan === 'intro' ? 'border-gold bg-gold/10' : 'border-border bg-card'
-                }`}
-              >
-                <span className="absolute -top-2 right-3 rounded-full bg-gold px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground">
-                  Intro offer
-                </span>
-                <p className="text-xs uppercase tracking-widest text-muted-foreground">First month</p>
-                <p className="mt-1 font-serif text-2xl text-foreground">
-                  $1<span className="text-sm text-muted-foreground"> for your first month</span>
-                </p>
-                <p className="mt-1 text-[11px] text-muted-foreground">Then $9.99/mo · cancel anytime</p>
-              </button>
-
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => setPlan('yearly')}
@@ -190,9 +169,7 @@ const Paywall = () => {
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Check className="h-3.5 w-3.5 text-gold" />
                 <span>
-                  {plan === 'intro'
-                    ? '$1 for your first month, then $9.99/month'
-                    : plan === 'yearly'
+                  {plan === 'yearly'
                     ? '$59.99/year, billed annually'
                     : '$9.99/month, billed monthly'}
                 </span>

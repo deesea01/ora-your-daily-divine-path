@@ -167,11 +167,7 @@ export function IapPaywallSection() {
               {plan.period === 'yearly' ? 'Yearly' : plan.period === 'monthly' ? 'Monthly' : plan.title}
             </p>
             <p className="mt-1 font-serif text-2xl text-foreground">{plan.priceString}</p>
-            {plan.introPeriod && plan.introPriceString && plan.introPriceString !== 'Free' && (
-              <p className="mt-1 text-[11px] text-gold">
-                {`${plan.introPriceString} for ${plan.introPeriod}, then ${plan.priceString}`}
-              </p>
-            )}
+            {/* Introductory pricing intentionally hidden — Ora offers only standard Monthly/Yearly. */}
           </div>
           {busyId === plan.identifier ? (
             <Loader2 className="h-5 w-5 animate-spin text-gold" />
