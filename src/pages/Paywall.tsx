@@ -19,21 +19,19 @@ const FEATURES = [
   { icon: Bell, text: 'Early access to new features' },
 ];
 
-const INTRO_DISCOUNT_CODE = 'ORAFIRSTMONTH';
-
 const Paywall = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
   const { isPremium, loading: entitlementLoading } = useEntitlement();
   const { openCheckout, loading } = usePaddleCheckout();
-  const [plan, setPlan] = useState<'intro' | 'monthly' | 'yearly'>('intro');
+  const [plan, setPlan] = useState<'monthly' | 'yearly'>('yearly');
   const [reminderOn, setReminderOn] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
   const autoStartedRef = useRef(false);
   const returnTo = (location.state as { from?: string } | null)?.from;
 
-  const handleStartTrial = async (autoPlan?: 'intro' | 'monthly' | 'yearly') => {
+  const handleStartTrial = async (autoPlan?: 'monthly' | 'yearly') => {
     if (!user) {
       // Send unauthenticated users to /auth and bring them back here to auto-open checkout.
       navigate(`/auth?redirect=${encodeURIComponent('/paywall?autoStart=1')}`);
@@ -41,15 +39,12 @@ const Paywall = () => {
     }
     const activePlan = autoPlan ?? plan;
     const priceId = activePlan === 'yearly' ? 'ora_premium_yearly' : 'ora_premium_monthly';
-    // Intro discount is restricted to the monthly price only — never attach it on yearly.
-    const discountCode = activePlan === 'intro' && priceId === 'ora_premium_monthly' ? INTRO_DISCOUNT_CODE : undefined;
     try {
       await openCheckout({
         priceId,
         customerEmail: user.email,
         customData: { userId: user.id, reminderOn: String(reminderOn), plan: activePlan },
         successUrl: `${window.location.origin}/checkout/success`,
-        ...(discountCode ? { discountCode } : {}),
       });
     } catch (e) {
       console.error('Checkout failed', e);
