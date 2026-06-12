@@ -11,8 +11,9 @@ import Foundation
 ///   - JS:      `customerInfo.entitlements.active['premium']`
 ///   - Webhook: `supabase/functions/revenuecat-webhook` PREMIUM_ENTITLEMENT
 enum RevenueCatBootstrap {
-    /// Public iOS SDK key reference only. Runtime configuration now happens in JS.
-    static let apiKey = "test_UJIsLopWOTwGmpsbwrrDYAvSHGa"
+    /// Runtime RevenueCat configuration is performed in JS via the Capacitor
+    /// plugin using `VITE_REVENUECAT_IOS_API_KEY`. No native key is bundled
+    /// here so the legacy sandbox/test key cannot be shipped accidentally.
 
     /// MUST match the entitlement ID configured in the RevenueCat dashboard
     /// and the `PREMIUM_ENTITLEMENT` constant in the revenuecat-webhook edge function.
