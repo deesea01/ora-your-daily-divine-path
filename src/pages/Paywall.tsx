@@ -86,6 +86,32 @@ const Paywall = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, onIos]);
 
+  // While auth / profile / entitlement are still resolving, render a spinner
+  // so we never flash the paywall and never make a routing decision on
+  // partial state. This is the source of "lands on paywall after verification".
+  if (authLoading || (user && (profileLoading || entitlementLoading))) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-6 w-6 rounded-full border-2 border-gold border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  // Signed-in users who have not completed onboarding must finish it first.
+  // Required flow: onboarding → (auth if needed) → paywall → home.
+  if (user && profile && !profile.onboarding_completed) {
+    console.info('[routing] Paywall → /onboarding (onboarding incomplete)');
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  // Already premium — bounce home (the effect above also handles this once
+  // mounted, but returning early avoids a paywall flash).
+  if (user && isPremium) {
+    console.info('[routing] Paywall → home (entitlement active)');
+    return <Navigate to={returnTo && returnTo !== '/paywall' ? returnTo : '/'} replace />;
+  }
+
+
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe app-container-wide">
       <SEO
