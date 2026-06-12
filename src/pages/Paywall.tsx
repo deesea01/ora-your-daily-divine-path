@@ -23,7 +23,8 @@ const FEATURES = [
 const Paywall = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, session, loading: authLoading } = useAuth();
+  const { profile, loading: profileLoading } = useUserProfile();
   const { isPremium, loading: entitlementLoading } = useEntitlement();
   const { openCheckout, loading } = usePaddleCheckout();
   const [plan, setPlan] = useState<'monthly' | 'yearly'>('yearly');
@@ -31,6 +32,14 @@ const Paywall = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const autoStartedRef = useRef(false);
   const returnTo = (location.state as { from?: string } | null)?.from;
+
+  console.info('[routing] Paywall render', {
+    route: location.pathname,
+    authSession: !!session,
+    onboardingComplete: !!profile?.onboarding_completed,
+    entitlementActive: isPremium,
+    loading: { authLoading, profileLoading, entitlementLoading },
+  });
 
   const handleStartTrial = async (autoPlan?: 'monthly' | 'yearly') => {
     if (!user) {
