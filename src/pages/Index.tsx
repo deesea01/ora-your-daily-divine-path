@@ -75,6 +75,14 @@ const Index = () => {
       });
   }, [user]);
 
+  console.info('[routing] Index render', {
+    route: '/',
+    authSession: !!user,
+    onboardingComplete: !!profile?.onboarding_completed,
+    entitlementActive: isPremium,
+    loading: { auth: loading, profile: profileLoading, ent: entLoading },
+  });
+
   if (loading || profileLoading || entLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -83,9 +91,9 @@ const Index = () => {
     );
   }
 
-  if (!user) return <Navigate to="/welcome" replace />;
-  if (!profile?.onboarding_completed) return <Navigate to="/onboarding" replace />;
-  if (!isPremium) return <Navigate to="/paywall" replace />;
+  if (!user) { console.info('[routing] Index → /welcome'); return <Navigate to="/welcome" replace />; }
+  if (!profile?.onboarding_completed) { console.info('[routing] Index → /onboarding'); return <Navigate to="/onboarding" replace />; }
+  if (!isPremium) { console.info('[routing] Index → /paywall'); return <Navigate to="/paywall" replace />; }
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? t.goodMorning : hour < 17 ? t.goodAfternoon : t.goodEvening;
