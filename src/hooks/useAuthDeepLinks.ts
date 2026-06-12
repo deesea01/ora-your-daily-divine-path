@@ -85,8 +85,9 @@ export function useAuthDeepLinks() {
           return;
         }
 
-        // Route to root; existing guards (Welcome → onboarding → paywall → home)
-        // will redirect non-premium verified users to the paywall.
+        // Route to root; Index guards (auth → onboarding → paywall → home)
+        // will land the user on the correct screen.
+        console.info('[auth deeplink] session restored → /');
         navigate('/', { replace: true });
       } catch (err) {
         console.error('[auth deeplink] failed to restore session', err);

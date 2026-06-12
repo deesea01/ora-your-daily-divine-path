@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Check, Loader2, Shield, Sparkles, BookOpen, BarChart3, Users, Heart, Compass, Bell, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useEntitlement } from '@/hooks/useEntitlement';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { usePaddleCheckout } from '@/hooks/usePaddleCheckout';
 import { MissionNote } from '@/components/MissionNote';
 import SEO from '@/components/SEO';
@@ -22,7 +23,8 @@ const FEATURES = [
 const Paywall = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, session, loading: authLoading } = useAuth();
+  const { profile, loading: profileLoading } = useUserProfile();
   const { isPremium, loading: entitlementLoading } = useEntitlement();
   const { openCheckout, loading } = usePaddleCheckout();
   const [plan, setPlan] = useState<'monthly' | 'yearly'>('yearly');
@@ -30,6 +32,14 @@ const Paywall = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const autoStartedRef = useRef(false);
   const returnTo = (location.state as { from?: string } | null)?.from;
+
+  console.info('[routing] Paywall render', {
+    route: location.pathname,
+    authSession: !!session,
+    onboardingComplete: !!profile?.onboarding_completed,
+    entitlementActive: isPremium,
+    loading: { authLoading, profileLoading, entitlementLoading },
+  });
 
   const handleStartTrial = async (autoPlan?: 'monthly' | 'yearly') => {
     if (!user) {
@@ -75,6 +85,32 @@ const Paywall = () => {
     handleStartTrial();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, onIos]);
+
+  // While auth / profile / entitlement are still resolving, render a spinner
+  // so we never flash the paywall and never make a routing decision on
+  // partial state. This is the source of "lands on paywall after verification".
+  if (authLoading || (user && (profileLoading || entitlementLoading))) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-6 w-6 rounded-full border-2 border-gold border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  // Signed-in users who have not completed onboarding must finish it first.
+  // Required flow: onboarding → (auth if needed) → paywall → home.
+  if (user && profile && !profile.onboarding_completed) {
+    console.info('[routing] Paywall → /onboarding (onboarding incomplete)');
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  // Already premium — bounce home (the effect above also handles this once
+  // mounted, but returning early avoids a paywall flash).
+  if (user && isPremium) {
+    console.info('[routing] Paywall → home (entitlement active)');
+    return <Navigate to={returnTo && returnTo !== '/paywall' ? returnTo : '/'} replace />;
+  }
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe app-container-wide">
