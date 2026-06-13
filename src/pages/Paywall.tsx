@@ -151,11 +151,12 @@ const Paywall = () => {
         </div>
         <div className="pt-4 text-center">
           <div className="mb-4 text-4xl">✨</div>
-          <h1 className="font-serif text-3xl text-foreground mb-2">Begin Your New Journey</h1>
+          <h1 className="font-serif text-3xl text-foreground mb-2">Unlock Your Prayer Life</h1>
           <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-            A guided life of prayer, devotion, and spiritual growth.
+            Your personalized prayer plan is ready. Unlock daily devotion, the saints, and the full guided path.
           </p>
         </div>
+
 
         {/* Value stack */}
         <div className="mt-8 space-y-3">
