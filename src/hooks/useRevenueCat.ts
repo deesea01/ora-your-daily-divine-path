@@ -211,7 +211,7 @@ export function useRevenueCat() {
         logEntitlementSnapshot('init', info.customerInfo);
         if (cancelled) return;
         setPlans(list);
-        setCustomerInfo(info.customerInfo);
+        broadcastCustomerInfo(info.customerInfo);
         setReady(true);
         if (user) {
           void syncEntitlement(user.id, info.customerInfo);
