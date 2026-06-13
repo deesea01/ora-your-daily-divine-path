@@ -32,6 +32,22 @@ import { useAuth } from '@/hooks/useAuth';
 const ENTITLEMENT_ID = 'premium';
 let configurePromise: Promise<void> | null = null;
 
+// ---- Module-level shared CustomerInfo cache --------------------------------
+// useRevenueCat is called from multiple components (IapPaywallSection AND
+// useEntitlement, which is consumed by Index / Paywall / RequirePremium).
+// Without a shared cache, only the hook instance that initiated the purchase
+// sees the updated CustomerInfo, while every other consumer keeps reporting
+// `hasPremiumEntitlement=false` — that is the root cause of "user stays stuck
+// on the paywall after a successful purchase".
+let cachedCustomerInfo: CustomerInfo | null = null;
+const customerInfoListeners = new Set<(info: CustomerInfo | null) => void>();
+function broadcastCustomerInfo(info: CustomerInfo | null) {
+  cachedCustomerInfo = info;
+  customerInfoListeners.forEach((l) => {
+    try { l(info); } catch { /* noop */ }
+  });
+}
+
 function getRevenueCatIosApiKey(): string {
   const key = (import.meta.env.VITE_REVENUECAT_IOS_API_KEY as string | undefined)?.trim();
   if (!key) {
@@ -121,9 +137,18 @@ export function useRevenueCat() {
   const { user } = useAuth();
   const [ready, setReady] = useState(false);
   const [plans, setPlans] = useState<IapPlan[]>([]);
-  const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
+  const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(cachedCustomerInfo);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Subscribe every hook instance to the shared CustomerInfo cache so that
+  // a purchase / restore in one component instantly updates entitlement
+  // status everywhere (Paywall, Index, RequirePremium…).
+  useEffect(() => {
+    const l = (info: CustomerInfo | null) => setCustomerInfo(info);
+    customerInfoListeners.add(l);
+    return () => { customerInfoListeners.delete(l); };
+  }, []);
 
   // Configure & load offerings on iOS. Offerings can be loaded with an
   // anonymous appUserID so unauthenticated visitors can browse subscription
@@ -186,7 +211,7 @@ export function useRevenueCat() {
         logEntitlementSnapshot('init', info.customerInfo);
         if (cancelled) return;
         setPlans(list);
-        setCustomerInfo(info.customerInfo);
+        broadcastCustomerInfo(info.customerInfo);
         setReady(true);
         if (user) {
           void syncEntitlement(user.id, info.customerInfo);
@@ -218,7 +243,10 @@ export function useRevenueCat() {
       const result = await Purchases.purchasePackage({ aPackage: plan.rcPackage });
       console.info('[RC] purchase: completed', { package: plan.identifier });
       logEntitlementSnapshot('purchase', result.customerInfo);
-      setCustomerInfo(result.customerInfo);
+      broadcastCustomerInfo(result.customerInfo);
+      console.info('[RC] purchase: entitlement broadcast', {
+        hasPremium: !!result.customerInfo.entitlements.active?.[ENTITLEMENT_ID],
+      });
       await syncEntitlement(user.id, result.customerInfo);
       return result.customerInfo;
     } catch (e: any) {
@@ -247,7 +275,7 @@ export function useRevenueCat() {
       logEntitlementSnapshot('restore', result.customerInfo);
       const isActive = !!result.customerInfo.entitlements.active?.[ENTITLEMENT_ID];
       console.info('[RC] restore: completed', { isActive });
-      setCustomerInfo(result.customerInfo);
+      broadcastCustomerInfo(result.customerInfo);
       await syncEntitlement(user.id, result.customerInfo);
       return result.customerInfo;
     } catch (e: any) {
@@ -260,9 +288,37 @@ export function useRevenueCat() {
     }
   }, [user?.id]);
 
+  /**
+   * Force-refresh CustomerInfo from RevenueCat, optionally polling until the
+   * `premium` entitlement appears. Used immediately after a successful
+   * purchase to absorb any propagation lag between StoreKit, RevenueCat, and
+   * our cache before we route the user to Home.
+   */
+  const refreshCustomerInfo = useCallback(
+    async (opts?: { waitForPremium?: boolean; attempts?: number; intervalMs?: number }) => {
+      if (!isNativeIOS()) return null;
+      const attempts = opts?.attempts ?? (opts?.waitForPremium ? 10 : 1);
+      const intervalMs = opts?.intervalMs ?? 1500;
+      for (let i = 0; i < attempts; i++) {
+        try {
+          const res = await Purchases.getCustomerInfo();
+          broadcastCustomerInfo(res.customerInfo);
+          const active = !!res.customerInfo.entitlements.active?.[ENTITLEMENT_ID];
+          console.info('[RC] refresh: customerInfo returned', { attempt: i + 1, entitlementActive: active });
+          if (!opts?.waitForPremium || active) return res.customerInfo;
+        } catch (e) {
+          logRcError(`refresh (attempt ${i + 1})`, e);
+        }
+        if (i < attempts - 1) await new Promise((r) => setTimeout(r, intervalMs));
+      }
+      return cachedCustomerInfo;
+    },
+    [],
+  );
+
   const hasPremiumEntitlement = !!customerInfo?.entitlements?.active?.[ENTITLEMENT_ID];
 
-  return { ready, loading, error, plans, customerInfo, hasPremiumEntitlement, purchase, restore };
+  return { ready, loading, error, plans, customerInfo, hasPremiumEntitlement, purchase, restore, refreshCustomerInfo };
 }
 
 /**
