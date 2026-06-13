@@ -97,8 +97,14 @@ const Paywall = () => {
     );
   }
 
-  // Signed-in users who have not completed onboarding must finish it first.
-  // Required flow: onboarding → (auth if needed) → paywall → home.
+  // Onboarding must always come before the paywall. This applies to BOTH
+  // unauthenticated visitors (no profile yet) and signed-in users whose
+  // profile has not been marked complete. Without this guard, deep-links or
+  // the old Get Started button could land users directly on the paywall.
+  if (!user) {
+    console.info('[routing] Paywall → /onboarding (no auth session yet)');
+    return <Navigate to="/onboarding" replace />;
+  }
   if (user && profile && !profile.onboarding_completed) {
     console.info('[routing] Paywall → /onboarding (onboarding incomplete)');
     return <Navigate to="/onboarding" replace />;
