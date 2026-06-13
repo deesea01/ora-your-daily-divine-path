@@ -36,7 +36,10 @@ const Paywall = () => {
   console.info('[routing] Paywall render', {
     route: location.pathname,
     authSession: !!session,
+    emailVerified: !!user?.email_confirmed_at,
     onboardingComplete: !!profile?.onboarding_completed,
+    prayerPlanGenerated: !!profile?.prayer_plan_generated,
+    prayerPlanReviewed: !!profile?.prayer_plan_reviewed,
     entitlementActive: isPremium,
     loading: { authLoading, profileLoading, entitlementLoading },
   });
