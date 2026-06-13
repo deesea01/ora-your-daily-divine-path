@@ -335,6 +335,7 @@ const Onboarding = () => {
   };
 
   const goToPaywall = () => {
+    console.info('[routing] onboarding completed → /paywall');
     clearPersistedProgress();
     navigate('/paywall', { replace: true });
   };
