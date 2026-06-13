@@ -137,9 +137,18 @@ export function useRevenueCat() {
   const { user } = useAuth();
   const [ready, setReady] = useState(false);
   const [plans, setPlans] = useState<IapPlan[]>([]);
-  const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
+  const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(cachedCustomerInfo);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Subscribe every hook instance to the shared CustomerInfo cache so that
+  // a purchase / restore in one component instantly updates entitlement
+  // status everywhere (Paywall, Index, RequirePremium…).
+  useEffect(() => {
+    const l = (info: CustomerInfo | null) => setCustomerInfo(info);
+    customerInfoListeners.add(l);
+    return () => { customerInfoListeners.delete(l); };
+  }, []);
 
   // Configure & load offerings on iOS. Offerings can be loaded with an
   // anonymous appUserID so unauthenticated visitors can browse subscription
