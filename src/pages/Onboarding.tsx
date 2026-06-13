@@ -158,7 +158,7 @@ function OnboardingSkeleton() {
 const Onboarding = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { saveProfile, profile, loading: profileLoading } = useUserProfile();
+  const { saveProfile, markPrayerPlanGenerated, markOnboardingComplete, profile, loading: profileLoading } = useUserProfile();
   const { isPremium, loading: entitlementLoading } = useEntitlement();
   const { save: saveResponses } = useOnboardingResponses();
 
