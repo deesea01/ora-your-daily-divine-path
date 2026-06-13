@@ -6,6 +6,8 @@ export interface UserProfile {
   seeking: string[];
   experience_level: string;
   onboarding_completed: boolean;
+  prayer_plan_generated: boolean;
+  prayer_plan_reviewed: boolean;
   spiritual_guide: string;
   preferred_language: string;
   daily_prayer_goal: number;
