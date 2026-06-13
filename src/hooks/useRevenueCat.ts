@@ -32,6 +32,22 @@ import { useAuth } from '@/hooks/useAuth';
 const ENTITLEMENT_ID = 'premium';
 let configurePromise: Promise<void> | null = null;
 
+// ---- Module-level shared CustomerInfo cache --------------------------------
+// useRevenueCat is called from multiple components (IapPaywallSection AND
+// useEntitlement, which is consumed by Index / Paywall / RequirePremium).
+// Without a shared cache, only the hook instance that initiated the purchase
+// sees the updated CustomerInfo, while every other consumer keeps reporting
+// `hasPremiumEntitlement=false` — that is the root cause of "user stays stuck
+// on the paywall after a successful purchase".
+let cachedCustomerInfo: CustomerInfo | null = null;
+const customerInfoListeners = new Set<(info: CustomerInfo | null) => void>();
+function broadcastCustomerInfo(info: CustomerInfo | null) {
+  cachedCustomerInfo = info;
+  customerInfoListeners.forEach((l) => {
+    try { l(info); } catch { /* noop */ }
+  });
+}
+
 function getRevenueCatIosApiKey(): string {
   const key = (import.meta.env.VITE_REVENUECAT_IOS_API_KEY as string | undefined)?.trim();
   if (!key) {
