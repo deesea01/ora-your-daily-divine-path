@@ -288,9 +288,37 @@ export function useRevenueCat() {
     }
   }, [user?.id]);
 
+  /**
+   * Force-refresh CustomerInfo from RevenueCat, optionally polling until the
+   * `premium` entitlement appears. Used immediately after a successful
+   * purchase to absorb any propagation lag between StoreKit, RevenueCat, and
+   * our cache before we route the user to Home.
+   */
+  const refreshCustomerInfo = useCallback(
+    async (opts?: { waitForPremium?: boolean; attempts?: number; intervalMs?: number }) => {
+      if (!isNativeIOS()) return null;
+      const attempts = opts?.attempts ?? (opts?.waitForPremium ? 10 : 1);
+      const intervalMs = opts?.intervalMs ?? 1500;
+      for (let i = 0; i < attempts; i++) {
+        try {
+          const res = await Purchases.getCustomerInfo();
+          broadcastCustomerInfo(res.customerInfo);
+          const active = !!res.customerInfo.entitlements.active?.[ENTITLEMENT_ID];
+          console.info('[RC] refresh: customerInfo returned', { attempt: i + 1, entitlementActive: active });
+          if (!opts?.waitForPremium || active) return res.customerInfo;
+        } catch (e) {
+          logRcError(`refresh (attempt ${i + 1})`, e);
+        }
+        if (i < attempts - 1) await new Promise((r) => setTimeout(r, intervalMs));
+      }
+      return cachedCustomerInfo;
+    },
+    [],
+  );
+
   const hasPremiumEntitlement = !!customerInfo?.entitlements?.active?.[ENTITLEMENT_ID];
 
-  return { ready, loading, error, plans, customerInfo, hasPremiumEntitlement, purchase, restore };
+  return { ready, loading, error, plans, customerInfo, hasPremiumEntitlement, purchase, restore, refreshCustomerInfo };
 }
 
 /**
