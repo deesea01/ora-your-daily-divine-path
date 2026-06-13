@@ -1006,6 +1006,8 @@ export type Database = {
           experience_level: string
           id: string
           onboarding_completed: boolean
+          prayer_plan_generated: boolean
+          prayer_plan_reviewed: boolean
           preferred_language: string
           seeking: string[]
           spiritual_guide: string
@@ -1021,6 +1023,8 @@ export type Database = {
           experience_level?: string
           id?: string
           onboarding_completed?: boolean
+          prayer_plan_generated?: boolean
+          prayer_plan_reviewed?: boolean
           preferred_language?: string
           seeking?: string[]
           spiritual_guide?: string
@@ -1036,6 +1040,8 @@ export type Database = {
           experience_level?: string
           id?: string
           onboarding_completed?: boolean
+          prayer_plan_generated?: boolean
+          prayer_plan_reviewed?: boolean
           preferred_language?: string
           seeking?: string[]
           spiritual_guide?: string
