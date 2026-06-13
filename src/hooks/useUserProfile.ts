@@ -6,6 +6,8 @@ export interface UserProfile {
   seeking: string[];
   experience_level: string;
   onboarding_completed: boolean;
+  prayer_plan_generated: boolean;
+  prayer_plan_reviewed: boolean;
   spiritual_guide: string;
   preferred_language: string;
   daily_prayer_goal: number;
@@ -39,7 +41,7 @@ export function useUserProfile() {
     setLoading(true);
     supabase
       .from('user_profiles')
-      .select('seeking, experience_level, onboarding_completed, spiritual_guide, preferred_language, daily_prayer_goal, display_name, terms_accepted_at, timezone')
+      .select('seeking, experience_level, onboarding_completed, prayer_plan_generated, prayer_plan_reviewed, spiritual_guide, preferred_language, daily_prayer_goal, display_name, terms_accepted_at, timezone')
       .eq('user_id', user.id)
       .maybeSingle()
       .then(({ data, error }) => {
@@ -70,11 +72,13 @@ export function useUserProfile() {
   const saveProfile = async (seeking: string[], experienceLevel: string, dailyGoal?: number, displayName?: string, acceptTerms?: boolean) => {
     if (!user) return;
 
+    // NOTE: onboarding_completed is intentionally NOT set here. It is only set
+    // after the user has reviewed their personalized prayer plan and tapped
+    // "continue" (see markOnboardingComplete).
     const payload: any = {
       user_id: user.id,
       seeking,
       experience_level: experienceLevel,
-      onboarding_completed: true,
       timezone: detectTimezone(),
       updated_at: new Date().toISOString(),
     };
@@ -88,13 +92,54 @@ export function useUserProfile() {
 
     if (!error) {
       setProfile((prev) => ({
-        ...(prev || { seeking: [], experience_level: 'beginner', onboarding_completed: true, spiritual_guide: 'monk', preferred_language: 'en', daily_prayer_goal: 3, display_name: null, terms_accepted_at: null, timezone: detectTimezone() }),
+        ...(prev || {
+          seeking: [],
+          experience_level: 'beginner',
+          onboarding_completed: false,
+          prayer_plan_generated: false,
+          prayer_plan_reviewed: false,
+          spiritual_guide: 'monk',
+          preferred_language: 'en',
+          daily_prayer_goal: 3,
+          display_name: null,
+          terms_accepted_at: null,
+          timezone: detectTimezone(),
+        }),
         seeking,
         experience_level: experienceLevel,
-        onboarding_completed: true,
         ...(displayName !== undefined ? { display_name: displayName } : {}),
         ...(acceptTerms ? { terms_accepted_at: new Date().toISOString() } : {}),
       }));
+    }
+    return { error };
+  };
+
+  const markPrayerPlanGenerated = async () => {
+    if (!user) return;
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ prayer_plan_generated: true, updated_at: new Date().toISOString() })
+      .eq('user_id', user.id);
+    if (!error) {
+      setProfile((prev) => (prev ? { ...prev, prayer_plan_generated: true } : prev));
+    }
+    return { error };
+  };
+
+  const markOnboardingComplete = async () => {
+    if (!user) return;
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({
+        onboarding_completed: true,
+        prayer_plan_reviewed: true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', user.id);
+    if (!error) {
+      setProfile((prev) =>
+        prev ? { ...prev, onboarding_completed: true, prayer_plan_reviewed: true } : prev,
+      );
     }
     return { error };
   };
@@ -127,5 +172,5 @@ export function useUserProfile() {
     return { error };
   };
 
-  return { profile, loading, saveProfile, setGuide, setDailyPrayerGoal };
+  return { profile, loading, saveProfile, markPrayerPlanGenerated, markOnboardingComplete, setGuide, setDailyPrayerGoal };
 }

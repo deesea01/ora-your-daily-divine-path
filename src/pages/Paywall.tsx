@@ -36,7 +36,10 @@ const Paywall = () => {
   console.info('[routing] Paywall render', {
     route: location.pathname,
     authSession: !!session,
+    emailVerified: !!user?.email_confirmed_at,
     onboardingComplete: !!profile?.onboarding_completed,
+    prayerPlanGenerated: !!profile?.prayer_plan_generated,
+    prayerPlanReviewed: !!profile?.prayer_plan_reviewed,
     entitlementActive: isPremium,
     loading: { authLoading, profileLoading, entitlementLoading },
   });
@@ -105,8 +108,23 @@ const Paywall = () => {
     console.info('[routing] Paywall → /onboarding (no auth session yet)');
     return <Navigate to="/onboarding" replace />;
   }
+  // Email must be verified before we let users see the paywall. Supabase only
+  // mints a session for verified users in our flow, but we double-check here.
+  if (user && !user.email_confirmed_at) {
+    console.info('[routing] Paywall → /auth (email not verified)');
+    return <Navigate to="/auth?mode=login" replace />;
+  }
   if (user && profile && !profile.onboarding_completed) {
     console.info('[routing] Paywall → /onboarding (onboarding incomplete)');
+    return <Navigate to="/onboarding" replace />;
+  }
+  // Defense-in-depth: even if onboarding_completed is somehow true, never show
+  // the paywall unless the user has actually generated AND reviewed their plan.
+  if (user && profile && (!profile.prayer_plan_generated || !profile.prayer_plan_reviewed)) {
+    console.info('[routing] Paywall → /onboarding (plan not generated/reviewed)', {
+      prayerPlanGenerated: profile.prayer_plan_generated,
+      prayerPlanReviewed: profile.prayer_plan_reviewed,
+    });
     return <Navigate to="/onboarding" replace />;
   }
 
