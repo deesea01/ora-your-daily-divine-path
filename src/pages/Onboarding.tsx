@@ -276,6 +276,11 @@ const Onboarding = () => {
     // 1) Generate the personalized plan deterministically
     const generated = buildDevotionalPlan({ goals, stage, burdens, styles, commitment });
     setPlan(generated);
+    console.info('[routing] prayer plan generated', {
+      saint: generated.saint.key,
+      prayerCount: generated.prayers.length,
+      scripture: generated.scripture.ref,
+    });
 
     // 2) Save user_profile (incl. chosen saint as their guide)
     await saveProfile(goals, level, goalCount, displayName.trim(), termsAccepted);
