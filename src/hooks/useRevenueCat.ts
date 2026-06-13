@@ -275,7 +275,7 @@ export function useRevenueCat() {
       logEntitlementSnapshot('restore', result.customerInfo);
       const isActive = !!result.customerInfo.entitlements.active?.[ENTITLEMENT_ID];
       console.info('[RC] restore: completed', { isActive });
-      setCustomerInfo(result.customerInfo);
+      broadcastCustomerInfo(result.customerInfo);
       await syncEntitlement(user.id, result.customerInfo);
       return result.customerInfo;
     } catch (e: any) {
