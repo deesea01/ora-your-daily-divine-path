@@ -243,7 +243,10 @@ export function useRevenueCat() {
       const result = await Purchases.purchasePackage({ aPackage: plan.rcPackage });
       console.info('[RC] purchase: completed', { package: plan.identifier });
       logEntitlementSnapshot('purchase', result.customerInfo);
-      setCustomerInfo(result.customerInfo);
+      broadcastCustomerInfo(result.customerInfo);
+      console.info('[RC] purchase: entitlement broadcast', {
+        hasPremium: !!result.customerInfo.entitlements.active?.[ENTITLEMENT_ID],
+      });
       await syncEntitlement(user.id, result.customerInfo);
       return result.customerInfo;
     } catch (e: any) {
