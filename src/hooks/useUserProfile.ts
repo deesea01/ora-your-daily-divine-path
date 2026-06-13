@@ -41,7 +41,7 @@ export function useUserProfile() {
     setLoading(true);
     supabase
       .from('user_profiles')
-      .select('seeking, experience_level, onboarding_completed, spiritual_guide, preferred_language, daily_prayer_goal, display_name, terms_accepted_at, timezone')
+      .select('seeking, experience_level, onboarding_completed, prayer_plan_generated, prayer_plan_reviewed, spiritual_guide, preferred_language, daily_prayer_goal, display_name, terms_accepted_at, timezone')
       .eq('user_id', user.id)
       .maybeSingle()
       .then(({ data, error }) => {
