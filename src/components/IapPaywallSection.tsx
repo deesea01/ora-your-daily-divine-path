@@ -18,8 +18,10 @@ import { useAuth } from '@/hooks/useAuth';
 export function IapPaywallSection() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { ready, loading, plans, error, hasPremiumEntitlement, purchase, restore } = useRevenueCat();
+  const { ready, loading, plans, error, hasPremiumEntitlement, purchase, restore, refreshCustomerInfo } = useRevenueCat();
   const [busyId, setBusyId] = useState<string | null>(null);
+
+  console.info('[Paywall] shown', { ready, plansCount: plans.length, hasPremiumEntitlement });
 
   const handlePurchase = async (plan: IapPlan) => {
     if (!user) {
@@ -27,11 +29,27 @@ export function IapPaywallSection() {
       return;
     }
     setBusyId(plan.identifier);
+    console.info('[Paywall] purchase started', { plan: plan.identifier, productId: plan.productId });
     try {
       const info = await purchase(plan);
-      if (info?.entitlements?.active?.['premium']) {
+      console.info('[Paywall] purchase success — customerInfo returned', {
+        hasPremium: !!info?.entitlements?.active?.['premium'],
+      });
+      // Always re-confirm via getCustomerInfo (polling) — covers the brief
+      // window where StoreKit has settled but RC hasn't propagated yet.
+      const confirmed = await refreshCustomerInfo({ waitForPremium: true, attempts: 8, intervalMs: 1500 });
+      const active = !!confirmed?.entitlements?.active?.['premium'];
+      console.info('[Paywall] entitlement active', { active, route: active ? '/' : '/paywall' });
+      if (active) {
         toast.success('Welcome to Ora Premium ✦');
         navigate('/', { replace: true });
+      } else if (info) {
+        // Purchase succeeded according to StoreKit but RC still doesn't show
+        // the entitlement. Keep the user on the paywall with a clear note
+        // rather than silently failing.
+        toast('Finalizing your subscription…', {
+          description: 'This can take a moment. Tap Restore Purchases if Home does not unlock.',
+        });
       }
     } catch (e: any) {
       toast.error(e?.message ?? 'Purchase failed');
@@ -46,9 +64,17 @@ export function IapPaywallSection() {
       return;
     }
     setBusyId('restore');
+    console.info('[Paywall] restore started');
     try {
       const info = await restore();
-      if (info?.entitlements?.active?.['premium']) {
+      console.info('[Paywall] restore — customerInfo returned', {
+        hasPremium: !!info?.entitlements?.active?.['premium'],
+      });
+      // Re-confirm via getCustomerInfo to be safe.
+      const confirmed = await refreshCustomerInfo({ waitForPremium: true, attempts: 4, intervalMs: 1200 });
+      const active = !!confirmed?.entitlements?.active?.['premium'];
+      console.info('[Paywall] restore entitlement active', { active, route: active ? '/' : '/paywall' });
+      if (active) {
         toast.success('Premium restored');
         navigate('/', { replace: true });
       } else {
