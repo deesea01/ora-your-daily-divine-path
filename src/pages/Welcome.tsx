@@ -100,7 +100,10 @@ const Welcome = () => {
 
         <div className="w-full max-w-sm space-y-3">
           <button
-            onClick={() => navigate('/paywall')}
+            onClick={() => {
+              console.info('[routing] Welcome → /onboarding (Get Started)');
+              navigate('/onboarding');
+            }}
             className="w-full rounded-xl bg-gold py-4 font-medium text-primary-foreground transition-all hover:brightness-110 active:scale-[0.98]"
           >
             {t.getStarted || 'Get Started'}
