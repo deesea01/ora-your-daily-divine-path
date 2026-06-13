@@ -330,12 +330,29 @@ const Onboarding = () => {
       { onConflict: 'user_id' },
     );
 
+    // 5) Mark the plan as generated (but NOT onboarding complete — that only
+    // happens after the user reviews the plan on step 9 and taps continue).
+    await markPrayerPlanGenerated?.();
+    console.info('[routing] prayer plan generated → step 7 reveal', {
+      userId: user.id,
+      prayerPlanGenerated: true,
+      prayerPlanReviewed: false,
+      onboardingComplete: false,
+    });
+
     setSaving(false);
     setStep(7); // loading screen
   };
 
-  const goToPaywall = () => {
-    console.info('[routing] onboarding completed → /paywall');
+  const goToPaywall = async () => {
+    // The user has now seen the personalized plan and tapped continue.
+    // Mark onboarding fully complete + plan reviewed BEFORE navigating, so
+    // /paywall and / never see a stale "incomplete onboarding" profile.
+    await markOnboardingComplete?.();
+    console.info('[routing] prayer plan reviewed → onboarding complete → /paywall', {
+      prayerPlanReviewed: true,
+      onboardingComplete: true,
+    });
     clearPersistedProgress();
     navigate('/paywall', { replace: true });
   };
