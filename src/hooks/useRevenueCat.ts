@@ -41,17 +41,31 @@ let customerInfoUpdateListenerRegistered = false;
 // `hasPremiumEntitlement=false` — that is the root cause of "user stays stuck
 // on the paywall after a successful purchase".
 let cachedCustomerInfo: CustomerInfo | null = null;
-const customerInfoListeners = new Set<(info: CustomerInfo | null) => void>();
-function broadcastCustomerInfo(info: CustomerInfo | null) {
+let customerInfoRevision = 0;
+const customerInfoListeners = new Set<(info: CustomerInfo | null, revision: number) => void>();
+function broadcastCustomerInfo(info: CustomerInfo | null, source = 'unknown') {
   cachedCustomerInfo = info;
+  customerInfoRevision += 1;
   const hasPremium = !!info?.entitlements?.active?.[ENTITLEMENT_ID];
   console.info('[RC] broadcastCustomerInfo', {
+    source,
+    revision: customerInfoRevision,
     listeners: customerInfoListeners.size,
     hasPremium,
+    activeEntitlementKeys: info ? Object.keys(info.entitlements.active ?? {}) : [],
   });
   customerInfoListeners.forEach((l) => {
-    try { l(info); } catch { /* noop */ }
+    try { l(info, customerInfoRevision); } catch { /* noop */ }
   });
+  if (hasPremium && typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('ora:premium-entitlement-active', {
+      detail: {
+        source,
+        revision: customerInfoRevision,
+        entitlementId: ENTITLEMENT_ID,
+      },
+    }));
+  }
 }
 
 /**
@@ -69,7 +83,7 @@ async function ensureCustomerInfoUpdateListener() {
       console.info('[RC] customerInfoUpdate listener fired', {
         hasPremium: !!info?.entitlements?.active?.[ENTITLEMENT_ID],
       });
-      broadcastCustomerInfo(info);
+      broadcastCustomerInfo(info, 'customerInfoUpdateListener');
     });
     console.info('[RC] customerInfoUpdate listener registered');
   } catch (e) {
@@ -168,6 +182,7 @@ export function useRevenueCat() {
   const [ready, setReady] = useState(false);
   const [plans, setPlans] = useState<IapPlan[]>([]);
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(cachedCustomerInfo);
+  const [customerInfoRevisionState, setCustomerInfoRevision] = useState(customerInfoRevision);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -175,7 +190,10 @@ export function useRevenueCat() {
   // a purchase / restore in one component instantly updates entitlement
   // status everywhere (Paywall, Index, RequirePremium…).
   useEffect(() => {
-    const l = (info: CustomerInfo | null) => setCustomerInfo(info);
+    const l = (info: CustomerInfo | null, revision: number) => {
+      setCustomerInfo(info);
+      setCustomerInfoRevision(revision);
+    };
     customerInfoListeners.add(l);
     return () => { customerInfoListeners.delete(l); };
   }, []);
@@ -242,7 +260,7 @@ export function useRevenueCat() {
         logEntitlementSnapshot('init', info.customerInfo);
         if (cancelled) return;
         setPlans(list);
-        broadcastCustomerInfo(info.customerInfo);
+        broadcastCustomerInfo(info.customerInfo, 'init');
         setReady(true);
         if (user) {
           void syncEntitlement(user.id, info.customerInfo);
@@ -274,7 +292,7 @@ export function useRevenueCat() {
       const result = await Purchases.purchasePackage({ aPackage: plan.rcPackage });
       console.info('[RC] purchase: completed', { package: plan.identifier });
       logEntitlementSnapshot('purchase', result.customerInfo);
-      broadcastCustomerInfo(result.customerInfo);
+      broadcastCustomerInfo(result.customerInfo, 'purchase');
       console.info('[RC] purchase: entitlement broadcast', {
         hasPremium: !!result.customerInfo.entitlements.active?.[ENTITLEMENT_ID],
       });
@@ -306,7 +324,7 @@ export function useRevenueCat() {
       logEntitlementSnapshot('restore', result.customerInfo);
       const isActive = !!result.customerInfo.entitlements.active?.[ENTITLEMENT_ID];
       console.info('[RC] restore: completed', { isActive });
-      broadcastCustomerInfo(result.customerInfo);
+      broadcastCustomerInfo(result.customerInfo, 'restore');
       await syncEntitlement(user.id, result.customerInfo);
       return result.customerInfo;
     } catch (e: any) {
@@ -333,7 +351,7 @@ export function useRevenueCat() {
       for (let i = 0; i < attempts; i++) {
         try {
           const res = await Purchases.getCustomerInfo();
-          broadcastCustomerInfo(res.customerInfo);
+          broadcastCustomerInfo(res.customerInfo, 'refresh');
           const active = !!res.customerInfo.entitlements.active?.[ENTITLEMENT_ID];
           console.info('[RC] refresh: customerInfo returned', { attempt: i + 1, entitlementActive: active });
           if (!opts?.waitForPremium || active) return res.customerInfo;
@@ -349,7 +367,7 @@ export function useRevenueCat() {
 
   const hasPremiumEntitlement = !!customerInfo?.entitlements?.active?.[ENTITLEMENT_ID];
 
-  return { ready, loading, error, plans, customerInfo, hasPremiumEntitlement, purchase, restore, refreshCustomerInfo };
+  return { ready, loading, error, plans, customerInfo, customerInfoRevision: customerInfoRevisionState, hasPremiumEntitlement, purchase, restore, refreshCustomerInfo };
 }
 
 /**
