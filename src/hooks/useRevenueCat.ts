@@ -260,7 +260,7 @@ export function useRevenueCat() {
         logEntitlementSnapshot('init', info.customerInfo);
         if (cancelled) return;
         setPlans(list);
-        broadcastCustomerInfo(info.customerInfo);
+        broadcastCustomerInfo(info.customerInfo, 'init');
         setReady(true);
         if (user) {
           void syncEntitlement(user.id, info.customerInfo);
@@ -292,7 +292,7 @@ export function useRevenueCat() {
       const result = await Purchases.purchasePackage({ aPackage: plan.rcPackage });
       console.info('[RC] purchase: completed', { package: plan.identifier });
       logEntitlementSnapshot('purchase', result.customerInfo);
-      broadcastCustomerInfo(result.customerInfo);
+      broadcastCustomerInfo(result.customerInfo, 'purchase');
       console.info('[RC] purchase: entitlement broadcast', {
         hasPremium: !!result.customerInfo.entitlements.active?.[ENTITLEMENT_ID],
       });
@@ -324,7 +324,7 @@ export function useRevenueCat() {
       logEntitlementSnapshot('restore', result.customerInfo);
       const isActive = !!result.customerInfo.entitlements.active?.[ENTITLEMENT_ID];
       console.info('[RC] restore: completed', { isActive });
-      broadcastCustomerInfo(result.customerInfo);
+      broadcastCustomerInfo(result.customerInfo, 'restore');
       await syncEntitlement(user.id, result.customerInfo);
       return result.customerInfo;
     } catch (e: any) {
@@ -351,7 +351,7 @@ export function useRevenueCat() {
       for (let i = 0; i < attempts; i++) {
         try {
           const res = await Purchases.getCustomerInfo();
-          broadcastCustomerInfo(res.customerInfo);
+          broadcastCustomerInfo(res.customerInfo, 'refresh');
           const active = !!res.customerInfo.entitlements.active?.[ENTITLEMENT_ID];
           console.info('[RC] refresh: customerInfo returned', { attempt: i + 1, entitlementActive: active });
           if (!opts?.waitForPremium || active) return res.customerInfo;
