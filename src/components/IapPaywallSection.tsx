@@ -104,9 +104,14 @@ export function IapPaywallSection() {
       // above, which will fire as soon as RC propagates the entitlement
       // (via polling below OR the background customerInfoUpdate listener).
       if (info?.entitlements?.active?.['premium']) {
+        if (!onboardingComplete) {
+          console.info('[routing] Paywall route decision', { decision: 'stay', reason: 'purchase active but onboarding incomplete' });
+          return;
+        }
         navigatedRef.current = true;
         toast.success('Welcome to Ora Premium ✦');
-        console.info('[Paywall] entitlement active', { active: true, route: '/' });
+        console.info('[Paywall] entitlement active', { active: true, onboardingComplete, route: '/' });
+        console.info('[routing] Paywall → home navigation', { source: 'iap-purchase-result' });
         navigate('/', { replace: true });
         return;
       }
@@ -116,6 +121,10 @@ export function IapPaywallSection() {
       const active = !!confirmed?.entitlements?.active?.['premium'];
       console.info('[Paywall] entitlement active', { active, route: active ? '/' : '/paywall (background poll continues)' });
       if (active) {
+        if (!onboardingComplete) {
+          console.info('[routing] Paywall route decision', { decision: 'stay', reason: 'refresh active but onboarding incomplete' });
+          return;
+        }
         navigatedRef.current = true;
         toast.success('Welcome to Ora Premium ✦');
         console.info('[routing] Paywall → home navigation', { source: 'iap-refresh-confirmed' });
@@ -153,7 +162,12 @@ export function IapPaywallSection() {
       const active = !!confirmed?.entitlements?.active?.['premium'];
       console.info('[Paywall] restore entitlement active', { active, route: active ? '/' : '/paywall' });
       if (active) {
+        if (!onboardingComplete) {
+          console.info('[routing] Paywall route decision', { decision: 'stay', reason: 'restore active but onboarding incomplete' });
+          return;
+        }
         toast.success('Premium restored');
+        console.info('[routing] Paywall → home navigation', { source: 'iap-restore-confirmed' });
         navigate('/', { replace: true });
       } else {
         toast('No previous purchase found on this Apple ID', {
