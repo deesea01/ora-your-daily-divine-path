@@ -195,6 +195,7 @@ export function useRevenueCat() {
         const appUserID = user?.id;
         console.info('[RC] init: ensuring SDK configured', { appUserID, hasUser: !!user });
         await ensureConfigured(appUserID);
+        await ensureCustomerInfoUpdateListener();
         if (user) {
           try {
             await Purchases.logIn({ appUserID: user.id });
