@@ -4,6 +4,7 @@ import { Loader2, RefreshCw, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRevenueCat, type IapPlan } from '@/hooks/useRevenueCat';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 
 /**
@@ -17,13 +18,16 @@ import { useAuth } from '@/hooks/useAuth';
  */
 export function IapPaywallSection() {
   const { user, loading: authLoading } = useAuth();
+  const { profile } = useUserProfile();
   const navigate = useNavigate();
   const { ready, loading, plans, error, customerInfoRevision, hasPremiumEntitlement, purchase, restore, refreshCustomerInfo } = useRevenueCat();
   const [busyId, setBusyId] = useState<string | null>(null);
   const navigatedRef = useRef(false);
   const purchaseAttemptedRef = useRef(false);
 
-  console.info('[Paywall] render', { ready, plansCount: plans.length, customerInfoRevision, hasPremiumEntitlement });
+  const onboardingComplete = !!profile?.onboarding_completed;
+
+  console.info('[Paywall] render', { ready, plansCount: plans.length, customerInfoRevision, hasPremiumEntitlement, onboardingComplete });
 
   // Continuous watcher: the moment the premium entitlement appears for ANY
   // reason (purchase poll, background customerInfoUpdate listener, restore,
@@ -32,20 +36,29 @@ export function IapPaywallSection() {
   useEffect(() => {
     if (!hasPremiumEntitlement) return;
     if (navigatedRef.current) return;
+    if (!onboardingComplete) {
+      console.info('[routing] Paywall route decision', { decision: 'stay', reason: 'premium active but onboarding incomplete' });
+      return;
+    }
     navigatedRef.current = true;
     console.info('[Paywall] entitlement watcher → navigating Home', {
       hasPremiumEntitlement,
       customerInfoRevision,
+      onboardingComplete,
       purchaseAttempted: purchaseAttemptedRef.current,
     });
     console.info('[routing] Paywall → home navigation', { source: 'iap-entitlement-watcher' });
     if (purchaseAttemptedRef.current) toast.success('Welcome to Ora Premium ✦');
     navigate('/', { replace: true });
-  }, [customerInfoRevision, hasPremiumEntitlement, navigate]);
+  }, [customerInfoRevision, hasPremiumEntitlement, navigate, onboardingComplete]);
 
   useEffect(() => {
     const onPremiumActive = (event: Event) => {
       if (navigatedRef.current) return;
+      if (!onboardingComplete) {
+        console.info('[routing] Paywall route decision', { decision: 'stay', reason: 'premium event but onboarding incomplete' });
+        return;
+      }
       navigatedRef.current = true;
       console.info('[Paywall] entitlement active event received', (event as CustomEvent).detail ?? {});
       console.info('[routing] Paywall → home navigation', { source: 'premium-entitlement-event' });
@@ -54,7 +67,7 @@ export function IapPaywallSection() {
     };
     window.addEventListener('ora:premium-entitlement-active', onPremiumActive);
     return () => window.removeEventListener('ora:premium-entitlement-active', onPremiumActive);
-  }, [navigate]);
+  }, [navigate, onboardingComplete]);
 
   // Background safety poll: if a purchase was attempted but the entitlement
   // hasn't flipped within the initial window, keep polling RevenueCat
