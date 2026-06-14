@@ -43,6 +43,19 @@ export function IapPaywallSection() {
     navigate('/', { replace: true });
   }, [customerInfoRevision, hasPremiumEntitlement, navigate]);
 
+  useEffect(() => {
+    const onPremiumActive = (event: Event) => {
+      if (navigatedRef.current) return;
+      navigatedRef.current = true;
+      console.info('[Paywall] entitlement active event received', (event as CustomEvent).detail ?? {});
+      console.info('[routing] Paywall → home navigation', { source: 'premium-entitlement-event' });
+      if (purchaseAttemptedRef.current) toast.success('Welcome to Ora Premium ✦');
+      navigate('/', { replace: true });
+    };
+    window.addEventListener('ora:premium-entitlement-active', onPremiumActive);
+    return () => window.removeEventListener('ora:premium-entitlement-active', onPremiumActive);
+  }, [navigate]);
+
   // Background safety poll: if a purchase was attempted but the entitlement
   // hasn't flipped within the initial window, keep polling RevenueCat
   // quietly. The watcher above will navigate as soon as it activates.
