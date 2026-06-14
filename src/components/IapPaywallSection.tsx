@@ -20,8 +20,43 @@ export function IapPaywallSection() {
   const navigate = useNavigate();
   const { ready, loading, plans, error, hasPremiumEntitlement, purchase, restore, refreshCustomerInfo } = useRevenueCat();
   const [busyId, setBusyId] = useState<string | null>(null);
+  const navigatedRef = useRef(false);
+  const purchaseAttemptedRef = useRef(false);
 
   console.info('[Paywall] shown', { ready, plansCount: plans.length, hasPremiumEntitlement });
+
+  // Continuous watcher: the moment the premium entitlement appears for ANY
+  // reason (purchase poll, background customerInfoUpdate listener, restore,
+  // another tab/instance), navigate Home. This is the safety net that
+  // prevents "stuck on paywall after successful purchase".
+  useEffect(() => {
+    if (!hasPremiumEntitlement) return;
+    if (navigatedRef.current) return;
+    navigatedRef.current = true;
+    console.info('[Paywall] entitlement watcher → navigating Home', {
+      hasPremiumEntitlement,
+      purchaseAttempted: purchaseAttemptedRef.current,
+    });
+    if (purchaseAttemptedRef.current) toast.success('Welcome to Ora Premium ✦');
+    navigate('/', { replace: true });
+  }, [hasPremiumEntitlement, navigate]);
+
+  // Background safety poll: if a purchase was attempted but the entitlement
+  // hasn't flipped within the initial window, keep polling RevenueCat
+  // quietly. The watcher above will navigate as soon as it activates.
+  useEffect(() => {
+    if (!purchaseAttemptedRef.current || hasPremiumEntitlement) return;
+    let cancelled = false;
+    (async () => {
+      for (let i = 0; i < 20 && !cancelled; i++) {
+        await new Promise((r) => setTimeout(r, 3000));
+        if (cancelled) return;
+        console.info('[Paywall] background poll', { attempt: i + 1 });
+        await refreshCustomerInfo({ waitForPremium: false });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [busyId, hasPremiumEntitlement, refreshCustomerInfo]);
 
   const handlePurchase = async (plan: IapPlan) => {
     if (!user) {
