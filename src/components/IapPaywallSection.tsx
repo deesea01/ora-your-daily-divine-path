@@ -64,28 +64,36 @@ export function IapPaywallSection() {
       return;
     }
     setBusyId(plan.identifier);
+    purchaseAttemptedRef.current = true;
     console.info('[Paywall] purchase started', { plan: plan.identifier, productId: plan.productId });
     try {
       const info = await purchase(plan);
       console.info('[Paywall] purchase success — customerInfo returned', {
         hasPremium: !!info?.entitlements?.active?.['premium'],
       });
-      // Always re-confirm via getCustomerInfo (polling) — covers the brief
-      // window where StoreKit has settled but RC hasn't propagated yet.
-      const confirmed = await refreshCustomerInfo({ waitForPremium: true, attempts: 8, intervalMs: 1500 });
-      const active = !!confirmed?.entitlements?.active?.['premium'];
-      console.info('[Paywall] entitlement active', { active, route: active ? '/' : '/paywall' });
-      if (active) {
+      // Immediate-path: if the purchase result already shows entitlement,
+      // navigate now. Otherwise rely on the continuous watcher useEffect
+      // above, which will fire as soon as RC propagates the entitlement
+      // (via polling below OR the background customerInfoUpdate listener).
+      if (info?.entitlements?.active?.['premium']) {
+        navigatedRef.current = true;
         toast.success('Welcome to Ora Premium ✦');
+        console.info('[Paywall] entitlement active', { active: true, route: '/' });
         navigate('/', { replace: true });
-      } else if (info) {
-        // Purchase succeeded according to StoreKit but RC still doesn't show
-        // the entitlement. Keep the user on the paywall with a clear note
-        // rather than silently failing.
+        return;
+      }
+      // Poll RC briefly; the watcher useEffect will navigate the moment
+      // hasPremiumEntitlement flips true mid-poll.
+      const confirmed = await refreshCustomerInfo({ waitForPremium: true, attempts: 10, intervalMs: 1500 });
+      const active = !!confirmed?.entitlements?.active?.['premium'];
+      console.info('[Paywall] entitlement active', { active, route: active ? '/' : '/paywall (background poll continues)' });
+      if (!active) {
         toast('Finalizing your subscription…', {
-          description: 'This can take a moment. Tap Restore Purchases if Home does not unlock.',
+          description: 'Hang tight — Ora will unlock automatically when Apple confirms your purchase.',
         });
       }
+      // No explicit navigate here: the watcher useEffect owns navigation
+      // so it fires regardless of which code path observes the entitlement.
     } catch (e: any) {
       toast.error(e?.message ?? 'Purchase failed');
     } finally {
