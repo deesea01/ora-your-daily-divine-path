@@ -68,10 +68,13 @@ const Paywall = () => {
 
   useEffect(() => {
     if (!user || entitlementLoading || !isPremium) return;
-    console.info('[Paywall] dismissing — user is premium', {
+    console.info('[routing] Paywall route decision', {
+      decision: 'home',
+      reason: 'isPremium true',
       onIos,
       returnTo,
     });
+    console.info('[routing] Paywall → home navigation', { source: 'paywall-premium-effect' });
     navigate(returnTo && returnTo !== '/paywall' ? returnTo : '/', { replace: true });
   }, [entitlementLoading, isPremium, navigate, returnTo, user, onIos]);
 
@@ -131,7 +134,8 @@ const Paywall = () => {
   // Already premium — bounce home (the effect above also handles this once
   // mounted, but returning early avoids a paywall flash).
   if (user && isPremium) {
-    console.info('[routing] Paywall → home (entitlement active)');
+    console.info('[routing] Paywall route decision', { decision: 'home', reason: 'entitlement active' });
+    console.info('[routing] Paywall → home navigation', { source: 'paywall-render-guard' });
     return <Navigate to={returnTo && returnTo !== '/paywall' ? returnTo : '/'} replace />;
   }
 
