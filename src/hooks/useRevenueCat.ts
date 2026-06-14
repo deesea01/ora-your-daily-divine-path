@@ -182,6 +182,7 @@ export function useRevenueCat() {
   const [ready, setReady] = useState(false);
   const [plans, setPlans] = useState<IapPlan[]>([]);
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(cachedCustomerInfo);
+  const [customerInfoRevisionState, setCustomerInfoRevision] = useState(customerInfoRevision);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -366,7 +367,7 @@ export function useRevenueCat() {
 
   const hasPremiumEntitlement = !!customerInfo?.entitlements?.active?.[ENTITLEMENT_ID];
 
-  return { ready, loading, error, plans, customerInfo, hasPremiumEntitlement, purchase, restore, refreshCustomerInfo };
+  return { ready, loading, error, plans, customerInfo, customerInfoRevision: customerInfoRevisionState, hasPremiumEntitlement, purchase, restore, refreshCustomerInfo };
 }
 
 /**
