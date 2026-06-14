@@ -18,12 +18,12 @@ import { useAuth } from '@/hooks/useAuth';
 export function IapPaywallSection() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { ready, loading, plans, error, hasPremiumEntitlement, purchase, restore, refreshCustomerInfo } = useRevenueCat();
+  const { ready, loading, plans, error, customerInfoRevision, hasPremiumEntitlement, purchase, restore, refreshCustomerInfo } = useRevenueCat();
   const [busyId, setBusyId] = useState<string | null>(null);
   const navigatedRef = useRef(false);
   const purchaseAttemptedRef = useRef(false);
 
-  console.info('[Paywall] shown', { ready, plansCount: plans.length, hasPremiumEntitlement });
+  console.info('[Paywall] render', { ready, plansCount: plans.length, customerInfoRevision, hasPremiumEntitlement });
 
   // Continuous watcher: the moment the premium entitlement appears for ANY
   // reason (purchase poll, background customerInfoUpdate listener, restore,
@@ -35,11 +35,13 @@ export function IapPaywallSection() {
     navigatedRef.current = true;
     console.info('[Paywall] entitlement watcher → navigating Home', {
       hasPremiumEntitlement,
+      customerInfoRevision,
       purchaseAttempted: purchaseAttemptedRef.current,
     });
+    console.info('[routing] Paywall → home navigation', { source: 'iap-entitlement-watcher' });
     if (purchaseAttemptedRef.current) toast.success('Welcome to Ora Premium ✦');
     navigate('/', { replace: true });
-  }, [hasPremiumEntitlement, navigate]);
+  }, [customerInfoRevision, hasPremiumEntitlement, navigate]);
 
   // Background safety poll: if a purchase was attempted but the entitlement
   // hasn't flipped within the initial window, keep polling RevenueCat
@@ -87,6 +89,13 @@ export function IapPaywallSection() {
       const confirmed = await refreshCustomerInfo({ waitForPremium: true, attempts: 10, intervalMs: 1500 });
       const active = !!confirmed?.entitlements?.active?.['premium'];
       console.info('[Paywall] entitlement active', { active, route: active ? '/' : '/paywall (background poll continues)' });
+      if (active) {
+        navigatedRef.current = true;
+        toast.success('Welcome to Ora Premium ✦');
+        console.info('[routing] Paywall → home navigation', { source: 'iap-refresh-confirmed' });
+        navigate('/', { replace: true });
+        return;
+      }
       if (!active) {
         toast('Finalizing your subscription…', {
           description: 'Hang tight — Ora will unlock automatically when Apple confirms your purchase.',
