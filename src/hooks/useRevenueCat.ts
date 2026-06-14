@@ -41,17 +41,31 @@ let customerInfoUpdateListenerRegistered = false;
 // `hasPremiumEntitlement=false` — that is the root cause of "user stays stuck
 // on the paywall after a successful purchase".
 let cachedCustomerInfo: CustomerInfo | null = null;
-const customerInfoListeners = new Set<(info: CustomerInfo | null) => void>();
-function broadcastCustomerInfo(info: CustomerInfo | null) {
+let customerInfoRevision = 0;
+const customerInfoListeners = new Set<(info: CustomerInfo | null, revision: number) => void>();
+function broadcastCustomerInfo(info: CustomerInfo | null, source = 'unknown') {
   cachedCustomerInfo = info;
+  customerInfoRevision += 1;
   const hasPremium = !!info?.entitlements?.active?.[ENTITLEMENT_ID];
   console.info('[RC] broadcastCustomerInfo', {
+    source,
+    revision: customerInfoRevision,
     listeners: customerInfoListeners.size,
     hasPremium,
+    activeEntitlementKeys: info ? Object.keys(info.entitlements.active ?? {}) : [],
   });
   customerInfoListeners.forEach((l) => {
-    try { l(info); } catch { /* noop */ }
+    try { l(info, customerInfoRevision); } catch { /* noop */ }
   });
+  if (hasPremium && typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('ora:premium-entitlement-active', {
+      detail: {
+        source,
+        revision: customerInfoRevision,
+        entitlementId: ENTITLEMENT_ID,
+      },
+    }));
+  }
 }
 
 /**
@@ -69,7 +83,7 @@ async function ensureCustomerInfoUpdateListener() {
       console.info('[RC] customerInfoUpdate listener fired', {
         hasPremium: !!info?.entitlements?.active?.[ENTITLEMENT_ID],
       });
-      broadcastCustomerInfo(info);
+      broadcastCustomerInfo(info, 'customerInfoUpdateListener');
     });
     console.info('[RC] customerInfoUpdate listener registered');
   } catch (e) {
@@ -175,7 +189,10 @@ export function useRevenueCat() {
   // a purchase / restore in one component instantly updates entitlement
   // status everywhere (Paywall, Index, RequirePremium…).
   useEffect(() => {
-    const l = (info: CustomerInfo | null) => setCustomerInfo(info);
+    const l = (info: CustomerInfo | null, revision: number) => {
+      setCustomerInfo(info);
+      setCustomerInfoRevision(revision);
+    };
     customerInfoListeners.add(l);
     return () => { customerInfoListeners.delete(l); };
   }, []);
