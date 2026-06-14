@@ -31,6 +31,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 const ENTITLEMENT_ID = 'premium';
 let configurePromise: Promise<void> | null = null;
+let customerInfoUpdateListenerRegistered = false;
 
 // ---- Module-level shared CustomerInfo cache --------------------------------
 // useRevenueCat is called from multiple components (IapPaywallSection AND
@@ -43,9 +44,38 @@ let cachedCustomerInfo: CustomerInfo | null = null;
 const customerInfoListeners = new Set<(info: CustomerInfo | null) => void>();
 function broadcastCustomerInfo(info: CustomerInfo | null) {
   cachedCustomerInfo = info;
+  const hasPremium = !!info?.entitlements?.active?.[ENTITLEMENT_ID];
+  console.info('[RC] broadcastCustomerInfo', {
+    listeners: customerInfoListeners.size,
+    hasPremium,
+  });
   customerInfoListeners.forEach((l) => {
     try { l(info); } catch { /* noop */ }
   });
+}
+
+/**
+ * Register a single global RevenueCat customerInfoUpdate listener that
+ * broadcasts background StoreKit/RC updates to every hook instance. Without
+ * this, post-purchase entitlement propagation that arrives *after* our
+ * polling window expires never updates React state and the user is stuck
+ * on the paywall.
+ */
+async function ensureCustomerInfoUpdateListener() {
+  if (customerInfoUpdateListenerRegistered) return;
+  customerInfoUpdateListenerRegistered = true;
+  try {
+    await Purchases.addCustomerInfoUpdateListener((info: CustomerInfo) => {
+      console.info('[RC] customerInfoUpdate listener fired', {
+        hasPremium: !!info?.entitlements?.active?.[ENTITLEMENT_ID],
+      });
+      broadcastCustomerInfo(info);
+    });
+    console.info('[RC] customerInfoUpdate listener registered');
+  } catch (e) {
+    customerInfoUpdateListenerRegistered = false;
+    console.warn('[RC] failed to register customerInfoUpdate listener', e);
+  }
 }
 
 function getRevenueCatIosApiKey(): string {
@@ -165,6 +195,7 @@ export function useRevenueCat() {
         const appUserID = user?.id;
         console.info('[RC] init: ensuring SDK configured', { appUserID, hasUser: !!user });
         await ensureConfigured(appUserID);
+        await ensureCustomerInfoUpdateListener();
         if (user) {
           try {
             await Purchases.logIn({ appUserID: user.id });
