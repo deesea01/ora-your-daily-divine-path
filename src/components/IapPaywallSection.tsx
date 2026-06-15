@@ -282,6 +282,17 @@ export function IapPaywallSection() {
 
   return (
     <div className="space-y-3">
+      {finalizing && (
+        <div className="flex items-center gap-2 rounded-xl border border-gold/40 bg-gold/10 p-3 text-sm text-foreground">
+          <Loader2 className="h-4 w-4 animate-spin text-gold" />
+          <span>Finalizing your subscription…</span>
+        </div>
+      )}
+      {syncError && (
+        <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm text-foreground">
+          {syncError}
+        </div>
+      )}
       {plans.map((plan) => (
         <button
           key={plan.identifier}
