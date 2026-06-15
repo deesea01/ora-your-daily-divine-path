@@ -22,6 +22,8 @@ export function IapPaywallSection() {
   const navigate = useNavigate();
   const { ready, loading, plans, error, customerInfoRevision, hasPremiumEntitlement, purchase, restore, refreshCustomerInfo } = useRevenueCat();
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [finalizing, setFinalizing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
   const navigatedRef = useRef(false);
   const purchaseAttemptedRef = useRef(false);
 
@@ -92,53 +94,60 @@ export function IapPaywallSection() {
       return;
     }
     setBusyId(plan.identifier);
+    setSyncError(null);
     purchaseAttemptedRef.current = true;
     console.info('[Paywall] purchase started', { plan: plan.identifier, productId: plan.productId });
     try {
       const info = await purchase(plan);
-      console.info('[Paywall] purchase success — customerInfo returned', {
+      console.info('[Paywall] purchase completed — customerInfo immediately after purchase', {
         hasPremium: !!info?.entitlements?.active?.['premium'],
+        activeEntitlementKeys: info ? Object.keys(info.entitlements.active ?? {}) : [],
       });
-      // Immediate-path: if the purchase result already shows entitlement,
-      // navigate now. Otherwise rely on the continuous watcher useEffect
-      // above, which will fire as soon as RC propagates the entitlement
-      // (via polling below OR the background customerInfoUpdate listener).
-      if (info?.entitlements?.active?.['premium']) {
-        if (!onboardingComplete) {
-          console.info('[routing] Paywall route decision', { decision: 'stay', reason: 'purchase active but onboarding incomplete' });
-          return;
-        }
-        navigatedRef.current = true;
-        toast.success('Welcome to Ora Premium ✦');
-        console.info('[Paywall] entitlement active', { active: true, onboardingComplete, route: '/' });
-        console.info('[routing] Paywall → home navigation', { source: 'iap-purchase-result' });
-        navigate('/', { replace: true });
-        return;
+
+      // StoreKit success alone is NOT enough — wait for RevenueCat entitlement.
+      let active = !!info?.entitlements?.active?.['premium'];
+      console.info('[Paywall] entitlement active after purchase', { active });
+
+      if (!active) {
+        setFinalizing(true);
+        // Poll up to ~15s (10 × 1.5s) for the premium entitlement to flip.
+        const confirmed = await refreshCustomerInfo({ waitForPremium: true, attempts: 10, intervalMs: 1500 });
+        active = !!confirmed?.entitlements?.active?.['premium'];
+        console.info('[Paywall] entitlement active after polling', { active });
       }
-      // Poll RC briefly; the watcher useEffect will navigate the moment
-      // hasPremiumEntitlement flips true mid-poll.
-      const confirmed = await refreshCustomerInfo({ waitForPremium: true, attempts: 10, intervalMs: 1500 });
-      const active = !!confirmed?.entitlements?.active?.['premium'];
-      console.info('[Paywall] entitlement active', { active, route: active ? '/' : '/paywall (background poll continues)' });
+
+      // Still inactive after polling → auto-restore once, then re-check.
+      if (!active) {
+        console.info('[Paywall] auto restore after purchase — polling failed');
+        try {
+          await restore();
+        } catch (e) {
+          console.warn('[Paywall] auto restore threw', e);
+        }
+        const confirmed2 = await refreshCustomerInfo({ waitForPremium: true, attempts: 4, intervalMs: 1500 });
+        active = !!confirmed2?.entitlements?.active?.['premium'];
+        console.info('[Paywall] entitlement active after auto-restore', { active });
+      }
+
+      setFinalizing(false);
+
       if (active) {
         if (!onboardingComplete) {
-          console.info('[routing] Paywall route decision', { decision: 'stay', reason: 'refresh active but onboarding incomplete' });
+          console.info('[routing] Paywall route decision', { decision: 'stay', reason: 'active but onboarding incomplete' });
           return;
         }
         navigatedRef.current = true;
         toast.success('Welcome to Ora Premium ✦');
-        console.info('[routing] Paywall → home navigation', { source: 'iap-refresh-confirmed' });
+        console.info('[routing] Paywall → home navigation', { source: 'iap-purchase-confirmed' });
         navigate('/', { replace: true });
         return;
       }
-      if (!active) {
-        toast('Finalizing your subscription…', {
-          description: 'Hang tight — Ora will unlock automatically when Apple confirms your purchase.',
-        });
-      }
-      // No explicit navigate here: the watcher useEffect owns navigation
-      // so it fires regardless of which code path observes the entitlement.
+
+      // Final failure surface — do NOT say "All set".
+      setSyncError('Purchase completed, but premium access is still syncing. Please tap Restore Purchases or try reopening Ora.');
+      console.info('[routing] Paywall route decision', { decision: 'stay', reason: 'entitlement never activated' });
     } catch (e: any) {
+      setFinalizing(false);
       toast.error(e?.message ?? 'Purchase failed');
     } finally {
       setBusyId(null);
@@ -273,6 +282,17 @@ export function IapPaywallSection() {
 
   return (
     <div className="space-y-3">
+      {finalizing && (
+        <div className="flex items-center gap-2 rounded-xl border border-gold/40 bg-gold/10 p-3 text-sm text-foreground">
+          <Loader2 className="h-4 w-4 animate-spin text-gold" />
+          <span>Finalizing your subscription…</span>
+        </div>
+      )}
+      {syncError && (
+        <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm text-foreground">
+          {syncError}
+        </div>
+      )}
       {plans.map((plan) => (
         <button
           key={plan.identifier}
