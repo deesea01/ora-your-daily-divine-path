@@ -31,7 +31,6 @@ const Paywall = () => {
   const [reminderOn, setReminderOn] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
   const autoStartedRef = useRef(false);
-  const returnTo = (location.state as { from?: string } | null)?.from;
 
   console.info('[routing] Paywall render', {
     route: location.pathname,
@@ -72,11 +71,11 @@ const Paywall = () => {
       decision: 'home',
       reason: 'isPremium true',
       onIos,
-      returnTo,
+      routeAfterPurchase: '/',
     });
     console.info('[routing] Paywall → home navigation', { source: 'paywall-premium-effect' });
-    navigate(returnTo && returnTo !== '/paywall' ? returnTo : '/', { replace: true });
-  }, [entitlementLoading, isPremium, navigate, returnTo, user, onIos]);
+    navigate('/', { replace: true });
+  }, [entitlementLoading, isPremium, navigate, user, onIos]);
 
   // If the user just signed in and we asked to auto-start checkout, open it once.
   useEffect(() => {
@@ -134,9 +133,9 @@ const Paywall = () => {
   // Already premium — bounce home (the effect above also handles this once
   // mounted, but returning early avoids a paywall flash).
   if (user && isPremium) {
-    console.info('[routing] Paywall route decision', { decision: 'home', reason: 'entitlement active' });
+    console.info('[routing] Paywall route decision', { decision: 'home', reason: 'entitlement active', routeAfterPurchase: '/' });
     console.info('[routing] Paywall → home navigation', { source: 'paywall-render-guard' });
-    return <Navigate to={returnTo && returnTo !== '/paywall' ? returnTo : '/'} replace />;
+    return <Navigate to="/" replace />;
   }
 
 

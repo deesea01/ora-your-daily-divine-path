@@ -32,6 +32,9 @@ import { useAuth } from '@/hooks/useAuth';
 const ENTITLEMENT_ID = 'premium';
 let configurePromise: Promise<void> | null = null;
 let customerInfoUpdateListenerRegistered = false;
+let alignedRevenueCatAppUserID: string | null = null;
+let identityPromise: Promise<CustomerInfo> | null = null;
+let identityPromiseUserID: string | null = null;
 
 // ---- Module-level shared CustomerInfo cache --------------------------------
 // useRevenueCat is called from multiple components (IapPaywallSection AND
@@ -110,17 +113,17 @@ function getRevenueCatIosApiKey(): string {
  * Configure via the plugin itself; do not rely on direct native SDK setup from
  * AppDelegate, which does not initialise the plugin bridge consistently.
  */
-async function ensureConfigured(appUserID?: string): Promise<void> {
+async function ensureConfigured(): Promise<void> {
   if (!configurePromise) {
     configurePromise = (async () => {
       const apiKey = getRevenueCatIosApiKey();
       console.info('[RC] configure: initializing Capacitor plugin', {
-        hasUser: !!appUserID,
         entitlement: ENTITLEMENT_ID,
+        identityMode: 'explicit-logIn-required',
       });
       await Purchases.configure({
         apiKey,
-        appUserID: appUserID ?? null,
+        appUserID: null,
         storeKitVersion: STOREKIT_VERSION.STOREKIT_2,
       });
       await Purchases.setLogLevel({ level: LOG_LEVEL.WARN });
@@ -161,6 +164,71 @@ function logEntitlementSnapshot(scope: string, info: CustomerInfo | null) {
   });
 }
 
+async function getCurrentRevenueCatAppUserID(scope: string): Promise<string | null> {
+  try {
+    const { appUserID } = await Purchases.getAppUserID();
+    console.info(`[RC] ${scope}: current RevenueCat appUserID`, { appUserID });
+    return appUserID;
+  } catch (e) {
+    logRcError(`${scope}: Purchases.getAppUserID`, e);
+    return null;
+  }
+}
+
+async function ensureRevenueCatIdentity(supabaseUserID: string, source: string): Promise<CustomerInfo> {
+  if (identityPromise && identityPromiseUserID === supabaseUserID) return identityPromise;
+
+  identityPromiseUserID = supabaseUserID;
+  identityPromise = (async () => {
+    await ensureConfigured();
+    await ensureCustomerInfoUpdateListener();
+
+    console.info('[RC] identity: Supabase user id', { supabaseUserID, source });
+    const beforeAppUserID = await getCurrentRevenueCatAppUserID('identity before logIn');
+    console.info('[RC] identity: RevenueCat appUserID before logIn', {
+      appUserID: beforeAppUserID,
+      supabaseUserID,
+      source,
+    });
+
+    const loginResult = await Purchases.logIn({ appUserID: supabaseUserID });
+    console.info('[RC] identity: Purchases.logIn completed', {
+      supabaseUserID,
+      created: loginResult.created,
+      wasAlreadyAligned: beforeAppUserID === supabaseUserID,
+      source,
+    });
+    logEntitlementSnapshot('identity logIn', loginResult.customerInfo);
+    broadcastCustomerInfo(loginResult.customerInfo, 'identity-logIn');
+
+    const afterAppUserID = await getCurrentRevenueCatAppUserID('identity after logIn');
+    console.info('[RC] identity: RevenueCat appUserID after logIn', {
+      appUserID: afterAppUserID,
+      supabaseUserID,
+      source,
+    });
+    if (afterAppUserID !== supabaseUserID) {
+      throw new Error(`RC_IDENTITY_MISMATCH: RevenueCat appUserID ${afterAppUserID ?? 'unknown'} does not match authenticated Ora user ${supabaseUserID}.`);
+    }
+    alignedRevenueCatAppUserID = afterAppUserID;
+
+    const refreshed = await Purchases.getCustomerInfo();
+    console.info('[RC] identity: CustomerInfo refreshed after logIn', {
+      appUserID: afterAppUserID,
+      premiumActive: !!refreshed.customerInfo.entitlements.active?.[ENTITLEMENT_ID],
+      activeEntitlementKeys: Object.keys(refreshed.customerInfo.entitlements.active ?? {}),
+    });
+    logEntitlementSnapshot('identity refresh', refreshed.customerInfo);
+    broadcastCustomerInfo(refreshed.customerInfo, 'identity-refresh');
+    return refreshed.customerInfo;
+  })().finally(() => {
+    identityPromise = null;
+    identityPromiseUserID = null;
+  });
+
+  return identityPromise;
+}
+
 export interface IapPlan {
   identifier: string; // RevenueCat package ID, e.g. "$rc_monthly"
   productId: string; // App Store product ID, e.g. "ora_premium_monthly"
@@ -183,7 +251,7 @@ export function useRevenueCat() {
   const [plans, setPlans] = useState<IapPlan[]>([]);
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(cachedCustomerInfo);
   const [customerInfoRevisionState, setCustomerInfoRevision] = useState(customerInfoRevision);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(() => isNativeIOS());
   const [error, setError] = useState<string | null>(null);
 
   // Subscribe every hook instance to the shared CustomerInfo cache so that
@@ -198,35 +266,33 @@ export function useRevenueCat() {
     return () => { customerInfoListeners.delete(l); };
   }, []);
 
-  // Configure & load offerings on iOS. Offerings can be loaded with an
-  // anonymous appUserID so unauthenticated visitors can browse subscription
-  // plans on /paywall before signing in (App Store reviewer flow).
+  // Configure & load offerings on iOS only after the authenticated Ora user is
+  // explicitly aligned to the same RevenueCat appUserID. Never load offerings,
+  // check entitlements, purchase, or restore against an anonymous RC identity.
   useEffect(() => {
     let cancelled = false;
     if (!isNativeIOS()) {
       setReady(false);
       return;
     }
+    if (!user) {
+      setReady(false);
+      setPlans([]);
+      setLoading(false);
+      return;
+    }
     (async () => {
       try {
         setLoading(true);
-        const appUserID = user?.id;
-        console.info('[RC] init: ensuring SDK configured', { appUserID, hasUser: !!user });
-        await ensureConfigured(appUserID);
-        await ensureCustomerInfoUpdateListener();
-        if (user) {
-          try {
-            await Purchases.logIn({ appUserID: user.id });
-            console.info('[RC] init: logged in', { appUserId: user.id });
-          } catch (e) {
-            logRcError('Purchases.logIn', e);
-          }
-        }
+        console.info('[RC] init: aligning identity before offerings', { supabaseUserID: user.id });
+        const alignedInfo = await ensureRevenueCatIdentity(user.id, 'init-before-offerings');
+        if (cancelled) return;
 
-        console.info('[RC] init: fetching offerings…');
+        console.info('[RC] init: fetching offerings…', { appUserID: alignedRevenueCatAppUserID });
         const offerings = await Purchases.getOfferings();
         const current: PurchasesOffering | null = offerings.current ?? null;
         console.info('[RC] init: offerings loaded', {
+          appUserID: alignedRevenueCatAppUserID,
           currentOfferingId: current?.identifier,
           hasCurrent: !!current,
           packageCount: current?.availablePackages?.length ?? 0,
@@ -262,9 +328,13 @@ export function useRevenueCat() {
         setPlans(list);
         broadcastCustomerInfo(info.customerInfo, 'init');
         setReady(true);
-        if (user) {
-          void syncEntitlement(user.id, info.customerInfo);
+        if (info.customerInfo !== alignedInfo) {
+          console.info('[RC] init: CustomerInfo refreshed after offerings', {
+            appUserID: alignedRevenueCatAppUserID,
+            premiumActive: !!info.customerInfo.entitlements.active?.[ENTITLEMENT_ID],
+          });
         }
+        void syncEntitlement(user.id, info.customerInfo);
       } catch (e: any) {
         logRcError('init', e);
         if (!cancelled) {
@@ -288,16 +358,31 @@ export function useRevenueCat() {
     setLoading(true);
     console.info('[RC] purchase: starting', { package: plan.identifier, productId: plan.productId });
     try {
-      await ensureConfigured(user.id);
+      const prePurchaseInfo = await ensureRevenueCatIdentity(user.id, 'purchase-before-storekit');
+      console.info('[RC] purchase: identity aligned', {
+        supabaseUserID: user.id,
+        purchaseAppUserID: alignedRevenueCatAppUserID,
+        premiumActiveBeforePurchase: !!prePurchaseInfo.entitlements.active?.[ENTITLEMENT_ID],
+      });
       const result = await Purchases.purchasePackage({ aPackage: plan.rcPackage });
-      console.info('[RC] purchase: completed', { package: plan.identifier });
+      console.info('[RC] purchase: completed', { package: plan.identifier, purchaseAppUserID: alignedRevenueCatAppUserID });
       logEntitlementSnapshot('purchase', result.customerInfo);
       broadcastCustomerInfo(result.customerInfo, 'purchase');
-      console.info('[RC] purchase: entitlement broadcast', {
-        hasPremium: !!result.customerInfo.entitlements.active?.[ENTITLEMENT_ID],
+      console.info('[RC] purchase: customerInfo entitlements after purchase', {
+        purchaseAppUserID: alignedRevenueCatAppUserID,
+        activeEntitlementKeys: Object.keys(result.customerInfo.entitlements.active ?? {}),
+        premiumActive: !!result.customerInfo.entitlements.active?.[ENTITLEMENT_ID],
       });
-      await syncEntitlement(user.id, result.customerInfo);
-      return result.customerInfo;
+      const refreshed = await Purchases.getCustomerInfo();
+      console.info('[RC] purchase: CustomerInfo refreshed after purchase', {
+        purchaseAppUserID: alignedRevenueCatAppUserID,
+        activeEntitlementKeys: Object.keys(refreshed.customerInfo.entitlements.active ?? {}),
+        premiumActive: !!refreshed.customerInfo.entitlements.active?.[ENTITLEMENT_ID],
+      });
+      logEntitlementSnapshot('purchase refresh', refreshed.customerInfo);
+      broadcastCustomerInfo(refreshed.customerInfo, 'purchase-refresh');
+      void syncEntitlement(user.id, refreshed.customerInfo);
+      return refreshed.customerInfo;
     } catch (e: any) {
       if (e?.userCancelled) {
         console.info('[RC] purchase: user cancelled');
@@ -319,14 +404,26 @@ export function useRevenueCat() {
     setLoading(true);
     console.info('[RC] restore: starting');
     try {
-      await ensureConfigured(user.id);
+      const preRestoreInfo = await ensureRevenueCatIdentity(user.id, 'restore-before-storekit');
+      console.info('[RC] restore: identity aligned', {
+        supabaseUserID: user.id,
+        restoreAppUserID: alignedRevenueCatAppUserID,
+        premiumActiveBeforeRestore: !!preRestoreInfo.entitlements.active?.[ENTITLEMENT_ID],
+      });
       const result = await Purchases.restorePurchases();
       logEntitlementSnapshot('restore', result.customerInfo);
       const isActive = !!result.customerInfo.entitlements.active?.[ENTITLEMENT_ID];
-      console.info('[RC] restore: completed', { isActive });
+      console.info('[RC] restore: completed', { isActive, restoreAppUserID: alignedRevenueCatAppUserID });
       broadcastCustomerInfo(result.customerInfo, 'restore');
-      await syncEntitlement(user.id, result.customerInfo);
-      return result.customerInfo;
+      const refreshed = await Purchases.getCustomerInfo();
+      console.info('[RC] restore: CustomerInfo refreshed after restore', {
+        restoreAppUserID: alignedRevenueCatAppUserID,
+        activeEntitlementKeys: Object.keys(refreshed.customerInfo.entitlements.active ?? {}),
+        premiumActive: !!refreshed.customerInfo.entitlements.active?.[ENTITLEMENT_ID],
+      });
+      broadcastCustomerInfo(refreshed.customerInfo, 'restore-refresh');
+      void syncEntitlement(user.id, refreshed.customerInfo);
+      return refreshed.customerInfo;
     } catch (e: any) {
       logRcError('restore', e);
       const code = e?.code ? ` (code ${e.code})` : '';
@@ -346,6 +443,8 @@ export function useRevenueCat() {
   const refreshCustomerInfo = useCallback(
     async (opts?: { waitForPremium?: boolean; attempts?: number; intervalMs?: number }) => {
       if (!isNativeIOS()) return null;
+      if (!user) return null;
+      await ensureRevenueCatIdentity(user.id, 'refresh-before-customer-info');
       const attempts = opts?.attempts ?? (opts?.waitForPremium ? 10 : 1);
       const intervalMs = opts?.intervalMs ?? 1500;
       for (let i = 0; i < attempts; i++) {
@@ -362,7 +461,7 @@ export function useRevenueCat() {
       }
       return cachedCustomerInfo;
     },
-    [],
+    [user?.id],
   );
 
   const hasPremiumEntitlement = !!customerInfo?.entitlements?.active?.[ENTITLEMENT_ID];
