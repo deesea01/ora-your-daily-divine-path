@@ -251,7 +251,7 @@ export function useRevenueCat() {
   const [plans, setPlans] = useState<IapPlan[]>([]);
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(cachedCustomerInfo);
   const [customerInfoRevisionState, setCustomerInfoRevision] = useState(customerInfoRevision);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(() => isNativeIOS());
   const [error, setError] = useState<string | null>(null);
 
   // Subscribe every hook instance to the shared CustomerInfo cache so that
