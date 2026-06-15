@@ -32,6 +32,9 @@ import { useAuth } from '@/hooks/useAuth';
 const ENTITLEMENT_ID = 'premium';
 let configurePromise: Promise<void> | null = null;
 let customerInfoUpdateListenerRegistered = false;
+let alignedRevenueCatAppUserID: string | null = null;
+let identityPromise: Promise<CustomerInfo> | null = null;
+let identityPromiseUserID: string | null = null;
 
 // ---- Module-level shared CustomerInfo cache --------------------------------
 // useRevenueCat is called from multiple components (IapPaywallSection AND
@@ -110,17 +113,17 @@ function getRevenueCatIosApiKey(): string {
  * Configure via the plugin itself; do not rely on direct native SDK setup from
  * AppDelegate, which does not initialise the plugin bridge consistently.
  */
-async function ensureConfigured(appUserID?: string): Promise<void> {
+async function ensureConfigured(): Promise<void> {
   if (!configurePromise) {
     configurePromise = (async () => {
       const apiKey = getRevenueCatIosApiKey();
       console.info('[RC] configure: initializing Capacitor plugin', {
-        hasUser: !!appUserID,
         entitlement: ENTITLEMENT_ID,
+        identityMode: 'explicit-logIn-required',
       });
       await Purchases.configure({
         apiKey,
-        appUserID: appUserID ?? null,
+        appUserID: null,
         storeKitVersion: STOREKIT_VERSION.STOREKIT_2,
       });
       await Purchases.setLogLevel({ level: LOG_LEVEL.WARN });
@@ -159,6 +162,74 @@ function logEntitlementSnapshot(scope: string, info: CustomerInfo | null) {
     willRenew: ent?.willRenew,
     activeEntitlementKeys: info ? Object.keys(info.entitlements.active ?? {}) : [],
   });
+}
+
+async function getCurrentRevenueCatAppUserID(scope: string): Promise<string | null> {
+  try {
+    const { appUserID } = await Purchases.getAppUserID();
+    console.info(`[RC] ${scope}: current RevenueCat appUserID`, { appUserID });
+    return appUserID;
+  } catch (e) {
+    logRcError(`${scope}: Purchases.getAppUserID`, e);
+    return null;
+  }
+}
+
+async function ensureRevenueCatIdentity(supabaseUserID: string, source: string): Promise<CustomerInfo> {
+  if (identityPromise && identityPromiseUserID === supabaseUserID) return identityPromise;
+
+  identityPromiseUserID = supabaseUserID;
+  identityPromise = (async () => {
+    await ensureConfigured();
+    await ensureCustomerInfoUpdateListener();
+
+    console.info('[RC] identity: Supabase user id', { supabaseUserID, source });
+    const beforeAppUserID = await getCurrentRevenueCatAppUserID('identity before logIn');
+    console.info('[RC] identity: RevenueCat appUserID before logIn', {
+      appUserID: beforeAppUserID,
+      supabaseUserID,
+      source,
+    });
+
+    if (beforeAppUserID !== supabaseUserID) {
+      const loginResult = await Purchases.logIn({ appUserID: supabaseUserID });
+      console.info('[RC] identity: Purchases.logIn completed', {
+        supabaseUserID,
+        created: loginResult.created,
+        source,
+      });
+      logEntitlementSnapshot('identity logIn', loginResult.customerInfo);
+      broadcastCustomerInfo(loginResult.customerInfo, 'identity-logIn');
+    } else {
+      console.info('[RC] identity: already aligned before logIn', { supabaseUserID, source });
+    }
+
+    const afterAppUserID = await getCurrentRevenueCatAppUserID('identity after logIn');
+    console.info('[RC] identity: RevenueCat appUserID after logIn', {
+      appUserID: afterAppUserID,
+      supabaseUserID,
+      source,
+    });
+    if (afterAppUserID !== supabaseUserID) {
+      throw new Error(`RC_IDENTITY_MISMATCH: RevenueCat appUserID ${afterAppUserID ?? 'unknown'} does not match authenticated Ora user ${supabaseUserID}.`);
+    }
+    alignedRevenueCatAppUserID = afterAppUserID;
+
+    const refreshed = await Purchases.getCustomerInfo();
+    console.info('[RC] identity: CustomerInfo refreshed after logIn', {
+      appUserID: afterAppUserID,
+      premiumActive: !!refreshed.customerInfo.entitlements.active?.[ENTITLEMENT_ID],
+      activeEntitlementKeys: Object.keys(refreshed.customerInfo.entitlements.active ?? {}),
+    });
+    logEntitlementSnapshot('identity refresh', refreshed.customerInfo);
+    broadcastCustomerInfo(refreshed.customerInfo, 'identity-refresh');
+    return refreshed.customerInfo;
+  })().finally(() => {
+    identityPromise = null;
+    identityPromiseUserID = null;
+  });
+
+  return identityPromise;
 }
 
 export interface IapPlan {
