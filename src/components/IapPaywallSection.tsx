@@ -22,6 +22,8 @@ export function IapPaywallSection() {
   const navigate = useNavigate();
   const { ready, loading, plans, error, customerInfoRevision, hasPremiumEntitlement, purchase, restore, refreshCustomerInfo } = useRevenueCat();
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [finalizing, setFinalizing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
   const navigatedRef = useRef(false);
   const purchaseAttemptedRef = useRef(false);
 
