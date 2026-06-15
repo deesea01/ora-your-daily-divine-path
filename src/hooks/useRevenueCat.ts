@@ -191,18 +191,15 @@ async function ensureRevenueCatIdentity(supabaseUserID: string, source: string):
       source,
     });
 
-    if (beforeAppUserID !== supabaseUserID) {
-      const loginResult = await Purchases.logIn({ appUserID: supabaseUserID });
-      console.info('[RC] identity: Purchases.logIn completed', {
-        supabaseUserID,
-        created: loginResult.created,
-        source,
-      });
-      logEntitlementSnapshot('identity logIn', loginResult.customerInfo);
-      broadcastCustomerInfo(loginResult.customerInfo, 'identity-logIn');
-    } else {
-      console.info('[RC] identity: already aligned before logIn', { supabaseUserID, source });
-    }
+    const loginResult = await Purchases.logIn({ appUserID: supabaseUserID });
+    console.info('[RC] identity: Purchases.logIn completed', {
+      supabaseUserID,
+      created: loginResult.created,
+      wasAlreadyAligned: beforeAppUserID === supabaseUserID,
+      source,
+    });
+    logEntitlementSnapshot('identity logIn', loginResult.customerInfo);
+    broadcastCustomerInfo(loginResult.customerInfo, 'identity-logIn');
 
     const afterAppUserID = await getCurrentRevenueCatAppUserID('identity after logIn');
     console.info('[RC] identity: RevenueCat appUserID after logIn', {
@@ -446,6 +443,8 @@ export function useRevenueCat() {
   const refreshCustomerInfo = useCallback(
     async (opts?: { waitForPremium?: boolean; attempts?: number; intervalMs?: number }) => {
       if (!isNativeIOS()) return null;
+      if (!user) return null;
+      await ensureRevenueCatIdentity(user.id, 'refresh-before-customer-info');
       const attempts = opts?.attempts ?? (opts?.waitForPremium ? 10 : 1);
       const intervalMs = opts?.intervalMs ?? 1500;
       for (let i = 0; i < attempts; i++) {
@@ -462,7 +461,7 @@ export function useRevenueCat() {
       }
       return cachedCustomerInfo;
     },
-    [],
+    [user?.id],
   );
 
   const hasPremiumEntitlement = !!customerInfo?.entitlements?.active?.[ENTITLEMENT_ID];
