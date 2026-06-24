@@ -15,6 +15,17 @@ const Welcome = () => {
   const { t, language, setLanguage } = useLanguage();
   const navigate = useNavigate();
 
+  console.info('[routing] Welcome render', {
+    authLoading: loading,
+    userId: user?.id ?? null,
+    profileLoading,
+    onboardingComplete: !!profile?.onboarding_completed,
+    entitlementLoading,
+    isPremium,
+  });
+
+  // Never redirect to launch while any auth/profile/entitlement signal is
+  // still resolving — that race is what caused the iPad login loop.
   if (loading || (user && (profileLoading || entitlementLoading))) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -23,9 +34,18 @@ const Welcome = () => {
     );
   }
 
-  if (user && !profile?.onboarding_completed) return <Navigate to="/onboarding" replace />;
-  if (user && !isPremium) return <Navigate to="/paywall" replace />;
-  if (user) return <Navigate to="/" replace />;
+  if (user && !profile?.onboarding_completed) {
+    console.info('[routing] Welcome → /onboarding');
+    return <Navigate to="/onboarding" replace />;
+  }
+  if (user && !isPremium) {
+    console.info('[routing] Welcome → /paywall');
+    return <Navigate to="/paywall" replace />;
+  }
+  if (user) {
+    console.info('[routing] Welcome → /');
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background px-6 pb-8 pt-safe app-container-wide">

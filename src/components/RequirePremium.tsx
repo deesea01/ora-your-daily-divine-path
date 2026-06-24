@@ -21,7 +21,17 @@ export function RequirePremium({ children }: Props) {
   const { isPremium, loading: entLoading } = useEntitlement();
   const location = useLocation();
 
-  if (authLoading || profileLoading || entLoading) {
+  console.info('[routing] RequirePremium render', {
+    path: location.pathname,
+    authLoading,
+    userId: user?.id ?? null,
+    profileLoading,
+    onboardingComplete: !!profile?.onboarding_completed,
+    entLoading,
+    isPremium,
+  });
+
+  if (authLoading || (user && (profileLoading || entLoading))) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-6 w-6 rounded-full border-2 border-gold border-t-transparent animate-spin" />
@@ -29,9 +39,18 @@ export function RequirePremium({ children }: Props) {
     );
   }
 
-  if (!user) return <Navigate to="/welcome" replace />;
-  if (!profile?.onboarding_completed) return <Navigate to="/onboarding" replace />;
-  if (!isPremium) return <Navigate to="/paywall" state={{ from: location.pathname }} replace />;
+  if (!user) {
+    console.info('[routing] RequirePremium → /welcome (no user)');
+    return <Navigate to="/welcome" replace />;
+  }
+  if (!profile?.onboarding_completed) {
+    console.info('[routing] RequirePremium → /onboarding');
+    return <Navigate to="/onboarding" replace />;
+  }
+  if (!isPremium) {
+    console.info('[routing] RequirePremium → /paywall');
+    return <Navigate to="/paywall" state={{ from: location.pathname }} replace />;
+  }
 
   return <>{children}</>;
 }

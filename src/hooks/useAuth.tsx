@@ -21,19 +21,61 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    let initialized = false;
+    let mounted = true;
+
+    const finishInit = (s: Session | null, source: string) => {
+      if (!mounted) return;
+      initialized = true;
+      setSession(s);
+      setUser(s?.user ?? null);
+      setLoading(false);
+      console.info('[auth] initialized', { source, hasSession: !!s, userId: s?.user?.id });
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+      console.info('[auth] onAuthStateChange', {
+        event,
+        hasSession: !!newSession,
+        userId: newSession?.user?.id,
+        initialized,
+      });
+      // IMPORTANT: ignore INITIAL_SESSION for state — getSession() below is the
+      // authoritative source for the restored session. On iPadOS the
+      // INITIAL_SESSION event can fire with a null session before storage has
+      // finished hydrating, which would otherwise flash `user=null` and bounce
+      // an authenticated user back to /welcome (the App Review loop).
+      if (event === 'INITIAL_SESSION') return;
+      if (!mounted) return;
+      setSession(newSession);
+      setUser(newSession?.user ?? null);
+      // Any post-init auth event (SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED, etc.)
+      // confirms the SDK is live — safe to clear the loading gate.
+      if (!initialized) initialized = true;
       setLoading(false);
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
+    supabase.auth.getSession().then(({ data: { session: s }, error }) => {
+      if (error) console.error('[auth] getSession error', error);
+      finishInit(s ?? null, 'getSession');
+    }).catch((err) => {
+      console.error('[auth] getSession threw', err);
+      finishInit(null, 'getSession-error');
     });
 
-    return () => subscription.unsubscribe();
+    // Safety: never strand the app on the launch/loading screen forever.
+    const timeoutId = window.setTimeout(() => {
+      if (!initialized && mounted) {
+        console.warn('[auth] session restore timed out after 8s — proceeding without session');
+        finishInit(null, 'timeout');
+      }
+    }, 8000);
+
+    return () => {
+      mounted = false;
+      window.clearTimeout(timeoutId);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string) => {
