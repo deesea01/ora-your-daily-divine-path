@@ -9,7 +9,7 @@
 - [Holy Rosary](/rosary): Step-by-step guided rosary with all four sets of mysteries, daily reflections, and saint-narrated audio.
 - [Saint Companions](/guide): Choose a Catholic saint companion (Francis of Assisi, Augustine, Teresa of Ávila, Padre Pio, Thérèse, Joan of Arc, Thomas Aquinas) to guide your prayer life.
 - [Talk with a Saint](/monk-chat): Sacred AI conversations with a saint companion for prayer, scripture, and spiritual guidance.
-- [Premium](/paywall): Ora Premium plans — $10/month or $70/year with a 3-day free trial.
+- [Premium](/paywall): Ora Premium plans — $10/month or $70/year.
 - [Impact](/impact): How Ora subscriptions support Catholic charities and ministries.
 
 ## Optional
