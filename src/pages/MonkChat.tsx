@@ -473,9 +473,7 @@ const MonkChat = () => {
             onClick={() => setUpgradeOpen(true)}
             className="w-full text-center text-[11px] text-muted-foreground hover:text-foreground transition-colors"
           >
-            {chatRemaining > 0
-              ? `${chatRemaining} of ${chatLimit} free chats left today · Unlock the saints`
-              : `You've used today's free chats · Unlock your prayer life for unlimited`}
+            Unlock the saints · Premium required
           </button>
         )}
         {voice.isEnabled && (

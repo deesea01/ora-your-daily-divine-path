@@ -31,8 +31,8 @@ export function SubscriptionCard() {
             <Sparkles className="h-5 w-5 text-gold" />
           </div>
           <div>
-            <p className="text-sm font-medium text-foreground">Free Plan</p>
-            <p className="text-xs text-muted-foreground">3 chats/day · Monk only</p>
+            <p className="text-sm font-medium text-foreground">No active subscription</p>
+            <p className="text-xs text-muted-foreground">Premium required · Monthly or yearly</p>
           </div>
         </div>
         <button
