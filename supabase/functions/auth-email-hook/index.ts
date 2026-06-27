@@ -36,7 +36,9 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "ora-sacred-path"
+const SITE_NAME = "Ora Devotion"
+const FROM_NAME = "Ora Devotion"
+const FROM_LOCAL_PART = "no-reply"
 const SENDER_DOMAIN = "notify.oradevotion.com"
 const ROOT_DOMAIN = "oradevotion.com"
 const FROM_DOMAIN = "notify.oradevotion.com" // Domain shown in From address (may be root or sender subdomain)
