@@ -56,3 +56,6 @@ verify_jwt = true
 
 [functions.auth-email-hook]
 verify_jwt = false
+
+[functions.admin-confirm-user]
+verify_jwt = false
