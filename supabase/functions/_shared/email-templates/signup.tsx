@@ -28,7 +28,15 @@ export const SignupEmail = ({
   confirmationUrl,
 }: SignupEmailProps) => (
   <Html lang="en" dir="ltr">
-    <Head />
+    <Head>
+      {/*
+        Force a light color scheme so Apple Mail (iOS) does not run its
+        dark-mode transform, which was dropping the gold button background
+        and blending the dark button label into the surrounding space.
+      */}
+      <meta name="color-scheme" content="light only" />
+      <meta name="supported-color-schemes" content="light" />
+    </Head>
     <Preview>Confirm your email for {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
@@ -50,6 +58,14 @@ export const SignupEmail = ({
         <Button style={button} href={confirmationUrl}>
           Verify Email
         </Button>
+        <Text style={fallbackIntro}>
+          Button not showing? Copy and paste this link into your browser:
+        </Text>
+        <Text style={fallbackUrl}>
+          <Link href={confirmationUrl} style={fallbackLink}>
+            {confirmationUrl}
+          </Link>
+        </Text>
         <Text style={footer}>
           If you didn't create an account, you can safely ignore this email.
         </Text>
@@ -75,12 +91,33 @@ const text = {
   margin: '0 0 25px',
 }
 const link = { color: 'inherit', textDecoration: 'underline' }
+// Explicit display/border/line-height + !important-equivalent inline color
+// keep the CTA visible in Apple Mail iOS (light + dark) and Gmail iOS.
 const button = {
   backgroundColor: '#d4af37',
   color: '#0b0a08',
-  fontSize: '14px',
+  fontSize: '15px',
+  fontWeight: 'bold' as const,
   borderRadius: '8px',
-  padding: '12px 20px',
+  padding: '14px 24px',
   textDecoration: 'none',
+  display: 'inline-block',
+  lineHeight: '1',
+  border: '1px solid #d4af37',
+  textAlign: 'center' as const,
+  msoLineHeightRule: 'exactly',
 }
+const fallbackIntro = {
+  fontSize: '12px',
+  color: '#5b5447',
+  lineHeight: '1.5',
+  margin: '24px 0 6px',
+}
+const fallbackUrl = {
+  fontSize: '12px',
+  lineHeight: '1.5',
+  margin: '0 0 20px',
+  wordBreak: 'break-all' as const,
+}
+const fallbackLink = { color: '#5b5447', textDecoration: 'underline' }
 const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
